@@ -1,4 +1,4 @@
-# PromeJo E-Commerce Platform
+# PrimeJo E-Commerce Platform
 
 A complete, full-stack e-commerce website with bilingual support (English/Arabic) and a powerful admin panel.
 
