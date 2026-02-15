@@ -1,7 +1,7 @@
 // Frontend API Service
 // This file handles all communication with the backend API
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://primejo-backend-demo.up.railway.app/api';
 
 // Check if we should use API or localStorage
 const USE_API = true; // Set to false to use localStorage (demo mode)
