@@ -1,4 +1,4 @@
-# Kiwi E-Commerce Platform
+# PromeJo E-Commerce Platform
 
 A complete, full-stack e-commerce website with bilingual support (English/Arabic) and a powerful admin panel.
 
@@ -70,7 +70,7 @@ CREATE DATABASE kiwi_ecommerce;
 
 2. Import the schema:
 ```bash
-mysql -u root -p kiwi_ecommerce < database/schema.sql
+mysql -u root -p primejo_ecommerce < database/schema.sql
 ```
 
 ### Step 2: Backend Setup
@@ -124,7 +124,7 @@ Open `frontend/index.html` directly in your browser.
 
 1. Open `admin/index.html` in your browser
 2. Default credentials (if using the backend):
-   - Email: admin@kiwi.com
+   - Email: admin@primejo.strore
    - Password: (set in database)
 
 ## Usage Guide
@@ -271,7 +271,7 @@ The platform comes with sample products in the localStorage. For production:
 
 ## Support
 
-For issues or questions, contact: info@kiwi.com
+For issues or questions, contact: info@primejo.store
 
 ## License
 
@@ -279,4 +279,4 @@ MIT License - feel free to use this project for commercial purposes.
 
 ---
 
-**Built with ❤️ for Kiwi E-Commerce**
+**Built with ❤️ for primeJO E-Commerce**
