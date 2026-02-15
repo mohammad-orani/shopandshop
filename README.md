@@ -33,7 +33,7 @@ A complete, full-stack e-commerce website with bilingual support (English/Arabic
 ## Project Structure
 
 ```
-kiwi-ecommerce/
+primejo-ecommerce/
 ├── frontend/               # Customer-facing website
 │   ├── index.html         # Home page
 │   ├── product.html       # Product details
@@ -65,7 +65,7 @@ kiwi-ecommerce/
 
 1. Create a MySQL database:
 ```sql
-CREATE DATABASE kiwi_ecommerce;
+CREATE DATABASE primejo_ecommerce;
 ```
 
 2. Import the schema:
@@ -95,7 +95,7 @@ cp .env.example .env
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_password
-DB_NAME=kiwi_ecommerce
+DB_NAME=primejo_ecommerce
 JWT_SECRET=your_secret_key
 ```
 
