@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+
+# Environment backend
+backend/.env
+
+# Environment frontend
+frontend/.env
+
+# Environment admin
+admin/.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs/
+*.log
+
+# Database
+*.sql.backup
+*.db
+
+# Uploads (if implemented)
+uploads/*
+!uploads/.gitkeep
+
+# Build files
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp

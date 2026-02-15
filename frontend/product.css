@@ -1,0 +1,221 @@
+.product-container {
+    padding: 3rem 0;
+}
+
+.product-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.product-gallery {
+    position: relative;
+}
+
+.main-image {
+    width: 100%;
+    height: 500px;
+    background: var(--grey-light);
+    border: 2px solid var(--primary-black);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail-images {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.thumbnail {
+    height: 100px;
+    background: var(--grey-light);
+    border: 2px solid var(--grey-medium);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+    border-color: var(--primary-black);
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-details {
+    padding: 2rem 0;
+}
+
+.product-details h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 900;
+}
+
+.product-stock {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--primary-black);
+    color: var(--primary-white);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.product-stock.out-of-stock {
+    background: var(--grey-dark);
+}
+
+.product-prices {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.current-price {
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+
+.old-price {
+    font-size: 1.8rem;
+    text-decoration: line-through;
+    color: var(--grey-medium);
+}
+
+.discount-badge {
+    background: var(--primary-black);
+    color: var(--primary-white);
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+}
+
+.product-description {
+    margin: 2rem 0;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.product-description h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.quantity-selector {
+    margin: 2rem 0;
+}
+
+.quantity-selector label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.quantity-btn {
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--primary-black);
+    background: var(--primary-white);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 700;
+}
+
+.quantity-btn:hover {
+    background: var(--primary-black);
+    color: var(--primary-white);
+}
+
+.quantity-input {
+    width: 80px;
+    height: 50px;
+    text-align: center;
+    border: 2px solid var(--primary-black);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    padding: 1.5rem;
+    background: var(--primary-black);
+    color: var(--primary-white);
+    border: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.add-to-cart-btn:hover {
+    background: var(--grey-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px var(--shadow);
+}
+
+.add-to-cart-btn:disabled {
+    background: var(--grey-medium);
+    cursor: not-allowed;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.secondary-btn {
+    flex: 1;
+    padding: 1rem;
+    background: var(--primary-white);
+    border: 2px solid var(--primary-black);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.secondary-btn:hover {
+    background: var(--primary-black);
+    color: var(--primary-white);
+}
+
+@media (max-width: 768px) {
+    .product-detail {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-details h1 {
+        font-size: 2rem;
+    }
+    
+    .current-price {
+        font-size: 2rem;
+    }
+}

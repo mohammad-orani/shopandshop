@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway MySQL Import Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .step h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        
+        .code {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Railway MySQL Import Tool</h1>
+        <p class="subtitle">Import your Primejo schema.sql into Railway MySQL database</p>
+        
+        <div class="warning">
+            ⚠️ <strong>Important:</strong> This tool requires your backend server to be running with CORS enabled. 
+            If import fails, use the Railway dashboard method instead.
+        </div>
+        
+        <div class="step">
+            <h3>📋 Step 1: Get Railway Connection Details</h3>
+            <p>Go to Railway → MySQL → Variables tab and copy these values:</p>
+            
+            <div class="form-group">
+                <label>MYSQL_HOST:</label>
+                <input type="text" id="host" placeholder="containers-us-west-123.railway.app">
+            </div>
+            
+            <div class="form-group">
+                <label>MYSQL_USER (usually 'root'):</label>
+                <input type="text" id="user" value="root">
+            </div>
+            
+            <div class="form-group">
+                <label>MYSQL_PASSWORD:</label>
+                <input type="password" id="password" placeholder="Your Railway MySQL password">
+            </div>
+            
+            <div class="form-group">
+                <label>MYSQL_DATABASE (usually 'railway'):</label>
+                <input type="text" id="database" value="railway">
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>📄 Step 2: Paste Your Schema.sql Content</h3>
+            <p>Open database/schema.sql in Notepad, copy all content (Ctrl+A, Ctrl+C), and paste below:</p>
+            
+            <div class="form-group">
+                <textarea id="schema" placeholder="Paste your entire schema.sql content here..."></textarea>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="importSchema()">
+            🚀 Import Schema to Railway
+        </button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Importing schema... Please wait...</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="step" style="margin-top: 30px;">
+            <h3>💡 Alternative Method (If Above Fails)</h3>
+            <p><strong>Use MySQL Command Line:</strong></p>
+            <div class="code" id="commandLine">
+                mysql -h [HOST] -P 3306 -u [USER] -p[PASSWORD] [DATABASE] &lt; schema.sql
+            </div>
+            <p style="margin-top: 10px;">Or use Railway Dashboard → MySQL → Data → Query</p>
+        </div>
+    </div>
+    
+    <script>
+        function updateCommandLine() {
+            const host = document.getElementById('host').value;
+            const user = document.getElementById('user').value;
+            const password = document.getElementById('password').value;
+            const database = document.getElementById('database').value;
+            
+            if (host && user && password && database) {
+                const command = `mysql -h ${host} -P 3306 -u ${user} -p${password} ${database} < schema.sql`;
+                document.getElementById('commandLine').textContent = command;
+            }
+        }
+        
+        // Update command line when inputs change
+        ['host', 'user', 'password', 'database'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateCommandLine);
+        });
+        
+        async function importSchema() {
+            const host = document.getElementById('host').value;
+            const user = document.getElementById('user').value;
+            const password = document.getElementById('password').value;
+            const database = document.getElementById('database').value;
+            const schema = document.getElementById('schema').value;
+            
+            // Validation
+            if (!host || !user || !password || !database) {
+                showResult('error', '❌ Please fill in all connection details!');
+                return;
+            }
+            
+            if (!schema || schema.trim().length < 100) {
+                showResult('error', '❌ Please paste your schema.sql content!');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                // Note: Direct MySQL connection from browser is not possible
+                // This would need a backend proxy
+                showResult('error', 
+                    '❌ Direct browser-to-MySQL connection is not supported for security reasons.<br><br>' +
+                    '<strong>Please use one of these methods instead:</strong><br><br>' +
+                    '1️⃣ <strong>Railway Dashboard:</strong><br>' +
+                    '   • Go to Railway → MySQL → Data tab<br>' +
+                    '   • Find Query/Console button<br>' +
+                    '   • Paste your schema and execute<br><br>' +
+                    '2️⃣ <strong>MySQL Command Line:</strong><br>' +
+                    '   • Copy the command shown below<br>' +
+                    '   • Run in terminal/command prompt<br><br>' +
+                    '3️⃣ <strong>MySQL Workbench:</strong><br>' +
+                    '   • Download from mysql.com<br>' +
+                    '   • Connect using your Railway details<br>' +
+                    '   • Import schema.sql file'
+                );
+                
+            } catch (error) {
+                showResult('error', '❌ Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result ' + type;
+            resultDiv.innerHTML = message;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
