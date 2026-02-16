@@ -492,6 +492,74 @@ app.get('/api/delivery/fee/:cityId', async (req, res) => {
     }
 });
 
+// ============ GENERAL INFO ENDPOINT ============
+
+// Get general info (brand name, phone, email)
+app.get('/api/general-info', async (req, res) => {
+    try {
+        const [info] = await pool.query(
+            'SELECT * FROM general_info LIMIT 1'
+        );
+
+        if (info.length === 0) {
+            return res.json({
+                success: false,
+                message: 'No general info found'
+            });
+        }
+
+        res.json({
+            success: true,
+            info: {
+                brand_name: info[0].gi_brand_name,
+                phone_number: info[0].gi_phone_number,
+                email_address: info[0].gi_email_address
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching general info:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch general info'
+        });
+    }
+});
+
+// Update general info (admin only)
+app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { brand_name, phone_number, email_address } = req.body;
+
+        // Check if record exists
+        const [existing] = await pool.query('SELECT * FROM general_info LIMIT 1');
+
+        if (existing.length === 0) {
+            // Insert new record
+            await pool.query(
+                'INSERT INTO general_info (gi_brand_name, gi_phone_number, gi_email_address) VALUES (?, ?, ?)',
+                [brand_name, phone_number, email_address]
+            );
+        } else {
+            // Update existing record
+            await pool.query(
+                'UPDATE general_info SET gi_brand_name = ?, gi_phone_number = ?, gi_email_address = ? WHERE gi_id = ?',
+                [brand_name, phone_number, email_address, existing[0].gi_id]
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'General info updated successfully'
+        });
+    } catch (error) {
+        console.error('Error updating general info:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update general info'
+        });
+    }
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Primejo E-Commerce API running on port ${PORT}`);
