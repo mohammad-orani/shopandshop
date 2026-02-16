@@ -1,25 +1,20 @@
 // General Info Loader
-const API_URL = 'http://primejo-backend-demo.up.railway.app/api';
-
-// Cache for general info
-let generalInfoCache = null;
+const API_URL = 'https://primejo-backend-demo.up.railway.app/api';
 
 // Load general info from API
 async function loadGeneralInfo() {
-    // Return cached data if available
-    if (generalInfoCache) {
-        return generalInfoCache;
-    }
-    
     try {
-        const response = await fetch(`${API_URL}/general-info`);
+        const response = await fetch(`${API_URL}/general-info`, {
+            cache: 'no-store'
+        });
+        
         const data = await response.json();
         
         if (data.success) {
-            generalInfoCache = data.info;
+            console.log('✅ General info loaded:', data.info);
             return data.info;
         } else {
-            console.error('Failed to load general info:', data.message);
+            console.error('Failed to load general info');
             return getDefaultInfo();
         }
     } catch (error) {
@@ -28,52 +23,37 @@ async function loadGeneralInfo() {
     }
 }
 
-// Default fallback info
-function getDefaultInfo() {
-    return {
-        brand_name: 'Primejo',
-        phone_number: '+962 79 123 4567',
-        email_address: 'support@primejo.com'
-    };
-}
 
-// Update header/footer with general info
+
+// Update page with general info
 async function updateGeneralInfo() {
     const info = await loadGeneralInfo();
     
-    // Update brand name
-    const brandElements = document.querySelectorAll('.brand-name, .logo-text, h1.brand');
-    brandElements.forEach(el => {
-        el.textContent = info.brand_name;
-    });
-    
-    // Update email
-    const emailElements = document.querySelectorAll('.contact-email, a[href^="mailto:"]');
-    emailElements.forEach(el => {
+    // Update all email elements
+    document.querySelectorAll('.contact-email, [data-email]').forEach(el => {
+        el.textContent = `📧 ${info.email_address}`;
         if (el.tagName === 'A') {
             el.href = `mailto:${info.email_address}`;
         }
-        el.textContent = `📧 ${info.email_address}`;
     });
     
-    // Update phone
-    const phoneElements = document.querySelectorAll('.contact-phone, a[href^="tel:"]');
-    phoneElements.forEach(el => {
+    // Update all phone elements
+    document.querySelectorAll('.contact-phone, [data-phone]').forEach(el => {
+        el.textContent = `📞 ${info.phone_number}`;
         if (el.tagName === 'A') {
             el.href = `tel:${info.phone_number}`;
         }
-        el.textContent = `📞 ${info.phone_number}`;
     });
     
-    // Update footer contact info
-    const footerContact = document.querySelector('.footer-contact-info');
-    if (footerContact) {
-        footerContact.innerHTML = `
-            <span class="contact-email">📧 ${info.email_address}</span>
-            <span class="contact-phone">📞 ${info.phone_number}</span>
-        `;
-    }
+    // Update brand name
+    document.querySelectorAll('.brand-name, [data-brand]').forEach(el => {
+        el.textContent = info.brand_name;
+    });
 }
 
-// Load on page load
-document.addEventListener('DOMContentLoaded', updateGeneralInfo);
+// Load on page ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateGeneralInfo);
+} else {
+    updateGeneralInfo();
+}

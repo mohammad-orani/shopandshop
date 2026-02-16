@@ -1,0 +1,227 @@
+/* ===== Hero Slider Styles ===== */
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    margin-bottom: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.slider-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+}
+
+.slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+/* Slide backgrounds (customize these!) */
+.slide:nth-child(1) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.slide:nth-child(2) {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.slide:nth-child(3) {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.slide-content {
+    text-align: center;
+    color: white;
+    padding: 40px;
+    max-width: 800px;
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-content h2 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.slide-content p {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    opacity: 0.95;
+}
+
+.cta-btn {
+    background: white;
+    color: #667eea;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: #f8f9fa;
+}
+
+/* Slider Navigation Buttons */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    border: none;
+    font-size: 3rem;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+    border-radius: 5px;
+}
+
+.slider-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.slider-btn.prev {
+    left: 20px;
+}
+
+.slider-btn.next {
+    right: 20px;
+}
+
+/* Slider Dots */
+.slider-dots {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.slider-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+    background: white;
+    width: 30px;
+    border-radius: 6px;
+}
+
+.slider-dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-slider {
+        height: 400px;
+    }
+
+    .slide-content h2 {
+        font-size: 2.5rem;
+    }
+
+    .slide-content p {
+        font-size: 1.2rem;
+    }
+
+    .slider-btn {
+        font-size: 2rem;
+        padding: 8px 15px;
+    }
+
+    .slider-btn.prev {
+        left: 10px;
+    }
+
+    .slider-btn.next {
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-slider {
+        height: 350px;
+    }
+
+    .slide-content h2 {
+        font-size: 2rem;
+    }
+
+    .slide-content p {
+        font-size: 1rem;
+    }
+
+    .cta-btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+}
+
+.slide:nth-child(1) {
+    background: linear-gradient(rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)),
+        url('images/slider-1.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.slide:nth-child(2) {
+    background: linear-gradient(rgba(240, 147, 251, 0.8), rgba(245, 87, 108, 0.8)),
+        url('images/slider-2.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.slide:nth-child(3) {
+    background: linear-gradient(rgba(79, 172, 254, 0.8), rgba(0, 242, 254, 0.8)),
+        url('images/slider-3.jpg');
+    background-size: cover;
+    background-position: center;
+}

@@ -24,7 +24,7 @@ const currencySymbols = {
 function formatPrice(price) {
     const convertedPrice = (price * currencyRates[currentCurrency]).toFixed(2);
     const symbol = currencySymbols[currentCurrency];
-    
+
     if (currentCurrency === 'JOD' || currentCurrency === 'AED' || currentCurrency === 'SAR') {
         return `${convertedPrice} ${symbol}`;
     }
@@ -34,7 +34,7 @@ function formatPrice(price) {
 function changeCurrency(currency) {
     currentCurrency = currency;
     localStorage.setItem('preferredCurrency', currency);
-    
+
     // Update all prices on the page
     updateAllPrices();
 }
@@ -47,19 +47,19 @@ function updateAllPrices() {
     if (typeof loadProductDetails === 'function') loadProductDetails();
     if (typeof loadCategoryProducts === 'function') loadCategoryProducts();
     if (typeof loadFavorites === 'function') loadFavorites();
-    
+
     // Reload section-specific content on homepage
     if (document.getElementById('topSellers')) {
         const products = getProducts();
         const topSellers = products.filter(p => p.topSeller).slice(0, 4);
         document.getElementById('topSellers').innerHTML = topSellers.map(createProductCard).join('');
-        
+
         const randomProducts = products.sort(() => 0.5 - Math.random()).slice(0, 4);
         document.getElementById('randomProducts').innerHTML = randomProducts.map(createProductCard).join('');
-        
+
         const offers = products.filter(p => p.isOffer).slice(0, 4);
         document.getElementById('offerProducts').innerHTML = offers.map(createProductCard).join('');
-        
+
         switchLanguage(currentLanguage);
     }
 }
@@ -68,11 +68,12 @@ function switchLanguage(lang) {
     currentLanguage = lang;
     document.documentElement.lang = lang;
     document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    
+
     // Update active button
     document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`lang-${lang}`).classList.add('active');
-    
+    const langBtn = document.getElementById(`lang-${lang}`);
+    if (langBtn) langBtn.classList.add('active');
+
     // Update all translatable elements
     document.querySelectorAll('[data-en][data-ar]').forEach(element => {
         const translation = element.getAttribute(`data-${lang}`);
@@ -84,7 +85,16 @@ function switchLanguage(lang) {
             element.textContent = translation;
         }
     });
-    
+
+    // Update breadcrumb if it exists
+    const breadcrumb = document.getElementById('breadcrumb-current');
+    if (breadcrumb) {
+        const breadcrumbText = lang === 'ar' ? breadcrumb.getAttribute('data-ar') : breadcrumb.getAttribute('data-en');
+        if (breadcrumbText) {
+            breadcrumb.textContent = breadcrumbText;
+        }
+    }
+
     localStorage.setItem('preferredLanguage', lang);
 }
 
@@ -92,7 +102,7 @@ function switchLanguage(lang) {
 window.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('preferredLanguage') || 'en';
     switchLanguage(savedLang);
-    
+
     // Load preferred currency
     const savedCurrency = localStorage.getItem('preferredCurrency') || 'USD';
     currentCurrency = savedCurrency;
@@ -100,7 +110,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (currencySelector) {
         currencySelector.value = savedCurrency;
     }
-    
+
     // Load categories into navigation menu
     loadCategoriesMenu();
 });
@@ -109,30 +119,27 @@ window.addEventListener('DOMContentLoaded', () => {
 function loadCategoriesMenu() {
     const menuContainer = document.getElementById('dynamicCategoryMenu');
     if (!menuContainer) return;
-    
+
     // Get categories from admin (same storage as admin panel)
     const categoriesData = localStorage.getItem('categories');
     if (!categoriesData) return;
-    
+
     const categories = JSON.parse(categoriesData);
     if (categories.length === 0) return;
-    
+
     // Keep "All Products" as first item
     let menuHTML = '<li><a href="category.html" data-en="All Products" data-ar="جميع المنتجات">All Products</a></li>';
-    
+
     // Add each category
     categories.forEach(cat => {
         menuHTML += `<li><a href="category.html?cat=${cat.id}" data-en="${cat.name_en}" data-ar="${cat.name_ar}">${cat.name_en}</a></li>`;
     });
-    
+
     menuContainer.innerHTML = menuHTML;
-    
+
     // Re-apply language to new menu items
     switchLanguage(currentLanguage);
 }
-
-// Sample Product Data has been removed
-// Add products through the Admin Dashboard at admin/index.html
 
 // Initialize empty products array if none exists
 if (!localStorage.getItem('products')) {
@@ -148,23 +155,32 @@ function getProducts() {
 function createProductCard(product) {
     const nameKey = `name_${currentLanguage}`;
     const descKey = `description_${currentLanguage}`;
-    
+
     return `
-        <div class="product-card" onclick="viewProduct(${product.id})">
+        <div class="product-card" 
+             data-product-id="${product.id}"
+             data-new="${product.isNew || false}"
+             data-topseller="${product.topSeller || false}">
             ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
             <div class="product-image">
-                <img src="${product.image}" alt="${product[nameKey]}">
+                <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product[nameKey]}">
             </div>
             <div class="product-info">
                 <h3 class="product-name">${product[nameKey]}</h3>
-                <p class="product-description">${product[descKey]}</p>
+                <p class="product-description">${product[descKey] || ''}</p>
                 <div class="product-price">
                     <span class="price-new">${formatPrice(product.newPrice)}</span>
                     ${product.oldPrice !== product.newPrice ? `<span class="price-old">${formatPrice(product.oldPrice)}</span>` : ''}
                 </div>
                 <div class="product-actions">
-                    <button class="btn" onclick="event.stopPropagation(); addToCart(${product.id})" data-en="Add to Cart" data-ar="أضف للسلة">Add to Cart</button>
-                    <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${product.id})">♥</button>
+                    <button class="btn" 
+                            data-action="add-to-cart" 
+                            data-product-id="${product.id}"
+                            data-en="Add to Cart" 
+                            data-ar="أضف للسلة">Add to Cart</button>
+                    <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}" 
+                            data-action="toggle-favorite"
+                            data-product-id="${product.id}">♥</button>
                 </div>
             </div>
         </div>
@@ -176,53 +192,249 @@ if (document.getElementById('topSellers')) {
     const products = getProducts();
     const topSellers = products.filter(p => p.topSeller).slice(0, 4);
     document.getElementById('topSellers').innerHTML = topSellers.map(createProductCard).join('');
-    
+
     const randomProducts = products.sort(() => 0.5 - Math.random()).slice(0, 4);
     document.getElementById('randomProducts').innerHTML = randomProducts.map(createProductCard).join('');
-    
+
     const offers = products.filter(p => p.isOffer).slice(0, 4);
     document.getElementById('offerProducts').innerHTML = offers.map(createProductCard).join('');
-    
+
     // Re-translate after loading products
     switchLanguage(currentLanguage);
 }
 
-// Hero Slider
-let currentSlide = 0;
-const slides = document.querySelectorAll('.slide');
+// ==================== HERO SLIDER ====================
 
-if (slides.length > 0) {
+(function () {
+    // Configuration
+    let currentSlide = 0;
+    let autoplayInterval = null;
+    const autoplayDelay = 5000; // 5 seconds
+
+    // Get elements
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const sliderWrapper = document.querySelector('.slider-wrapper');
+
+    // Exit if no slider found
+    if (!slides.length || !dotsContainer) {
+        return;
+    }
+
+    console.log('✅ Slider initialized with', slides.length, 'slides');
+
     // Create dots
-    const dotsContainer = document.querySelector('.slider-dots');
-    slides.forEach((_, index) => {
-        const dot = document.createElement('div');
-        dot.className = `dot ${index === 0 ? 'active' : ''}`;
-        dot.onclick = () => goToSlide(index);
-        dotsContainer.appendChild(dot);
+    function createDots() {
+        dotsContainer.innerHTML = '';
+
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (index === 0) dot.classList.add('active');
+
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(dot);
+        });
+    }
+
+    // Update active dot
+    function updateDots() {
+        const dots = dotsContainer.querySelectorAll('.dot');
+        dots.forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    // Show slide
+    function showSlide(index) {
+        // Remove active from all slides
+        slides.forEach(slide => slide.classList.remove('active'));
+
+        // Handle wrap around
+        if (index >= slides.length) {
+            currentSlide = 0;
+        } else if (index < 0) {
+            currentSlide = slides.length - 1;
+        } else {
+            currentSlide = index;
+        }
+
+        // Add active to current slide
+        slides[currentSlide].classList.add('active');
+        updateDots();
+    }
+
+    // Next slide
+    function nextSlide() {
+        showSlide(currentSlide + 1);
+    }
+
+    // Previous slide
+    function prevSlide() {
+        showSlide(currentSlide - 1);
+    }
+
+    // Go to specific slide
+    function goToSlide(index) {
+        showSlide(index);
+        resetAutoplay();
+    }
+
+    // Start autoplay
+    function startAutoplay() {
+        autoplayInterval = setInterval(nextSlide, autoplayDelay);
+    }
+
+    // Stop autoplay
+    function stopAutoplay() {
+        if (autoplayInterval) {
+            clearInterval(autoplayInterval);
+            autoplayInterval = null;
+        }
+    }
+
+    // Reset autoplay
+    function resetAutoplay() {
+        stopAutoplay();
+        startAutoplay();
+    }
+
+    // Event listeners
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            prevSlide();
+            resetAutoplay();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            resetAutoplay();
+        });
+    }
+
+    // Pause on hover
+    if (sliderWrapper) {
+        sliderWrapper.addEventListener('mouseenter', stopAutoplay);
+        sliderWrapper.addEventListener('mouseleave', startAutoplay);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            prevSlide();
+            resetAutoplay();
+        } else if (e.key === 'ArrowRight') {
+            nextSlide();
+            resetAutoplay();
+        }
     });
 
-    function changeSlide(direction) {
-        slides[currentSlide].classList.remove('active');
-        document.querySelectorAll('.dot')[currentSlide].classList.remove('active');
-        
-        currentSlide = (currentSlide + direction + slides.length) % slides.length;
-        
-        slides[currentSlide].classList.add('active');
-        document.querySelectorAll('.dot')[currentSlide].classList.add('active');
-    }
+    // Initialize
+    createDots();
+    showSlide(0);
+    startAutoplay();
 
-    function goToSlide(index) {
-        slides[currentSlide].classList.remove('active');
-        document.querySelectorAll('.dot')[currentSlide].classList.remove('active');
-        
-        currentSlide = index;
-        
-        slides[currentSlide].classList.add('active');
-        document.querySelectorAll('.dot')[currentSlide].classList.add('active');
-    }
+    console.log('🎉 Slider fully initialized and running!');
 
-    // Auto-advance slides
-    setInterval(() => changeSlide(1), 5000);
+})();
+
+// ==================== PRODUCT FILTERING & BREADCRUMB ====================
+
+function filterProducts(category) {
+    console.log('Filtering products:', category);
+
+    // Update active button state
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.classList.remove('active');
+
+        // Find and activate the clicked button
+        const btnOnClick = btn.getAttribute('onclick');
+        if (btnOnClick && btnOnClick.includes(`'${category}'`)) {
+            btn.classList.add('active');
+
+            // Update breadcrumb
+            updateBreadcrumb(btn);
+        }
+    });
+
+    // Get all product cards
+    const products = document.querySelectorAll('.product-card');
+
+    console.log(`Found ${products.length} product cards`);
+
+    // Show/hide products based on filter
+    products.forEach(product => {
+        if (category === 'all') {
+            product.style.display = 'block';
+        } else if (category === 'new') {
+            // Show only new arrivals
+            const isNew = product.getAttribute('data-new') === 'true';
+            product.style.display = isNew ? 'block' : 'none';
+        } else if (category === 'topseller') {
+            // Show only top sellers
+            const isTopSeller = product.getAttribute('data-topseller') === 'true';
+            product.style.display = isTopSeller ? 'block' : 'none';
+        }
+    });
+
+    // Update product count
+    updateProductCount();
+}
+
+// Update breadcrumb text
+function updateBreadcrumb(button) {
+    const breadcrumbElement = document.getElementById('breadcrumb-current');
+
+    if (!breadcrumbElement || !button) return;
+
+    // Add transition effect
+    breadcrumbElement.classList.add('updating');
+
+    setTimeout(() => {
+        // Get breadcrumb text from button
+        const breadcrumbTextEn = button.getAttribute('data-en');
+        const breadcrumbTextAr = button.getAttribute('data-ar');
+
+        // Update breadcrumb attributes
+        breadcrumbElement.setAttribute('data-en', breadcrumbTextEn);
+        breadcrumbElement.setAttribute('data-ar', breadcrumbTextAr);
+
+        // Set current language text
+        if (currentLanguage === 'ar') {
+            breadcrumbElement.textContent = breadcrumbTextAr;
+        } else {
+            breadcrumbElement.textContent = breadcrumbTextEn;
+        }
+
+        // Remove transition effect
+        breadcrumbElement.classList.remove('updating');
+
+        console.log('Breadcrumb updated to:', breadcrumbElement.textContent);
+    }, 150);
+}
+
+// Update product count
+function updateProductCount() {
+    const productCountElement = document.getElementById('productCount');
+    if (!productCountElement) return;
+
+    const visibleProducts = document.querySelectorAll('.product-card[style*="display: block"], .product-card:not([style*="display: none"])');
+    const count = visibleProducts.length;
+
+    if (currentLanguage === 'ar') {
+        productCountElement.textContent = `عرض ${count} منتج`;
+    } else {
+        productCountElement.textContent = `Showing ${count} products`;
+    }
 }
 
 // Cart Management
@@ -238,13 +450,13 @@ function saveCart(cart) {
 function addToCart(productId) {
     const cart = getCart();
     const existingItem = cart.find(item => item.productId === productId);
-    
+
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
         cart.push({ productId, quantity: 1 });
     }
-    
+
     saveCart(cart);
     alert(currentLanguage === 'en' ? 'Product added to cart!' : 'تمت إضافة المنتج إلى السلة!');
 }
@@ -279,7 +491,7 @@ function toggleFavorite(productId) {
         favorites.push(productId);
     }
     saveFavorites(favorites);
-    
+
     // Update UI
     const btn = event.target;
     btn.classList.toggle('active');
@@ -298,59 +510,7 @@ function getCategories() {
     if (categoriesData) {
         return JSON.parse(categoriesData);
     }
-    
-    // Default categories
-    const defaultCategories = [
-        {
-            id: 'exterior',
-            name_en: 'Exterior Accessories',
-            name_ar: 'إكسسوارات خارجية',
-            description_en: 'Premium exterior upgrades for your vehicle',
-            description_ar: 'ترقيات خارجية مميزة لسيارتك',
-            image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'interior',
-            name_en: 'Interior Accessories',
-            name_ar: 'إكسسوارات داخلية',
-            description_en: 'Enhance your driving comfort and style',
-            description_ar: 'عزز راحتك وأناقتك أثناء القيادة',
-            image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'lighting',
-            name_en: 'Lighting',
-            name_ar: 'الإضاءة',
-            description_en: 'LED lights and premium lighting solutions',
-            description_ar: 'مصابيح LED وحلول إضاءة مميزة',
-            image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'performance',
-            name_en: 'Performance Parts',
-            name_ar: 'قطع الأداء',
-            description_en: 'Boost your vehicle performance',
-            description_ar: 'عزز أداء سيارتك',
-            image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'wheels',
-            name_en: 'Wheels & Tires',
-            name_ar: 'العجلات والإطارات',
-            description_en: 'Premium wheels and high-performance tires',
-            description_ar: 'عجلات مميزة وإطارات عالية الأداء',
-            image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'electronics',
-            name_en: 'Electronics',
-            name_ar: 'الإلكترونيات',
-            description_en: 'Advanced electronics and smart accessories',
-            description_ar: 'إلكترونيات متقدمة وإكسسوارات ذكية',
-            image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=600&fit=crop'
-        }
-    ];
-    
+
     localStorage.setItem('categories', JSON.stringify(defaultCategories));
     return defaultCategories;
 }
@@ -359,11 +519,11 @@ function getCategories() {
 function loadHeaderCategories() {
     const dropdown = document.getElementById('categoriesDropdown');
     if (!dropdown) return;
-    
+
     const categories = getCategories();
-    
+
     let html = '<a href="category.html" class="all-categories" data-en="All Categories" data-ar="جميع الفئات">All Categories</a>';
-    
+
     categories.forEach(cat => {
         html += `
             <a href="category.html?cat=${cat.id}" 
@@ -373,9 +533,9 @@ function loadHeaderCategories() {
             </a>
         `;
     });
-    
+
     dropdown.innerHTML = html;
-    
+
     // Re-apply current language
     if (typeof currentLanguage !== 'undefined' && typeof switchLanguage === 'function') {
         switchLanguage(currentLanguage);
@@ -387,4 +547,27 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadHeaderCategories);
 } else {
     loadHeaderCategories();
+}
+
+// Setup filter button event listeners
+function setupFilterButtons() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    filterButtons.forEach(btn => {
+        // Remove any existing listeners first
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    // Re-select after cloning
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const filter = this.getAttribute('data-filter');
+            if (filter) {
+                console.log('Filter clicked:', filter);
+                filterProductsWithPagination(filter, this);
+            }
+        });
+    });
+
+    console.log('✅ Filter buttons initialized');
 }
