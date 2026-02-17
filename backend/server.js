@@ -559,7 +559,63 @@ app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
         });
     }
 });
+// ============ AUTH ENDPOINTS ============
 
+// Admin Login
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Get user from database
+        const [users] = await pool.query(
+            'SELECT * FROM users WHERE email = ? AND role = "admin"',
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials'
+            });
+        }
+
+        const user = users[0];
+
+        // Check password
+        const validPassword = await bcrypt.compare(password, user.password);
+
+        if (!validPassword) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials'
+            });
+        }
+
+        // Generate token
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET || 'primejo-secret',
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Login failed'
+        });
+    }
+});
 // Start server
 app.listen(PORT, () => {
     console.log(`Primejo E-Commerce API running on port ${PORT}`);

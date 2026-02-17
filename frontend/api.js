@@ -1,7 +1,7 @@
 // Frontend API Service
 // This file handles all communication with the backend API
 
-const API_URL = 'http://primejo-backend-demo.up.railway.app/api';
+const API_URL = 'https://primejo-backend-demo.up.railway.app/api';
 
 // Check if we should use API or localStorage
 const USE_API = true; // Set to false to use localStorage (demo mode)
@@ -10,20 +10,15 @@ const USE_API = true; // Set to false to use localStorage (demo mode)
 // PRODUCTS
 // ========================================
 
+// Load products from API
 async function getProductsFromAPI() {
-    if (!USE_API) {
-        return JSON.parse(localStorage.getItem('products') || '[]');
-    }
-    
     try {
         const response = await fetch(`${API_URL}/products`);
-        if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
-        return data.products || [];
+        return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error('Error fetching products:', error);
-        // Fallback to localStorage if API fails
-        return JSON.parse(localStorage.getItem('products') || '[]');
+        return [];
     }
 }
 
@@ -32,7 +27,7 @@ async function getProductByIdFromAPI(id) {
         const products = JSON.parse(localStorage.getItem('products') || '[]');
         return products.find(p => p.id === parseInt(id));
     }
-    
+
     try {
         const response = await fetch(`${API_URL}/products/${id}`);
         if (!response.ok) throw new Error('Failed to fetch product');
@@ -53,7 +48,7 @@ async function getCategoriesFromAPI() {
     if (!USE_API) {
         return JSON.parse(localStorage.getItem('categories') || '[]');
     }
-    
+
     try {
         const response = await fetch(`${API_URL}/categories`);
         if (!response.ok) throw new Error('Failed to fetch categories');
@@ -77,7 +72,7 @@ async function createOrderAPI(orderData) {
         localStorage.setItem('orders', JSON.stringify(orders));
         return { success: true, order: orderData };
     }
-    
+
     try {
         const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',
@@ -86,7 +81,7 @@ async function createOrderAPI(orderData) {
             },
             body: JSON.stringify(orderData)
         });
-        
+
         if (!response.ok) throw new Error('Failed to create order');
         const data = await response.json();
         return data;
@@ -140,13 +135,13 @@ function saveCart(cart) {
 function addToCart(productId, quantity = 1) {
     const cart = getCart();
     const existingItem = cart.find(item => item.productId === productId);
-    
+
     if (existingItem) {
         existingItem.quantity += quantity;
     } else {
         cart.push({ productId, quantity });
     }
-    
+
     saveCart(cart);
     updateCartCount();
     return true;
@@ -184,18 +179,18 @@ window.API = {
     // Products
     getProducts: getProductsFromAPI,
     getProductById: getProductByIdFromAPI,
-    
+
     // Categories
     getCategories: getCategoriesFromAPI,
-    
+
     // Orders
     createOrder: createOrderAPI,
-    
+
     // Favorites
     addToFavorites: addToFavoritesAPI,
     removeFromFavorites: removeFromFavoritesAPI,
     getFavorites: getFavoritesAPI,
-    
+
     // Cart (localStorage)
     getCart: getCart,
     addToCart: addToCart,
