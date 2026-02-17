@@ -32,35 +32,76 @@ function formatPrice(price) {
 }
 
 function changeCurrency(currency) {
+    if (!currencyRates[currency]) {
+        console.error('Unknown currency:', currency);
+        return;
+    }
+
     currentCurrency = currency;
     localStorage.setItem('preferredCurrency', currency);
 
-    // Update all prices on the page
-    updateAllPrices();
+    console.log('💱 Currency changed to:', currency);
+
+    // Update selector UI to match
+    const selector = document.getElementById('currencySelector');
+    if (selector) selector.value = currency;
+
+    // ✅ Re-render products with new prices immediately
+    refreshAllPricesNow();
 }
 
-function updateAllPrices() {
-    // This will be called to refresh prices after currency change
-    if (typeof loadProducts === 'function') loadProducts();
-    if (typeof loadCartItems === 'function') loadCartItems();
-    if (typeof loadOrderSummary === 'function') loadOrderSummary();
-    if (typeof loadProductDetails === 'function') loadProductDetails();
-    if (typeof loadCategoryProducts === 'function') loadCategoryProducts();
-    if (typeof loadFavorites === 'function') loadFavorites();
+function refreshAllPricesNow() {
+    console.log('🔄 Refreshing all prices for:', currentCurrency);
 
-    // Reload section-specific content on homepage
+    // 1. Update main products grid (index.html filter section)
+    const grid = document.getElementById('topbaicProductsGrid');
+    if (grid && filteredProducts.length > 0) {
+        renderProductsPage();
+        console.log('✅ Products grid updated');
+    }
+
+    // 2. Update homepage sections
     if (document.getElementById('topSellers')) {
-        const products = getProducts();
-        const topSellers = products.filter(p => p.topSeller).slice(0, 4);
-        document.getElementById('topSellers').innerHTML = topSellers.map(createProductCard).join('');
+        reloadHomeProducts();
+        console.log('✅ Homepage sections updated');
+    }
 
-        const randomProducts = products.sort(() => 0.5 - Math.random()).slice(0, 4);
-        document.getElementById('randomProducts').innerHTML = randomProducts.map(createProductCard).join('');
+    // 3. Update ALL price elements already in DOM
+    document.querySelectorAll('.price-new, .price-old, .current-price, .old-price').forEach(el => {
+        const basePrice = el.getAttribute('data-base-price');
+        if (basePrice) {
+            el.textContent = formatPrice(parseFloat(basePrice));
+        }
+    });
 
-        const offers = products.filter(p => p.isOffer).slice(0, 4);
-        document.getElementById('offerProducts').innerHTML = offers.map(createProductCard).join('');
+    // 4. Update cart if on cart page
+    if (typeof loadCartItems === 'function') {
+        loadCartItems();
+        console.log('✅ Cart updated');
+    }
 
-        switchLanguage(currentLanguage);
+    // 5. Update order summary if on checkout
+    if (typeof loadOrderSummary === 'function') {
+        loadOrderSummary();
+        console.log('✅ Order summary updated');
+    }
+
+    // 6. Update product details if on product page
+    if (typeof loadProductDetails === 'function') {
+        loadProductDetails();
+        console.log('✅ Product details updated');
+    }
+
+    // 7. Update category page
+    if (typeof loadCategoryProducts === 'function') {
+        loadCategoryProducts();
+        console.log('✅ Category products updated');
+    }
+
+    // 8. Update favorites page
+    if (typeof loadFavorites === 'function') {
+        loadFavorites();
+        console.log('✅ Favorites updated');
     }
 }
 
@@ -156,31 +197,44 @@ function createProductCard(product) {
     const nameKey = `name_${currentLanguage}`;
     const descKey = `description_${currentLanguage}`;
 
+    const imageUrl = product.image ||
+        product.image_url ||
+        'https://placehold.co/300x260?text=No+Image';
+
+    const newPrice = product.newPrice || product.new_price || 0;
+    const oldPrice = product.oldPrice || product.old_price || 0;
+
     return `
-        <div class="product-card" 
+        <div class="product-card"
              data-product-id="${product.id}"
              data-new="${product.isNew || false}"
-             data-topseller="${product.topSeller || false}">
+             data-topseller="${product.topSeller || false}"
+             onclick="viewProduct(${product.id})">
             ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
             <div class="product-image">
-                <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product[nameKey]}">
+                <img src="${imageUrl}"
+                     alt="${(product[nameKey] || product.name_en || 'Product').replace(/"/g, '&quot;')}"
+                     loading="lazy"
+                     onerror="this.onerror=null;this.src='https://placehold.co/300x260?text=No+Image'">
             </div>
             <div class="product-info">
-                <h3 class="product-name">${product[nameKey]}</h3>
-                <p class="product-description">${product[descKey] || ''}</p>
+                <h3 class="product-name">${product[nameKey] || product.name_en}</h3>
+                <p class="product-description">${product[descKey] || product.description_en || ''}</p>
                 <div class="product-price">
-                    <span class="price-new">${formatPrice(product.newPrice)}</span>
-                    ${product.oldPrice !== product.newPrice ? `<span class="price-old">${formatPrice(product.oldPrice)}</span>` : ''}
+                    <span class="price-new" data-base-price="${newPrice}">
+                        ${formatPrice(newPrice)}
+                    </span>
+                    ${oldPrice && oldPrice !== newPrice
+            ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
+            : ''}
                 </div>
                 <div class="product-actions">
-                    <button class="btn" 
-                            data-action="add-to-cart" 
-                            data-product-id="${product.id}"
-                            data-en="Add to Cart" 
+                    <button class="btn"
+                            onclick="event.stopPropagation(); addToCart(${product.id})"
+                            data-en="Add to Cart"
                             data-ar="أضف للسلة">Add to Cart</button>
-                    <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}" 
-                            data-action="toggle-favorite"
-                            data-product-id="${product.id}">♥</button>
+                    <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}"
+                            onclick="event.stopPropagation(); toggleFavorite(${product.id})">♥</button>
                 </div>
             </div>
         </div>
@@ -577,5 +631,9 @@ function setupFilterButtons() {
 
     console.log('✅ Filter buttons initialized');
 }
+// ✅ Added event listener to currency selector
+currencySelector.addEventListener('change', function () {
+    changeCurrency(this.value);
+});
 
 
