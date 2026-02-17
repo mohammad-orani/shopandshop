@@ -11,56 +11,56 @@ function getCategories() {
     }
     
     // Default categories if none exist
-    const defaultCategories = [
-        {
-            id: 'exterior',
-            name_en: 'Exterior Accessories',
-            name_ar: 'إكسسوارات خارجية',
-            description_en: 'Premium exterior upgrades for your vehicle',
-            description_ar: 'ترقيات خارجية مميزة لسيارتك',
-            image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'interior',
-            name_en: 'Interior Accessories',
-            name_ar: 'إكسسوارات داخلية',
-            description_en: 'Enhance your driving comfort and style',
-            description_ar: 'عزز راحتك وأناقتك أثناء القيادة',
-            image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'lighting',
-            name_en: 'Lighting',
-            name_ar: 'الإضاءة',
-            description_en: 'LED lights and premium lighting solutions',
-            description_ar: 'مصابيح LED وحلول إضاءة مميزة',
-            image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'performance',
-            name_en: 'Performance Parts',
-            name_ar: 'قطع الأداء',
-            description_en: 'Boost your vehicle performance',
-            description_ar: 'عزز أداء سيارتك',
-            image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'wheels',
-            name_en: 'Wheels & Tires',
-            name_ar: 'العجلات والإطارات',
-            description_en: 'Premium wheels and high-performance tires',
-            description_ar: 'عجلات مميزة وإطارات عالية الأداء',
-            image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'
-        },
-        {
-            id: 'electronics',
-            name_en: 'Electronics',
-            name_ar: 'الإلكترونيات',
-            description_en: 'Advanced electronics and smart accessories',
-            description_ar: 'إلكترونيات متقدمة وإكسسوارات ذكية',
-            image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=600&fit=crop'
-        }
-    ];
+    // const defaultCategories = [
+    //     {
+    //         id: 'exterior',
+    //         name_en: 'Exterior Accessories',
+    //         name_ar: 'إكسسوارات خارجية',
+    //         description_en: 'Premium exterior upgrades for your vehicle',
+    //         description_ar: 'ترقيات خارجية مميزة لسيارتك',
+    //         image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=600&fit=crop'
+    //     },
+    //     {
+    //         id: 'interior',
+    //         name_en: 'Interior Accessories',
+    //         name_ar: 'إكسسوارات داخلية',
+    //         description_en: 'Enhance your driving comfort and style',
+    //         description_ar: 'عزز راحتك وأناقتك أثناء القيادة',
+    //         image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop'
+    //     },
+    //     {
+    //         id: 'lighting',
+    //         name_en: 'Lighting',
+    //         name_ar: 'الإضاءة',
+    //         description_en: 'LED lights and premium lighting solutions',
+    //         description_ar: 'مصابيح LED وحلول إضاءة مميزة',
+    //         image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=600&fit=crop'
+    //     },
+    //     {
+    //         id: 'performance',
+    //         name_en: 'Performance Parts',
+    //         name_ar: 'قطع الأداء',
+    //         description_en: 'Boost your vehicle performance',
+    //         description_ar: 'عزز أداء سيارتك',
+    //         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop'
+    //     },
+    //     {
+    //         id: 'wheels',
+    //         name_en: 'Wheels & Tires',
+    //         name_ar: 'العجلات والإطارات',
+    //         description_en: 'Premium wheels and high-performance tires',
+    //         description_ar: 'عجلات مميزة وإطارات عالية الأداء',
+    //         image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop'
+    //     },
+    //     {
+    //         id: 'electronics',
+    //         name_en: 'Electronics',
+    //         name_ar: 'الإلكترونيات',
+    //         description_en: 'Advanced electronics and smart accessories',
+    //         description_ar: 'إلكترونيات متقدمة وإكسسوارات ذكية',
+    //         image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=600&fit=crop'
+    //     }
+    // ];
     
     localStorage.setItem('categories', JSON.stringify(defaultCategories));
     return defaultCategories;
