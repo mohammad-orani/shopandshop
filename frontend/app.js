@@ -156,31 +156,47 @@ function createProductCard(product) {
     const nameKey = `name_${currentLanguage}`;
     const descKey = `description_${currentLanguage}`;
 
+    const imageUrl = product.image ||
+        product.image_url ||
+        product.imageUrl ||
+        'https://via.placeholder.com/300x300?text=No+Image';
+
     return `
         <div class="product-card" 
              data-product-id="${product.id}"
              data-new="${product.isNew || false}"
-             data-topseller="${product.topSeller || false}">
+             data-topseller="${product.topSeller || false}"
+             onclick="viewProduct(${product.id})">
+            
             ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
+            
             <div class="product-image">
-                <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product[nameKey]}">
+                <img src="${imageUrl}" 
+                     alt="${product[nameKey] || 'Product'}"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=No+Image'">
             </div>
+            
             <div class="product-info">
-                <h3 class="product-name">${product[nameKey]}</h3>
-                <p class="product-description">${product[descKey] || ''}</p>
+                <h3 class="product-name">${product[nameKey] || product.name_en || 'Product'}</h3>
+                <p class="product-description">${product[descKey] || product.description_en || ''}</p>
+                
                 <div class="product-price">
-                    <span class="price-new">${formatPrice(product.newPrice)}</span>
-                    ${product.oldPrice !== product.newPrice ? `<span class="price-old">${formatPrice(product.oldPrice)}</span>` : ''}
+                    <span class="price-new">${formatPrice(product.newPrice || product.new_price || 0)}</span>
+                    ${(product.oldPrice || product.old_price) ?
+            `<span class="price-old">${formatPrice(product.oldPrice || product.old_price)}</span>` : ''}
                 </div>
+                
                 <div class="product-actions">
                     <button class="btn" 
-                            data-action="add-to-cart" 
-                            data-product-id="${product.id}"
+                            onclick="event.stopPropagation(); addToCart(${product.id})"
                             data-en="Add to Cart" 
-                            data-ar="أضف للسلة">Add to Cart</button>
+                            data-ar="أضف للسلة">
+                        Add to Cart
+                    </button>
                     <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}" 
-                            data-action="toggle-favorite"
-                            data-product-id="${product.id}">♥</button>
+                            onclick="event.stopPropagation(); toggleFavorite(${product.id})">
+                        ♥
+                    </button>
                 </div>
             </div>
         </div>
@@ -348,47 +364,53 @@ if (document.getElementById('topSellers')) {
 
 // ==================== PRODUCT FILTERING & BREADCRUMB ====================
 
-function filterProducts(category) {
-    console.log('Filtering products:', category);
+// function filterProducts(category) {
+//     console.log('Filtering products:', category);
 
-    // Update active button state
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-        btn.classList.remove('active');
+//     // Update active button state
+//     const filterButtons = document.querySelectorAll('.filter-btn');
+//     filterButtons.forEach(btn => {
+//         btn.classList.remove('active');
 
-        // Find and activate the clicked button
-        const btnOnClick = btn.getAttribute('onclick');
-        if (btnOnClick && btnOnClick.includes(`'${category}'`)) {
-            btn.classList.add('active');
+//         // Find and activate the clicked button
+//         const btnOnClick = btn.getAttribute('onclick');
+//         if (btnOnClick && btnOnClick.includes(`'${category}'`)) {
+//             btn.classList.add('active');
 
-            // Update breadcrumb
-            updateBreadcrumb(btn);
-        }
-    });
+//             // Update breadcrumb
+//             updateBreadcrumb(btn);
+//         }
+//     });
 
-    // Get all product cards
-    const products = document.querySelectorAll('.product-card');
+//     // Get all product cards
+//     const products = document.querySelectorAll('.product-card');
 
-    console.log(`Found ${products.length} product cards`);
+//     // Show/hide products based on filter
+//     products.forEach(product => {
+//         if (category === 'all') {
+//             product.style.display = 'block';
+//         } else if (category === 'new') {
+//             // Show only new arrivals
+//             if (product.classList.contains('new-arrival') ||
+//                 product.dataset.new === 'true') {
+//                 product.style.display = 'block';
+//             } else {
+//                 product.style.display = 'none';
+//             }
+//         } else if (category === 'topseller') {
+//             // Show only top sellers
+//             if (product.classList.contains('top-seller') ||
+//                 product.dataset.topSeller === 'true') {
+//                 product.style.display = 'block';
+//             } else {
+//                 product.style.display = 'none';
+//             }
+//         }
+//     });
 
-    // Show/hide products based on filter
-    products.forEach(product => {
-        if (category === 'all') {
-            product.style.display = 'block';
-        } else if (category === 'new') {
-            // Show only new arrivals
-            const isNew = product.getAttribute('data-new') === 'true';
-            product.style.display = isNew ? 'block' : 'none';
-        } else if (category === 'topseller') {
-            // Show only top sellers
-            const isTopSeller = product.getAttribute('data-topseller') === 'true';
-            product.style.display = isTopSeller ? 'block' : 'none';
-        }
-    });
-
-    // Update product count
-    updateProductCount();
-}
+//     // Update product count
+//     updateProductCount();
+// }
 
 // Update breadcrumb text
 function updateBreadcrumb(button) {
@@ -571,3 +593,210 @@ function setupFilterButtons() {
 
     console.log('✅ Filter buttons initialized');
 }
+
+
+// ==================== PRODUCTS & PAGINATION ====================
+
+const PRODUCTS_PER_PAGE = 12;
+let currentPage = 1;
+let currentFilter = 'all';
+let allProducts = [];
+let filteredProducts = [];
+
+// Initialize products and pagination
+function initProducts() {
+    console.log('🚀 Initializing products...');
+
+    const grid = document.getElementById('topbaicProductsGrid');
+    if (!grid) return;
+
+    // Load products from storage
+    allProducts = getProducts();
+    filteredProducts = [...allProducts];
+
+    console.log(`📦 Found ${allProducts.length} products`);
+
+    if (allProducts.length === 0) {
+        grid.innerHTML = `
+            <div class="no-products" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                <p>No products found. Please add products in admin panel.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Render first page
+    renderProductsPage();
+    renderPagination();
+}
+
+// Render current page of products
+function renderProductsPage() {
+    const grid = document.getElementById('topbaicProductsGrid');
+    if (!grid) return;
+
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const end = start + PRODUCTS_PER_PAGE;
+    const pageProducts = filteredProducts.slice(start, end);
+
+    if (pageProducts.length === 0) {
+        grid.innerHTML = `
+            <div class="no-products" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                <p data-en="No products found" data-ar="لا توجد منتجات">No products found</p>
+            </div>
+        `;
+    } else {
+        grid.innerHTML = pageProducts.map(p => createProductCard(p)).join('');
+    }
+
+    // Re-apply translations
+    switchLanguage(currentLanguage);
+
+    console.log(`✅ Rendered ${pageProducts.length} products on page ${currentPage}`);
+}
+
+// Filter products - FIXED VERSION
+function filterProducts(category) {
+    console.log('🔍 Filter clicked:', category);
+
+    currentFilter = category;
+    currentPage = 1;
+
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        if (onclickAttr.includes(`'${category}'`)) {
+            btn.classList.add('active');
+            updateBreadcrumb(btn);
+        }
+    });
+
+    // Apply filter to allProducts (NOT to DOM elements)
+    switch (category) {
+        case 'all':
+            filteredProducts = [...allProducts];
+            break;
+        case 'new':
+            filteredProducts = allProducts.filter(p =>
+                p.isNew === true || p.is_new === true || p.isNew === 'true'
+            );
+            break;
+        case 'topseller':
+            filteredProducts = allProducts.filter(p =>
+                p.topSeller === true || p.is_top_seller === true || p.topSeller === 'true'
+            );
+            break;
+        default:
+            filteredProducts = [...allProducts];
+    }
+
+    console.log(`✅ Filter "${category}": ${filteredProducts.length} products found`);
+
+    // Re-render products
+    renderProductsPage();
+    renderPagination();
+    updateProductCount();
+}
+
+// Render pagination buttons
+function renderPagination() {
+    const container = document.querySelector('.topbaic-pagination');
+    if (!container) return;
+
+    const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+    if (totalPages <= 1) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'flex';
+
+    let html = '';
+
+    // Previous button
+    html += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">‹</button>`;
+
+    // Page numbers with ellipsis
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    if (startPage > 1) {
+        html += `<button class="pagination-btn" data-page="1">1</button>`;
+        if (startPage > 2) html += `<span class="pagination-ellipsis">...</span>`;
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span class="pagination-ellipsis">...</span>`;
+        html += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+    }
+
+    // Next button
+    html += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">›</button>`;
+
+    container.innerHTML = html;
+
+    // Add event listeners to pagination buttons
+    container.querySelectorAll('.pagination-btn[data-page]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            if (!this.disabled) {
+                const page = parseInt(this.getAttribute('data-page'));
+                goToPage(page);
+            }
+        });
+    });
+}
+
+// Go to page
+function goToPage(page) {
+    const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+    if (page < 1 || page > totalPages) return;
+
+    currentPage = page;
+    renderProductsPage();
+    renderPagination();
+
+    // Scroll to products
+    document.querySelector('.topbaic-products')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Update product count
+function updateProductCount() {
+    const el = document.getElementById('productCount');
+    if (!el) return;
+
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE + 1;
+    const end = Math.min(currentPage * PRODUCTS_PER_PAGE, filteredProducts.length);
+    const total = filteredProducts.length;
+
+    const textEn = `Showing ${start}-${end} of ${total} products`;
+    const textAr = `عرض ${start}-${end} من ${total} منتج`;
+
+    el.setAttribute('data-en', textEn);
+    el.setAttribute('data-ar', textAr);
+    el.textContent = currentLanguage === 'ar' ? textAr : textEn;
+}
+
+// Auto initialize when grid exists
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initProducts);
+} else {
+    initProducts();
+}
+
+// Make goToPage globally available
+window.goToPage = goToPage;
