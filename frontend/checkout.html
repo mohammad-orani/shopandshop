@@ -7,7 +7,7 @@
     <title>Checkout - Primejo</title>
     <link rel="stylesheet" href="topbaic-style.css">
     <link rel="stylesheet" href="checkout.css">
-    <link rel="stylesheet" href="modern-animations.css">
+    <!-- <link rel="stylesheet" href="modern-animations.css"> -->
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
@@ -47,10 +47,10 @@
 
                 <!-- Categories Dropdown -->
                 <div class="nav-item">
-                    <a href="category.html">
-                        <span data-en="Categories" data-ar="الفئات">Categories</span>
-                        <span class="dropdown-arrow">▼</span>
-                    </a>
+                    <!-- <a href="category.html"> -->
+                    <span data-en="Categories" data-ar="الفئات">Categories</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <!-- </a> -->
                     <div class="categories-dropdown" id="categoriesDropdown">
                         <!-- Categories loaded dynamically from database -->
                     </div>
@@ -265,37 +265,19 @@
     <script src="settings.js"></script>
     <script src="checkout.js"></script>
     <script src="modern-animations.js"></script>
-    <script>
-        // Load categories dynamically into dropdown
-        function loadCheckoutCategories() {
-            const dropdown = document.getElementById('categoriesDropdown');
-            if (!dropdown) return;
+    
 
-            const categories = getCategories ? getCategories() : [];
-            if (categories.length === 0) return;
+    <!-- 1. API URL defined FIRST -->
+    <script src="api.js"></script>
 
-            let html = '<a href="category.html" class="all-categories" data-en="All Categories" data-ar="جميع الفئات">All Categories</a>';
-            categories.forEach(cat => {
-                html += `<a href="category.html?cat=${cat.id}" data-en="${cat.name_en}" data-ar="${cat.name_ar}">${cat.name_en}</a>`;
-            });
-            dropdown.innerHTML = html;
-
-            // Re-apply language
-            if (typeof switchLanguage === 'function' && typeof currentLanguage !== 'undefined') {
-                switchLanguage(currentLanguage);
-            }
-        }
-
-        // Run after app.js loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadCheckoutCategories);
-        } else {
-            loadCheckoutCategories();
-        }
-    </script>
-
-    <!-- Load general info from database -->
+    <!-- 2. Then general info (uses API_URL from api.js) -->
     <script src="general-info.js"></script>
+
+    <!-- 3. Then checkout logic -->
+    <script src="checkout.js"></script>
+
+    <!-- 4. Then app.js -->
+    <script src="app.js"></script>
 </body>
 
 </html>

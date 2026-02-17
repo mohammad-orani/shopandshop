@@ -7,16 +7,290 @@
     <title>Favorites - Primejo</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="topbaic-style.css">
-    <link rel="stylesheet" href="modern-animations.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
+    <style>
+        /* ===== FAVORITES PAGE SPECIFIC STYLES ===== */
+
+        .favorites-page-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        /* Page Header */
+        .favorites-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary-black);
+            margin-bottom: 30px;
+        }
+
+        .favorites-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--primary-black);
+        }
+
+        .favorites-count-badge {
+            background: var(--primary-black);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Products Grid - Same as homepage */
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+        }
+
+        /* ===== PRODUCT CARD - IMAGE FIX ===== */
+        .favorites-grid .product-card {
+            background: white;
+            border: 2px solid var(--primary-black);
+            border-radius: 4px;
+            overflow: hidden !important;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .favorites-grid .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== CRITICAL IMAGE FIX ===== */
+        .favorites-grid .product-image {
+            width: 100% !important;
+            height: 260px !important;
+            min-height: 260px !important;
+            max-height: 260px !important;
+            overflow: hidden !important;
+            background: #f5f5f5;
+            position: relative !important;
+            display: block !important;
+            flex-shrink: 0;
+        }
+
+        .favorites-grid .product-image img {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 260px !important;
+            object-fit: cover !important;
+            object-position: center !important;
+            display: block !important;
+            position: static !important;
+            transform: none !important;
+            transition: transform 0.4s ease !important;
+        }
+
+        .favorites-grid .product-card:hover .product-image img {
+            transform: scale(1.07) !important;
+        }
+
+        /* Product Badge */
+        .favorites-grid .product-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--primary-black);
+            color: white;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 2;
+            letter-spacing: 0.5px;
+        }
+
+        /* Product Info */
+        .favorites-grid .product-info {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .favorites-grid .product-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            color: var(--primary-black);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .favorites-grid .product-description {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .favorites-grid .product-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .favorites-grid .price-new {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-black);
+        }
+
+        .favorites-grid .price-old {
+            font-size: 0.95rem;
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        .favorites-grid .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .favorites-grid .btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid var(--primary-black);
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .favorites-grid .btn:hover {
+            background: var(--primary-black);
+            color: white;
+        }
+
+        .favorites-grid .btn-fav {
+            flex: 0 0 44px;
+            font-size: 1.2rem;
+            padding: 10px 0;
+            text-align: center;
+            background: #fff0f0;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .favorites-grid .btn-fav:hover {
+            background: #e74c3c !important;
+            color: white !important;
+            border-color: #e74c3c !important;
+        }
+
+        /* Empty State */
+        .favorites-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .favorites-empty-icon {
+            font-size: 5rem;
+            display: block;
+            margin-bottom: 20px;
+            opacity: 0.25;
+        }
+
+        .favorites-empty h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: var(--primary-black);
+        }
+
+        .favorites-empty p {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .btn-browse {
+            display: inline-block;
+            padding: 14px 35px;
+            background: var(--primary-black);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-browse:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .favorites-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .favorites-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .favorites-grid .product-image {
+                height: 210px !important;
+                max-height: 210px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .favorites-grid {
+                gap: 10px;
+            }
+
+            .favorites-grid .product-image {
+                height: 170px !important;
+                max-height: 170px !important;
+            }
+
+            .favorites-header h1 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <!-- TOP BAIC Style Header - Include on all pages -->
+    <!-- Header -->
     <header class="topbaic-header">
-        <!-- Top Bar -->
         <div class="header-top">
             <div class="header-top-content">
                 <div class="contact-info">
@@ -24,8 +298,6 @@
                     <span class="contact-phone" data-phone>📞 Loading...</span>
                 </div>
                 <div>
-                    <!-- <a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a>
-                    <a href="#" data-en="Help" data-ar="مساعدة">Help</a> -->
                     <div class="lang-toggle" style="display: inline-block;">
                         <button onclick="switchLanguage('en')" class="lang-btn active" id="lang-en"
                             style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer; margin: 0 4px;">EN</button>
@@ -36,21 +308,21 @@
             </div>
         </div>
 
-        <!-- Main Header -->
         <div class="header-main">
             <a href="index.html" class="topbaic-logo">PRIMEJO</a>
 
             <nav class="topbaic-nav">
                 <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
-                <a href="category.html" data-en="Shop" data-ar="المتجر">Shop</a>
+                <div class="nav-item">
+                    <span data-en="Categories" data-ar="الفئات">Categories</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <div class="categories-dropdown" id="categoriesDropdown"></div>
+                </div>
                 <a href="about.html" data-en="About" data-ar="من نحن">About</a>
                 <a href="contact.html" data-en="Contact" data-ar="اتصل بنا">Contact</a>
             </nav>
 
             <div class="header-icons">
-                <!-- <button class="icon-btn" onclick="window.location.href='#'" title="Search">
-                    🔍
-                </button> -->
                 <button class="icon-btn" onclick="window.location.href='favorites.html'" title="Favorites">
                     ❤️
                 </button>
@@ -62,15 +334,23 @@
         </div>
     </header>
 
+    <!-- Main Content -->
+    <div class="favorites-page-wrapper">
 
-    <div class="container">
-        <h1 class="page-title" data-en="My Favorites" data-ar="المفضلة">My Favorites</h1>
-        <div class="products-grid" id="favoritesGrid"></div>
+        <!-- Page Header -->
+        <div class="favorites-header">
+            <h1 data-en="My Favorites" data-ar="المفضلة">My Favorites</h1>
+            <span class="favorites-count-badge" id="favoritesCountBadge">0 items</span>
+        </div>
+
+        <!-- Favorites Grid -->
+        <div class="favorites-grid" id="favoritesGrid">
+            <!-- Products loaded by JavaScript -->
+        </div>
+
     </div>
 
-    <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
-    <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
-    <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
+    <!-- Footer -->
     <footer class="topbaic-footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -171,39 +451,132 @@
         </div>
     </footer>
 
-
-
-
+    <!-- Scripts -->
     <script src="app.js"></script>
     <script src="countries-data.js"></script>
     <script src="settings.js"></script>
-    <script>
-        function loadFavorites() {
-            const favorites = getFavorites();
-            const products = getProducts();
-            const favProducts = products.filter(p => favorites.includes(p.id));
 
+    <script>
+        // ===== LOAD FAVORITES =====
+        function loadFavorites() {
             const grid = document.getElementById('favoritesGrid');
+            const countBadge = document.getElementById('favoritesCountBadge');
+            if (!grid) return;
+
+            // Get favorites - handle both string and number IDs
+            const favoriteIds = getFavorites();
+            const allProducts = getProducts();
+
+            // Match favorites - compare as strings to avoid type mismatch
+            const favProducts = allProducts.filter(p =>
+                favoriteIds.some(fid => String(fid) === String(p.id))
+            );
+
+            console.log('Favorite IDs:', favoriteIds);
+            console.log('Matched products:', favProducts.length);
+
+            // Update count badge
+            if (countBadge) {
+                const lang = document.documentElement.lang || 'en';
+                countBadge.textContent = lang === 'ar'
+                    ? `${favProducts.length} منتج`
+                    : `${favProducts.length} item${favProducts.length !== 1 ? 's' : ''}`;
+            }
 
             if (favProducts.length === 0) {
                 grid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                        <h2 data-en="No favorites yet" data-ar="لا توجد مفضلات بعد">No favorites yet</h2>
-                        <p data-en="Start adding products to your favorites!" data-ar="ابدأ بإضافة منتجات إلى مفضلتك!">Start adding products to your favorites!</p>
-                        <a href="index.html" class="btn" style="display: inline-block; margin-top: 1rem; padding: 1rem 2rem; text-decoration: none;" data-en="Browse Products" data-ar="تصفح المنتجات">Browse Products</a>
+                    <div class="favorites-empty">
+                        <span class="favorites-empty-icon">♥</span>
+                        <h2 data-en="No Favorites Yet" data-ar="لا توجد مفضلة بعد">No Favorites Yet</h2>
+                        <p data-en="Add products to your favorites to see them here"
+                           data-ar="أضف منتجات إلى مفضلتك لتظهر هنا">
+                            Add products to your favorites to see them here
+                        </p>
+                        <a href="index.html" class="btn-browse"
+                           data-en="Continue Shopping"
+                           data-ar="متابعة التسوق">
+                            Continue Shopping
+                        </a>
                     </div>
                 `;
             } else {
-                grid.innerHTML = favProducts.map(createProductCard).join('');
+                grid.innerHTML = favProducts.map(p => createFavoriteCard(p)).join('');
             }
 
             switchLanguage(currentLanguage);
         }
 
+        // Create product card for favorites (same style as homepage)
+        function createFavoriteCard(product) {
+            const nameKey = `name_${currentLanguage}`;
+            const descKey = `description_${currentLanguage}`;
+
+            const imageUrl = product.image ||
+                product.image_url ||
+                product.imageUrl ||
+                'https://placehold.co/300x260?text=No+Image';
+
+            return `
+                <div class="product-card"
+                     data-product-id="${product.id}"
+                     onclick="viewProduct(${product.id})">
+
+                    ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
+
+                    <div class="product-image">
+                        <img src="${imageUrl}"
+                             alt="${(product[nameKey] || product.name_en || 'Product').replace(/"/g, '&quot;')}"
+                             loading="lazy"
+                             onerror="this.onerror=null;this.src='https://placehold.co/300x260?text=No+Image'">
+                    </div>
+
+                    <div class="product-info">
+                        <h3 class="product-name">
+                            ${product[nameKey] || product.name_en || 'Product'}
+                        </h3>
+                        <p class="product-description">
+                            ${product[descKey] || product.description_en || ''}
+                        </p>
+                        <div class="product-price">
+                            <span class="price-new">${formatPrice(product.newPrice || product.new_price || 0)}</span>
+                            ${(product.oldPrice || product.old_price) ?
+                    `<span class="price-old">${formatPrice(product.oldPrice || product.old_price)}</span>` : ''}
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn"
+                                    onclick="event.stopPropagation(); addToCart(${product.id})"
+                                    data-en="Add to Cart"
+                                    data-ar="أضف للسلة">
+                                Add to Cart
+                            </button>
+                            <button class="btn btn-fav active"
+                                    onclick="event.stopPropagation(); removeFavorite(${product.id}, this)"
+                                    title="Remove from favorites">
+                                ♥
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Remove from favorites and refresh grid
+        function removeFavorite(productId, btn) {
+            let favorites = getFavorites();
+            favorites = favorites.filter(id => String(id) !== String(productId));
+            saveFavorites(favorites);
+
+            console.log('Removed product', productId, 'from favorites');
+
+            // Reload the grid
+            loadFavorites();
+        }
+
+        // Load when page is ready
         loadFavorites();
     </script>
+
     <script src="modern-animations.js"></script>
-    <!-- Add this script at the end of body -->
     <script src="general-info.js"></script>
 </body>
 

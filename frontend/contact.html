@@ -7,7 +7,7 @@
     <title>Contact Us - Primejo</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="topbaic-style.css">
-    <link rel="stylesheet" href="modern-animations.css">
+    <!-- <link rel="stylesheet" href="modern-animations.css"> -->
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
@@ -138,8 +138,8 @@
                     <span class="contact-phone" data-phone>📞 Loading...</span>
                 </div>
                 <div>
-                    <a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a>
-                    <a href="#" data-en="Help" data-ar="مساعدة">Help</a>
+                    <!-- <a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a>
+                    <a href="#" data-en="Help" data-ar="مساعدة">Help</a> -->
                     <div class="lang-toggle" style="display: inline-block;">
                         <button onclick="switchLanguage('en')" class="lang-btn active" id="lang-en"
                             style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer; margin: 0 4px;">EN</button>
@@ -156,7 +156,16 @@
 
             <nav class="topbaic-nav">
                 <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
-                <a href="category.html" data-en="Shop" data-ar="المتجر">Shop</a>
+                <!-- Categories Dropdown -->
+                <div class="nav-item">
+                    <!-- <a href="category.html"> -->
+                    <span data-en="Categories" data-ar="الفئات">Categories</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <!-- </a> -->
+                    <div class="categories-dropdown" id="categoriesDropdown">
+                        <!-- Categories loaded dynamically from database -->
+                    </div>
+                </div>
                 <a href="about.html" data-en="About" data-ar="من نحن">About</a>
                 <a href="contact.html" data-en="Contact" data-ar="اتصل بنا">Contact</a>
             </nav>

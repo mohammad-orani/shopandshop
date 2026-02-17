@@ -73,7 +73,7 @@ function loadCategoriesDropdown() {
     
     if (!dropdown) return;
     
-    let html = '<a href="category.html" class="all-categories" data-en="All Categories" data-ar="جميع الفئات">All Categories</a>';
+    let html = '';
     
     categories.forEach(cat => {
         html += `

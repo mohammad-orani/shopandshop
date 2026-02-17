@@ -1,59 +1,99 @@
-// General Info Loader
-const API_URL = 'https://primejo-backend-demo.up.railway.app/api';
+// ==================== GENERAL INFO LOADER ====================
+// Note: API_URL is defined in api.js - don't redeclare it here
 
-// Load general info from API
-async function loadGeneralInfo() {
-    try {
-        const response = await fetch(`${API_URL}/general-info`, {
-            cache: 'no-store'
-        });
+(function() {
+    // Use the global API_URL or fallback
+    const GENERAL_INFO_API = (typeof API_URL !== 'undefined') 
+        ? API_URL 
+        : 'https://primejo-backend-demo.up.railway.app/api';
+    
+    // Cache
+    let generalInfoCache = null;
+    
+    // Load general info from API
+    async function loadGeneralInfo() {
+        if (generalInfoCache) return generalInfoCache;
         
-        const data = await response.json();
-        
-        if (data.success) {
-            console.log('✅ General info loaded:', data.info);
-            return data.info;
-        } else {
-            console.error('Failed to load general info');
+        try {
+            const response = await fetch(`${GENERAL_INFO_API}/general-info`, {
+                cache: 'no-store'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                generalInfoCache = data.info;
+                console.log('✅ General info loaded:', data.info);
+                return data.info;
+            }
+            
+            return getDefaultInfo();
+        } catch (error) {
+            console.error('Error loading general info:', error);
             return getDefaultInfo();
         }
-    } catch (error) {
-        console.error('Error loading general info:', error);
-        return getDefaultInfo();
     }
-}
-
-
-
-// Update page with general info
-async function updateGeneralInfo() {
-    const info = await loadGeneralInfo();
     
-    // Update all email elements
-    document.querySelectorAll('.contact-email, [data-email]').forEach(el => {
-        el.textContent = `📧 ${info.email_address}`;
-        if (el.tagName === 'A') {
-            el.href = `mailto:${info.email_address}`;
-        }
-    });
+    // Default fallback
+    function getDefaultInfo() {
+        return {
+            brand_name: 'PrimeJo',
+            phone_number: '+962788888888',
+            email_address: 'Info@primejo.store'
+        };
+    }
     
-    // Update all phone elements
-    document.querySelectorAll('.contact-phone, [data-phone]').forEach(el => {
-        el.textContent = `📞 ${info.phone_number}`;
-        if (el.tagName === 'A') {
-            el.href = `tel:${info.phone_number}`;
-        }
-    });
+    // Update page elements
+    async function updateGeneralInfo() {
+        const info = await loadGeneralInfo();
+        
+        // Update email elements
+        document.querySelectorAll('.contact-email, [data-contact="email"]').forEach(el => {
+            el.textContent = `📧 ${info.email_address}`;
+        });
+        
+        // Update phone elements
+        document.querySelectorAll('.contact-phone, [data-contact="phone"]').forEach(el => {
+            el.textContent = `📞 ${info.phone_number}`;
+        });
+        
+        // Update brand name
+        document.querySelectorAll('.brand-name, [data-contact="brand"]').forEach(el => {
+            el.textContent = info.brand_name;
+        });
+        
+        // Update topbar specifically
+        updateTopbar(info);
+    }
     
-    // Update brand name
-    document.querySelectorAll('.brand-name, [data-brand]').forEach(el => {
-        el.textContent = info.brand_name;
-    });
-}
-
-// Load on page ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateGeneralInfo);
-} else {
-    updateGeneralInfo();
-}
+    // Update topbar info
+    function updateTopbar(info) {
+        const topbarEmail = document.querySelector('.topbar-email, .top-email');
+        const topbarPhone = document.querySelector('.topbar-phone, .top-phone');
+        
+        if (topbarEmail) topbarEmail.textContent = `📧 ${info.email_address}`;
+        if (topbarPhone) topbarPhone.textContent = `📞 ${info.phone_number}`;
+        
+        // Also update any element showing "Loading..."
+        document.querySelectorAll('*').forEach(el => {
+            if (el.children.length === 0) {
+                if (el.textContent.includes('Loading...')) {
+                    const classes = el.className;
+                    if (classes.includes('email') || classes.includes('mail')) {
+                        el.textContent = `📧 ${info.email_address}`;
+                    } else if (classes.includes('phone') || classes.includes('tel')) {
+                        el.textContent = `📞 ${info.phone_number}`;
+                    }
+                }
+            }
+        });
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateGeneralInfo);
+    } else {
+        updateGeneralInfo();
+    }
+    
+})(); // Self-invoking function prevents variable conflicts
