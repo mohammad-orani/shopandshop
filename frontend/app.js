@@ -21,88 +21,49 @@ const currencySymbols = {
     SAR: 'SAR'
 };
 
-function formatPrice(price) {
-    const convertedPrice = (price * currencyRates[currentCurrency]).toFixed(2);
-    const symbol = currencySymbols[currentCurrency];
 
-    if (currentCurrency === 'JOD' || currentCurrency === 'AED' || currentCurrency === 'SAR') {
-        return `${convertedPrice} ${symbol}`;
-    }
-    return `${symbol}${convertedPrice}`;
+function formatPrice(price) {
+    if (!price || isNaN(price)) return '';
+    const converted = (parseFloat(price) * currencyRates[currentCurrency]).toFixed(2);
+    const symbol = currencySymbols[currentCurrency];
+    return ['JOD', 'AED', 'SAR'].includes(currentCurrency)
+        ? `${converted} ${symbol}`
+        : `${symbol}${converted}`;
 }
 
 function changeCurrency(currency) {
-    if (!currencyRates[currency]) {
-        console.error('Unknown currency:', currency);
-        return;
-    }
-
+    if (!currencyRates[currency]) return;
     currentCurrency = currency;
     localStorage.setItem('preferredCurrency', currency);
-
     console.log('💱 Currency changed to:', currency);
-
-    // Update selector UI to match
-    const selector = document.getElementById('currencySelector');
-    if (selector) selector.value = currency;
-
-    // ✅ Re-render products with new prices immediately
     refreshAllPricesNow();
 }
 
 function refreshAllPricesNow() {
-    console.log('🔄 Refreshing all prices for:', currentCurrency);
+    console.log('🔄 Refreshing prices for:', currentCurrency);
 
-    // 1. Update main products grid (index.html filter section)
-    const grid = document.getElementById('topbaicProductsGrid');
-    if (grid && filteredProducts.length > 0) {
-        renderProductsPage();
-        console.log('✅ Products grid updated');
-    }
-
-    // 2. Update homepage sections
-    if (document.getElementById('topSellers')) {
-        reloadHomeProducts();
-        console.log('✅ Homepage sections updated');
-    }
-
-    // 3. Update ALL price elements already in DOM
-    document.querySelectorAll('.price-new, .price-old, .current-price, .old-price').forEach(el => {
-        const basePrice = el.getAttribute('data-base-price');
-        if (basePrice) {
-            el.textContent = formatPrice(parseFloat(basePrice));
-        }
+    // Update all elements with data-base-price (no re-render needed)
+    document.querySelectorAll('[data-base-price]').forEach(el => {
+        const base = parseFloat(el.getAttribute('data-base-price'));
+        if (!isNaN(base)) el.textContent = formatPrice(base);
     });
 
-    // 4. Update cart if on cart page
-    if (typeof loadCartItems === 'function') {
-        loadCartItems();
-        console.log('✅ Cart updated');
+    // Re-render products grid
+    if (document.getElementById('topbaicProductsGrid') && typeof renderProductsPage === 'function') {
+        renderProductsPage();
     }
 
-    // 5. Update order summary if on checkout
-    if (typeof loadOrderSummary === 'function') {
-        loadOrderSummary();
-        console.log('✅ Order summary updated');
+    // Re-render homepage sections
+    if (document.getElementById('topSellers')) {
+        reloadHomeProducts();
     }
 
-    // 6. Update product details if on product page
-    if (typeof loadProductDetails === 'function') {
-        loadProductDetails();
-        console.log('✅ Product details updated');
-    }
-
-    // 7. Update category page
-    if (typeof loadCategoryProducts === 'function') {
-        loadCategoryProducts();
-        console.log('✅ Category products updated');
-    }
-
-    // 8. Update favorites page
-    if (typeof loadFavorites === 'function') {
-        loadFavorites();
-        console.log('✅ Favorites updated');
-    }
+    // Other pages
+    if (typeof loadCartItems === 'function') loadCartItems();
+    if (typeof loadOrderSummary === 'function') loadOrderSummary();
+    if (typeof loadProductDetails === 'function') loadProductDetails();
+    if (typeof loadCategoryProducts === 'function') loadCategoryProducts();
+    if (typeof loadFavorites === 'function') loadFavorites();
 }
 
 function switchLanguage(lang) {

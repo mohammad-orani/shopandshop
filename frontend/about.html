@@ -76,56 +76,13 @@
 
 <body>
     <!-- TOP BAIC Style Header - Include on all pages -->
-    <header class="topbaic-header">
-        <!-- Top Bar -->
-        <div class="header-top">
-            <div class="header-top-content">
-                <div class="contact-info">
-                    <span class="contact-email" data-email>📧 Loading...</span>
-                    <span class="contact-phone" data-phone>📞 Loading...</span>
-                </div>
-                <div>
-                    <!-- <a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a>
-                    <a href="#" data-en="Help" data-ar="مساعدة">Help</a> -->
-                    <div class="lang-toggle" style="display: inline-block;">
-                        <button onclick="switchLanguage('en')" class="lang-btn active" id="lang-en"
-                            style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer; margin: 0 4px;">EN</button>
-                        <button onclick="switchLanguage('ar')" class="lang-btn" id="lang-ar"
-                            style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer;">ع</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div id="site-header"></div>
 
-        <!-- Main Header -->
-        <div class="header-main">
-            <a href="index.html" class="topbaic-logo">PRIMEJO</a>
 
-            <nav class="topbaic-nav">
-                <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
-                <a href="category.html" data-en="Shop" data-ar="المتجر">Shop</a>
-                <a href="about.html" data-en="About" data-ar="من نحن">About</a>
-                <a href="contact.html" data-en="Contact" data-ar="اتصل بنا">Contact</a>
-            </nav>
-
-            <div class="header-icons">
-                <!-- <button class="icon-btn" onclick="window.location.href='#'" title="Search">
-                    🔍
-                </button> -->
-                <button class="icon-btn" onclick="window.location.href='favorites.html'" title="Favorites">
-                    ❤️
-                </button>
-                <button class="icon-btn" onclick="window.location.href='cart.html'" title="Cart">
-                    🛒
-                    <span class="icon-badge" id="cartCount">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
 
 
     <div class="about-hero">
-        <h1 data-en="About Primejo" data-ar="عن كيوي">About Primejo</h1>
+        <h1 data-en="About Primejo" data-ar="عن Primejo">About Primejo</h1>
         <p data-en="Your premium shopping destination" data-ar="وجهتك المميزة للتسوق">Your premium shopping destination
         </p>
     </div>
@@ -183,23 +140,35 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>PRIMEJO</h3>
-                <p data-en="Your trusted partner for premium automotive accessories. We deliver quality, style, and performance."
-                    data-ar="شريكك الموثوق للإكسسوارات السيارات المميزة. نقدم الجودة والأناقة والأداء.">
-                    Your trusted partner for premium automotive accessories. We deliver quality, style, and performance.
+                <p data-en="Our world of shopping, simplified. Premium products, unbeatable value, and always free delivery."
+                    data-ar="عالم التسوق لدينا أصبح أبسط. منتجات مميزة، قيمة لا تُضاهى، وتوصيل مجاني دائماً.">
+                    Our world of shopping, simplified. Premium products, unbeatable value, and always free delivery.
                 </p>
+
+                <div style="margin-top: 20px;">
+                    <p style="font-size: 13px; color: #999; margin-bottom: 8px;">
+                        <strong data-en="Contact Us" data-ar="اتصل بنا">Contact Us</strong>
+                    </p>
+                    <div class="contact-info">
+                        <span class="contact-email" data-email>📧 Loading...</span>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-phone" data-phone>📞 Loading...</span>
+                    </div>
+                </div>
             </div>
 
             <div class="footer-section">
                 <h3 data-en="Quick Links" data-ar="روابط سريعة">Quick Links</h3>
                 <ul>
                     <li><a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a></li>
-                    <li><a href="category.html" data-en="Shop" data-ar="المتجر">Shop</a></li>
+                    <!-- <li><a href="category.html" data-en="Shop" data-ar="المتجر">Shop</a></li> -->
                     <li><a href="about.html" data-en="About Us" data-ar="من نحن">About Us</a></li>
                     <li><a href="contact.html" data-en="Contact" data-ar="اتصل بنا">Contact</a></li>
                 </ul>
             </div>
 
-            <div class="footer-section">
+            <!-- <div class="footer-section">
                 <h3 data-en="Customer Service" data-ar="خدمة العملاء">Customer Service</h3>
                 <ul>
                     <li><a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a></li>
@@ -207,7 +176,7 @@
                     <li><a href="#" data-en="Returns" data-ar="الإرجاع">Returns</a></li>
                     <li><a href="#" data-en="FAQ" data-ar="الأسئلة الشائعة">FAQ</a></li>
                 </ul>
-            </div>
+            </div> -->
 
             <div class="footer-section">
                 <h3 data-en="Follow Us" data-ar="تابعنا">Follow Us</h3>
@@ -261,16 +230,7 @@
                     </a>
                 </div>
 
-                <div style="margin-top: 20px;">
-                    <p style="font-size: 13px; color: #999; margin-bottom: 8px;">
-                        <strong data-en="Contact Us" data-ar="اتصل بنا">Contact Us</strong>
-                    </p>
-                    <div class="contact-info">
-                        <span class="contact-email" data-email>📧 Loading...</span>
-                        <span class="contact-phone" data-phone>📞 Loading...</span>
-                    </div>
-                    <p style="font-size: 13px; color: #cccccc;">📍 Amman, Jordan</p>
-                </div>
+
             </div>
         </div>
 
@@ -281,7 +241,7 @@
 
 
 
-
+    <script src="header.js"></script>
     <script src="app.js"></script>
     <script src="countries-data.js"></script>
     <script src="settings.js"></script>

@@ -19,21 +19,21 @@
     --border-light: #e5e5e5;
     --bg-light: #f8f8f8;
     --bg-white: #ffffff;
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
     /* Typography */
     --font-primary: 'Work Sans', 'Helvetica Neue', Arial, sans-serif;
     --font-heading: 'Playfair Display', Georgia, serif;
-    
+
     /* Spacing */
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;
     --spacing-lg: 2rem;
     --spacing-xl: 3rem;
-    
+
     /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
@@ -129,7 +129,7 @@ body {
     align-items: center;
 }
 
-.topbaic-nav > a,
+.topbaic-nav>a,
 .topbaic-nav .nav-item {
     color: var(--text-primary);
     text-decoration: none;
@@ -141,7 +141,7 @@ body {
     transition: color var(--transition-fast);
 }
 
-.topbaic-nav > a::after {
+.topbaic-nav>a::after {
     content: '';
     position: absolute;
     bottom: -5px;
@@ -152,11 +152,11 @@ body {
     transition: width var(--transition-normal);
 }
 
-.topbaic-nav > a:hover {
+.topbaic-nav>a:hover {
     color: var(--accent-gold);
 }
 
-.topbaic-nav > a:hover::after {
+.topbaic-nav>a:hover::after {
     width: 100%;
 }
 
@@ -166,7 +166,7 @@ body {
     cursor: pointer;
 }
 
-.nav-item > a {
+.nav-item>a {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -179,7 +179,7 @@ body {
     transition: color var(--transition-fast);
 }
 
-.nav-item > a::after {
+.nav-item>a::after {
     content: '';
     position: absolute;
     bottom: -5px;
@@ -190,11 +190,11 @@ body {
     transition: width var(--transition-normal);
 }
 
-.nav-item:hover > a {
+.nav-item:hover>a {
     color: var(--accent-gold);
 }
 
-.nav-item:hover > a::after {
+.nav-item:hover>a::after {
     width: 100%;
 }
 
@@ -900,7 +900,7 @@ body {
 /* Specific social media colors on hover */
 .social-link:nth-child(1):hover {
     /* Instagram gradient */
-    background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
     border-color: #dc2743;
     color: white;
 }
@@ -952,7 +952,7 @@ body {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 20px;
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr 1fr;
         gap: 40px;
@@ -964,25 +964,26 @@ body {
         flex-wrap: wrap;
         gap: 20px;
     }
-    
+
     .topbaic-nav {
-        display: none; /* Mobile menu needed */
+        display: none;
+        /* Mobile menu needed */
     }
-    
+
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 16px;
     }
-    
+
     .collection-title {
         font-size: 28px;
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr;
         gap: 30px;
     }
-    
+
     .filter-content {
         flex-wrap: wrap;
         gap: 12px;
@@ -993,11 +994,11 @@ body {
     .products-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .product-info {
         padding: 16px;
     }
-    
+
     .collection-header {
         padding: 30px 20px;
     }
@@ -1049,7 +1050,9 @@ select:focus-visible {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Premium Hover Effects */
@@ -1065,3 +1068,207 @@ select:focus-visible {
 /* ============================================
    END OF TOP BAIC PREMIUM STYLES
    ============================================ */
+/* ============================================================
+   ADD THIS TO YOUR topbaic-style.css
+   Replace or update existing header/controls styles
+   ============================================================ */
+
+/* ── Remove old floating controls ── */
+.controls-container {
+    display: none !important;
+}
+
+/* ── Header Top Bar ── */
+.header-top {
+    background: #111111;
+    padding: 7px 0;
+    font-size: 0.82rem;
+}
+
+.header-top-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Contact Info */
+.header-contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.82rem;
+}
+
+.header-contact svg {
+    vertical-align: middle;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.header-sep {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+}
+
+/* Right Controls: Lang + Currency */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Language Switch */
+.lang-switch {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.lang-sep {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.lang-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.65);
+    padding: 3px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-family: 'Work Sans', sans-serif;
+    line-height: 1.4;
+}
+
+.lang-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.lang-btn.active {
+    background: white;
+    color: #111;
+}
+
+/* Currency Wrapper */
+.currency-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 3px 10px;
+    transition: all 0.2s ease;
+}
+
+.currency-wrapper:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.currency-wrapper svg {
+    opacity: 0.6;
+    flex-shrink: 0;
+    color: white;
+}
+
+/* Currency Select - clean invisible select */
+.currency-select {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Work Sans', sans-serif;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    padding: 0;
+    min-width: 52px;
+    line-height: 1.4;
+}
+
+.currency-select option {
+    background: #1a1a1a;
+    color: white;
+    font-weight: 500;
+}
+
+/* ── Main Header ── */
+.header-main {
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 14px 0;
+}
+
+.header-main-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+/* ── RTL Support ── */
+body[dir="rtl"] .header-top-inner,
+body[dir="rtl"] .header-main-inner {
+    flex-direction: row-reverse;
+}
+
+body[dir="rtl"] .header-controls {
+    flex-direction: row-reverse;
+}
+
+body[dir="rtl"] .header-contact {
+    flex-direction: row-reverse;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .header-contact {
+        display: none;
+    }
+
+    .header-top-inner {
+        justify-content: flex-end;
+    }
+
+    .header-controls {
+        gap: 10px;
+    }
+
+    .lang-btn {
+        padding: 3px 8px;
+    }
+
+    .currency-wrapper {
+        padding: 3px 8px;
+    }
+
+    .currency-select {
+        min-width: 44px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-top {
+        padding: 5px 0;
+    }
+}

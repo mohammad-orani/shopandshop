@@ -153,7 +153,7 @@ function loadOrderSummary() {
     });
     
     orderItemsContainer.innerHTML = orderHTML;
-    document.getElementById('orderSubtotal').textContent = formatPrice(subtotal);
+    document.getElementById('orderSubtotal').textContent = subtotal;
     updateOrderTotal();
 }
 
