@@ -529,7 +529,7 @@ function viewOrderDetails(orderId) {
         </div>
         <div style="margin-top: 1rem; text-align: right;">
             <strong style="font-size: 1.5rem;">Total: $${order.total.toFixed(2)}</strong>
-            ${order.currency && order.currency !== 'USD' ? `<br><span style="font-size: 1rem; color: #666;">(Original: ${order.total.toFixed(2)} ${order.currency})</span>` : ''}
+            ${order.currency && order.currency !== 'JOD' ? `<br><span style="font-size: 1rem; color: #666;">(Original: ${order.total.toFixed(2)} ${order.currency})</span>` : ''}
         </div>
     `;
 

@@ -34,10 +34,7 @@
                         <button onclick="switchLanguage('ar')" class="lang-btn" id="lang-ar"
                             style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer;">ع</button>
                     </div>
-                    <select id="currencySelector" onchange="changeCurrency(this.value)">
-                        <option value="USD" data-en="$ USD" data-ar="دولار $">$ USD</option>
-                        <option value="JOD" data-en="JOD دينار" data-ar="دينار JOD">JOD دينار</option>
-                    </select>
+                  
                 </div>
             </div>
         </div>
@@ -79,6 +76,10 @@
         </div>
     </header>`;
 
+    //   <select id="currencySelector" onchange="changeCurrency(this.value)">
+    //                     <option value="USD" data-en="$ USD" data-ar="دولار $">$ USD</option>
+    //                     <option value="JOD" data-en="JOD دينار" data-ar="دينار JOD">JOD دينار</option>
+    //                 </select>
     // Inject header
     const placeholder = document.getElementById('site-header');
     if (placeholder) {

@@ -106,7 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
     switchLanguage(savedLang);
 
     // Load preferred currency
-    const savedCurrency = localStorage.getItem('preferredCurrency') || 'USD';
+    const savedCurrency = localStorage.getItem('preferredCurrency') || 'JOD';
     currentCurrency = savedCurrency;
     const currencySelector = document.getElementById('currencySelector');
     if (currencySelector) {
