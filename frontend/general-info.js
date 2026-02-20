@@ -15,7 +15,7 @@
         if (generalInfoCache) return generalInfoCache;
 
         try {
-            app.get('/api/general-info', async (req, res) => {
+            app.get('/general-info', async (req, res) => {
                 try {
                     const [rows] = await pool.query(
                         'SELECT brand_name, phone_number, email_address, minimum_order_amount FROM general_info WHERE id = 1'
