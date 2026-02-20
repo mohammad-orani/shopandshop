@@ -705,9 +705,7 @@ section {
         height: 36px;
         font-size: 14px;
     }
-}
 
-@media (max-width: 768px) {
     body {
         font-size: 16px;
         /* Never go below 16px on mobile */
