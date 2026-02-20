@@ -307,12 +307,14 @@
         </div>
     </footer>
 
-
-
+    <!-- Scripts - Load in correct order -->
     <script src="header.js"></script>
+    <script src="mobile-menu.js"></script>
     <script src="app.js"></script>
+    <script src="general-info.js"></script>
     <script src="countries-data.js"></script>
-    <script src="settings.js"></script>
+
+    <!-- Contact form handler -->
     <script>
         document.getElementById('contactForm').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -322,11 +324,6 @@
             this.reset();
         });
     </script>
-    <!-- <script src="modern-animations.js"></script> -->
-    <!-- Add this script at the end of body -->
-    <script src="header.js"></script>
-    <script src="mobile-menu.js"></script>
-    <script src="general-info.js"></script>
 </body>
 
 </html>

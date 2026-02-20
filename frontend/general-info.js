@@ -1,39 +1,52 @@
 // ==================== GENERAL INFO LOADER ====================
 // Note: API_URL is defined in api.js - don't redeclare it here
 
-(function() {
+(function () {
     // Use the global API_URL or fallback
-    const GENERAL_INFO_API = (typeof API_URL !== 'undefined') 
-        ? API_URL 
+    const GENERAL_INFO_API = (typeof API_URL !== 'undefined')
+        ? API_URL
         : 'https://primejo-backend-demo.up.railway.app/api';
-    
+
     // Cache
     let generalInfoCache = null;
-    
+
     // Load general info from API
     async function loadGeneralInfo() {
         if (generalInfoCache) return generalInfoCache;
-        
+
         try {
-            const response = await fetch(`${GENERAL_INFO_API}/general-info`, {
-                cache: 'no-store'
+            app.get('/api/general-info', async (req, res) => {
+                try {
+                    const [rows] = await pool.query(
+                        'SELECT brand_name, phone_number, email_address, minimum_order_amount FROM general_info WHERE id = 1'
+                    );
+
+                    if (rows.length === 0) {
+                        return res.json({
+                            success: false,
+                            error: 'General info not found'
+                        });
+                    }
+
+                    res.json({
+                        success: true,
+                        info: rows[0]
+                    });
+                } catch (error) {
+                    console.error('Error fetching general info:', error);
+                    res.status(500).json({
+                        success: false,
+                        error: error.message
+                    });
+                }
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                generalInfoCache = data.info;
-                console.log('✅ General info loaded:', data.info);
-                return data.info;
-            }
-            
             return getDefaultInfo();
         } catch (error) {
             console.error('Error loading general info:', error);
             return getDefaultInfo();
         }
     }
-    
+
     // Default fallback
     function getDefaultInfo() {
         return {
@@ -42,38 +55,38 @@
             email_address: 'Info@primejo.store'
         };
     }
-    
+
     // Update page elements
     async function updateGeneralInfo() {
         const info = await loadGeneralInfo();
-        
+
         // Update email elements
         document.querySelectorAll('.contact-email, [data-contact="email"]').forEach(el => {
             el.textContent = `📧 ${info.email_address}`;
         });
-        
+
         // Update phone elements
         document.querySelectorAll('.contact-phone, [data-contact="phone"]').forEach(el => {
             el.textContent = `📞 ${info.phone_number}`;
         });
-        
+
         // Update brand name
         document.querySelectorAll('.brand-name, [data-contact="brand"]').forEach(el => {
             el.textContent = info.brand_name;
         });
-        
+
         // Update topbar specifically
         updateTopbar(info);
     }
-    
+
     // Update topbar info
     function updateTopbar(info) {
         const topbarEmail = document.querySelector('.topbar-email, .top-email');
         const topbarPhone = document.querySelector('.topbar-phone, .top-phone');
-        
+
         if (topbarEmail) topbarEmail.textContent = `📧 ${info.email_address}`;
         if (topbarPhone) topbarPhone.textContent = `📞 ${info.phone_number}`;
-        
+
         // Also update any element showing "Loading..."
         document.querySelectorAll('*').forEach(el => {
             if (el.children.length === 0) {
@@ -88,12 +101,12 @@
             }
         });
     }
-    
+
     // Run when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', updateGeneralInfo);
     } else {
         updateGeneralInfo();
     }
-    
+
 })(); // Self-invoking function prevents variable conflicts

@@ -1280,3 +1280,18 @@ body[dir="rtl"] .header-contact {
         /* Never go below 16px on mobile */
     }
 }
+
+/* Fix contact info display in header */
+.header-contact span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.header-contact svg,
+.contact-info svg {
+    flex-shrink: 0;
+}
