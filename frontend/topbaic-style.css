@@ -54,6 +54,7 @@ body {
     background: var(--bg-white);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
 }
 
 /* ============================================
@@ -1270,5 +1271,12 @@ body[dir="rtl"] .header-contact {
 @media (max-width: 480px) {
     .header-top {
         padding: 5px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 16px;
+        /* Never go below 16px on mobile */
     }
 }
