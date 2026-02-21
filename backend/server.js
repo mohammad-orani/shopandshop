@@ -4,7 +4,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-// const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 
@@ -573,9 +573,9 @@ app.post('/api/auth/login', async (req, res) => {
         );
 
         if (users.length === 0) {
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid email or password'
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Invalid email or password' 
             });
         }
 
@@ -606,8 +606,8 @@ module.exports = app;
 // ==================== AUTHENTICATION ENDPOINTS ====================
 // Add these to your server.js
 
-// const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+ bcrypt = require('bcrypt');
+ jwt = require('jsonwebtoken');
 
 // JWT Secret (use environment variable in production)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
@@ -634,7 +634,7 @@ app.post('/api/auth/login', async (req, res) => {
         const user = users[0];
 
         // Check password (assuming it's hashed with bcrypt)
-        const passwordMatch = await compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
             return res.status(401).json({
