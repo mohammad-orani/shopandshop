@@ -30,7 +30,8 @@
         return {
             brand_name: 'PrimeJo',
             phone_number: '+962788888888',
-            email_address: 'Info@primejo.store'
+            email_address: 'Info@primejo.store',
+            minimum_order_amount: 15
         };
     }
 
@@ -39,22 +40,47 @@
         const info = await loadGeneralInfo();
 
         // Update email elements
-        document.querySelectorAll('.contact-email, [data-contact="email"]').forEach(el => {
+        document.querySelectorAll('.contact-email, [data-email]').forEach(el => {
             el.textContent = `📧 ${info.email_address}`;
         });
 
         // Update phone elements
-        document.querySelectorAll('.contact-phone, [data-contact="phone"]').forEach(el => {
+        document.querySelectorAll('.contact-phone, [data-phone]').forEach(el => {
             el.textContent = `📞 ${info.phone_number}`;
         });
 
         // Update brand name
-        document.querySelectorAll('.brand-name, [data-contact="brand"]').forEach(el => {
+        document.querySelectorAll('.brand-name, [data-brand]').forEach(el => {
             el.textContent = info.brand_name;
         });
 
-        // Update topbar specifically
-        updateTopbar(info);
+        // ✅ NEW: Update minimum order amount
+        const minAmount = info.minimum_order_amount || 15;
+        const currentLang = localStorage.getItem('selectedLanguage') || 'en';
+
+        document.querySelectorAll('.delivery-minimum-text').forEach(el => {
+            const template = currentLang === 'ar'
+                ? el.getAttribute('data-ar-template')
+                : el.getAttribute('data-en-template');
+
+            if (template) {
+                el.textContent = template.replace('{amount}', minAmount);
+            }
+        });
+
+        // Update any elements still showing "Loading..."
+        document.querySelectorAll('[data-email], [data-phone]').forEach(el => {
+            if (el.textContent.includes('Loading')) {
+                const attr = el.getAttribute('data-email') !== null ? 'email' : 'phone';
+                if (attr === 'email') {
+                    el.textContent = `📧 ${info.email_address}`;
+                } else {
+                    el.textContent = `📞 ${info.phone_number}`;
+                }
+            }
+        });
+
+        console.log('✅ General info loaded:', info);
     }
 
     // Update topbar info

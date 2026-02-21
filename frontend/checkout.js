@@ -119,16 +119,24 @@ async function updateDeliveryFee() {
         return total;
     }, 0);
 
-    // Get minimum order amount from general info
-    let minimumOrderAmount = 0;
+    // Get minimum order amount from general info (uses cache if available)
+    let minimumOrderAmount = 15; // Default fallback
     try {
-        const response = await fetch(`${API_URL}/general-info`);
-        const data = await response.json();
-        if (data.success && data.info) {
-            minimumOrderAmount = parseFloat(data.info.minimum_order_amount || data.info.min_order_amount) || 0;
+        // Use the global loadGeneralInfo function if available
+        if (typeof window.loadGeneralInfo === 'function') {
+            const info = await window.loadGeneralInfo();
+            minimumOrderAmount = parseFloat(info.minimum_order_amount) || 15;
+        } else {
+            // Fallback to direct API call
+            const response = await fetch(`${API_URL}/general-info`);
+            const data = await response.json();
+            if (data.success && data.info) {
+                minimumOrderAmount = parseFloat(data.info.minimum_order_amount) || 15;
+            }
         }
     } catch (error) {
         console.error('Error fetching minimum order amount:', error);
+        minimumOrderAmount = 15; // Use default on error
     }
 
     // Check if cart total meets minimum for free delivery
@@ -141,12 +149,14 @@ async function updateDeliveryFee() {
             ? 'مجاناً ✓'
             : 'FREE ✓';
 
+        const metText = currentLanguage === 'ar'
+            ? `تم تجاوز الحد الأدنى ${formatPrice(minimumOrderAmount)}`
+            : `Minimum ${formatPrice(minimumOrderAmount)} met`;
+
         document.getElementById('deliveryFeeDisplay').innerHTML = `
             <span style="color: #10b981; font-weight: 700;">${freeText}</span>
             <span style="display:block;font-size:0.75rem;color:#666;margin-top:2px;">
-                ${currentLanguage === 'ar'
-                ? `تم تجاوز الحد الأدنى $${minimumOrderAmount.toFixed(2)}`
-                : `Minimum $${minimumOrderAmount.toFixed(2)} met`}
+                ${metText}
             </span>
         `;
     } else {
@@ -154,16 +164,33 @@ async function updateDeliveryFee() {
         selectedDeliveryFee = cityDeliveryFee;
         selectedActualFee = cityDeliveryFee;
 
+        const remaining = minimumOrderAmount - cartTotal;
+        const addText = currentLanguage === 'ar'
+            ? `أضف ${formatPrice(remaining)} للتوصيل المجاني`
+            : `Add ${formatPrice(remaining)} for free delivery`;
+
         document.getElementById('deliveryFeeDisplay').innerHTML = `
             <span style="font-weight: 700;">${formatPrice(cityDeliveryFee)}</span>
             ${minimumOrderAmount > 0 ? `
                 <span style="display:block;font-size:0.75rem;color:#e74c3c;margin-top:2px;">
-                    ${currentLanguage === 'ar'
-                    ? `أضف $${(minimumOrderAmount - cartTotal).toFixed(2)} للتوصيل المجاني`
-                    : `Add $${(minimumOrderAmount - cartTotal).toFixed(2)} for free delivery`}
+                    ${addText}
                 </span>
             ` : ''}
         `;
+    }
+
+    updateOrderTotal();
+}
+
+function resetDeliveryFee() {
+    selectedDeliveryFee = 0;
+    selectedActualFee = 0;
+
+    const displayEl = document.getElementById('deliveryFeeDisplay');
+    if (displayEl) {
+        displayEl.innerHTML = currentLanguage === 'ar'
+            ? '<span style="color:#999;">اختر المدينة أولاً</span>'
+            : '<span style="color:#999;">Select city first</span>';
     }
 
     updateOrderTotal();
