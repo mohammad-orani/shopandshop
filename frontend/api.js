@@ -1,78 +1,52 @@
-// Frontend API Service
-// This file handles all communication with the backend API
+// ==================== FRONTEND API SERVICE ====================
+// Handles all communication with the backend API
+// Uses Railway MySQL database via backend endpoints
 
 const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
-// Check if we should use API or localStorage
-const USE_API = true; // Set to false to use localStorage (demo mode)
+// ==================== PRODUCTS ====================
 
-// ========================================
-// PRODUCTS
-// ========================================
-
-// Load products from API
 async function getProductsFromAPI() {
     try {
         const response = await fetch(`${API_URL}/products`);
+        if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
         return Array.isArray(data) ? data : [];
     } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('❌ Error fetching products:', error);
         return [];
     }
 }
 
 async function getProductByIdFromAPI(id) {
-    if (!USE_API) {
-        const products = JSON.parse(localStorage.getItem('products') || '[]');
-        return products.find(p => p.id === parseInt(id));
-    }
-
     try {
         const response = await fetch(`${API_URL}/products/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch product');
+        if (!response.ok) throw new Error('Product not found');
         const data = await response.json();
-        return data.product;
+        return data.product || data;
     } catch (error) {
-        console.error('Error fetching product:', error);
-        const products = JSON.parse(localStorage.getItem('products') || '[]');
-        return products.find(p => p.id === parseInt(id));
+        console.error('❌ Error fetching product:', error);
+        return null;
     }
 }
 
-// ========================================
-// CATEGORIES
-// ========================================
+// ==================== CATEGORIES ====================
 
 async function getCategoriesFromAPI() {
-    if (!USE_API) {
-        return JSON.parse(localStorage.getItem('categories') || '[]');
-    }
-
     try {
         const response = await fetch(`${API_URL}/categories`);
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
-        return data.categories || [];
+        return Array.isArray(data) ? data : (data.categories || []);
     } catch (error) {
-        console.error('Error fetching categories:', error);
-        return JSON.parse(localStorage.getItem('categories') || '[]');
+        console.error('❌ Error fetching categories:', error);
+        return [];
     }
 }
 
-// ========================================
-// ORDERS
-// ========================================
+// ==================== ORDERS ====================
 
 async function createOrderAPI(orderData) {
-    if (!USE_API) {
-        // Save to localStorage
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        orders.push(orderData);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        return { success: true, order: orderData };
-    }
-
     try {
         const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',
@@ -82,25 +56,51 @@ async function createOrderAPI(orderData) {
             body: JSON.stringify(orderData)
         });
 
-        if (!response.ok) throw new Error('Failed to create order');
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create order');
+        }
+
         const data = await response.json();
+        console.log('✅ Order created:', data);
         return data;
+
     } catch (error) {
-        console.error('Error creating order:', error);
-        // Fallback to localStorage
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        orders.push(orderData);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        return { success: true, order: orderData };
+        console.error('❌ Error creating order:', error);
+        return { success: false, error: error.message };
     }
 }
 
-// ========================================
-// FAVORITES
-// ========================================
+// ==================== DELIVERY ====================
+
+async function getDeliveryCountries() {
+    try {
+        const response = await fetch(`${API_URL}/delivery/countries`);
+        if (!response.ok) throw new Error('Failed to fetch countries');
+        const data = await response.json();
+        return data.countries || [];
+    } catch (error) {
+        console.error('❌ Error fetching countries:', error);
+        return [];
+    }
+}
+
+async function getDeliveryCities(countryId) {
+    try {
+        const response = await fetch(`${API_URL}/delivery/cities/${countryId}`);
+        if (!response.ok) throw new Error('Failed to fetch cities');
+        const data = await response.json();
+        return data.cities || [];
+    } catch (error) {
+        console.error('❌ Error fetching cities:', error);
+        return [];
+    }
+}
+
+// ==================== FAVORITES ====================
+// Favorites stored in localStorage (user-specific, no login required)
 
 async function addToFavoritesAPI(productId) {
-    // Favorites stay in localStorage for now (user-specific)
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     if (!favorites.includes(productId)) {
         favorites.push(productId);
@@ -120,9 +120,8 @@ async function getFavoritesAPI() {
     return JSON.parse(localStorage.getItem('favorites') || '[]');
 }
 
-// ========================================
-// CART (stays in localStorage - session-based)
-// ========================================
+// ==================== CART ====================
+// Cart stored in localStorage (session-based, cleared on order)
 
 function getCart() {
     return JSON.parse(localStorage.getItem('cart') || '[]');
@@ -134,7 +133,7 @@ function saveCart(cart) {
 
 function addToCart(productId, quantity = 1) {
     const cart = getCart();
-    const existingItem = cart.find(item => item.productId === productId);
+    const existingItem = cart.find(item => String(item.productId) === String(productId));
 
     if (existingItem) {
         existingItem.quantity += quantity;
@@ -149,23 +148,85 @@ function addToCart(productId, quantity = 1) {
 
 function removeFromCart(productId) {
     const cart = getCart();
-    const updatedCart = cart.filter(item => item.productId !== productId);
+    const updatedCart = cart.filter(item => String(item.productId) !== String(productId));
     saveCart(updatedCart);
+    updateCartCount();
+}
+
+function updateCartItemQuantity(productId, quantity) {
+    const cart = getCart();
+    const item = cart.find(i => String(i.productId) === String(productId));
+    if (item) {
+        item.quantity = Math.max(1, quantity);
+        saveCart(cart);
+        updateCartCount();
+    }
+}
+
+function clearCart() {
+    localStorage.removeItem('cart');
     updateCartCount();
 }
 
 function updateCartCount() {
     const cart = getCart();
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const countElement = document.getElementById('cartCount');
-    if (countElement) {
-        countElement.textContent = totalItems;
+    const countElements = document.querySelectorAll('#cartCount, .cart-count');
+    countElements.forEach(el => {
+        if (el) el.textContent = totalItems;
+    });
+}
+
+// ==================== GENERAL INFO ====================
+
+async function getGeneralInfoFromAPI() {
+    try {
+        const response = await fetch(`${API_URL}/general-info`);
+        if (!response.ok) throw new Error('Failed to fetch general info');
+        const data = await response.json();
+        return data.info || data;
+    } catch (error) {
+        console.error('❌ Error fetching general info:', error);
+        return {
+            brand_name: 'PrimeJo',
+            phone_number: '+962786215022',
+            email_address: 'Info@primejo.store',
+            minimum_order_amount: 25
+        };
     }
 }
 
-// ========================================
-// INITIALIZE
-// ========================================
+// ==================== HELPER FUNCTIONS ====================
+
+// Get products for display (handles both DB formats)
+async function getProducts() {
+    const products = await getProductsFromAPI();
+    return products.map(p => ({
+        id: p.id,
+        name_en: p.name_en,
+        name_ar: p.name_ar,
+        description_en: p.description_en,
+        description_ar: p.description_ar,
+        category: p.category || p.category_id,
+        newPrice: parseFloat(p.newPrice || p.new_price || 0),
+        oldPrice: parseFloat(p.oldPrice || p.old_price || 0),
+        image: p.image || p.image_url,
+        stock: p.stock || 0,
+        visible: p.visible !== false && p.is_visible !== false,
+        isNew: p.isNew || p.is_new || false,
+        topSeller: p.topSeller || p.is_top_seller || false,
+        isOffer: p.isOffer || p.is_offer || false,
+        additionalImages: p.additionalImages || p.additional_images || [],
+        videoUrl: p.videoUrl || p.video_url || ''
+    }));
+}
+
+// Get categories
+async function getCategories() {
+    return await getCategoriesFromAPI();
+}
+
+// ==================== INITIALIZE ====================
 
 // Update cart count on page load
 if (typeof window !== 'undefined') {
@@ -174,35 +235,57 @@ if (typeof window !== 'undefined') {
     });
 }
 
-// Export API functions
+// ==================== GLOBAL EXPORTS ====================
+
+// Export as window.API object (modern approach)
 window.API = {
     // Products
-    getProducts: getProductsFromAPI,
+    getProducts: getProducts,
     getProductById: getProductByIdFromAPI,
+    getProductsFromAPI: getProductsFromAPI,
 
     // Categories
-    getCategories: getCategoriesFromAPI,
+    getCategories: getCategories,
+    getCategoriesFromAPI: getCategoriesFromAPI,
 
     // Orders
     createOrder: createOrderAPI,
+
+    // Delivery
+    getDeliveryCountries: getDeliveryCountries,
+    getDeliveryCities: getDeliveryCities,
 
     // Favorites
     addToFavorites: addToFavoritesAPI,
     removeFromFavorites: removeFromFavoritesAPI,
     getFavorites: getFavoritesAPI,
 
-    // Cart (localStorage)
+    // Cart
     getCart: getCart,
     addToCart: addToCart,
     removeFromCart: removeFromCart,
+    updateCartItemQuantity: updateCartItemQuantity,
+    clearCart: clearCart,
     saveCart: saveCart,
-    updateCartCount: updateCartCount
+    updateCartCount: updateCartCount,
+
+    // General Info
+    getGeneralInfo: getGeneralInfoFromAPI
 };
 
-// Also export for backward compatibility
-window.getProducts = getProductsFromAPI;
-window.getCategories = getCategoriesFromAPI;
+// Export for backward compatibility (old code that uses these directly)
+window.getProducts = getProducts;
+window.getProductById = getProductByIdFromAPI;
+window.getCategories = getCategories;
 window.getCart = getCart;
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
+window.updateCartItemQuantity = updateCartItemQuantity;
+window.clearCart = clearCart;
 window.saveCart = saveCart;
+window.updateCartCount = updateCartCount;
+window.createOrder = createOrderAPI;
+window.getDeliveryCountries = getDeliveryCountries;
+window.getDeliveryCities = getDeliveryCities;
+
+console.log('✅ API Service initialized - Connected to Railway MySQL');

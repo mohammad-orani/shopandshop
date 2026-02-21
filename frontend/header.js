@@ -92,7 +92,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const sel = document.getElementById('currencySelector');
         if (!sel) return;
-        const saved = localStorage.getItem('preferredCurrency') || 'USD';
+        const saved = localStorage.getItem('preferredCurrency') || 'JOD';
         sel.value = saved;
         sel.addEventListener('change', function () {
             if (typeof changeCurrency === 'function') changeCurrency(this.value);

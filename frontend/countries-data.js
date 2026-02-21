@@ -1,191 +1,250 @@
-/**
- * Complete Countries and Cities Database
- * With delivery fees management
- */
+// ==================== COUNTRIES & CITIES DATA ====================
+// Hybrid system: Uses database API when available, localStorage as fallback
 
-// Get countries with cities
-function getCountriesWithCities() {
+// ==================== GET COUNTRIES WITH CITIES ====================
+
+async function getCountriesWithCities() {
+    // Try to get from API first
+    if (typeof getDeliveryCountries === 'function') {
+        try {
+            const countries = await getDeliveryCountries();
+            if (countries && countries.length > 0) {
+                return countries;
+            }
+        } catch (error) {
+            console.warn('API unavailable, using localStorage:', error);
+        }
+    }
+
+    // Fallback to localStorage
     const data = localStorage.getItem('countriesWithCities');
     if (data) {
         return JSON.parse(data);
     }
-    
-    // Default countries with major cities
+
+    // Ultimate fallback: Default data
+    return getDefaultCountries();
+}
+
+// ==================== DEFAULT COUNTRIES DATA ====================
+
+function getDefaultCountries() {
     const defaultCountries = [
         {
             id: 1,
             name_en: 'Jordan',
             name_ar: 'الأردن',
+            phone_prefix: '+962',
             phonePrefix: '+962',
-            defaultFee: 0, // Free delivery
+            default_fee: 0,
+            defaultFee: 0,
             cities: [
-                { id: 1, name_en: 'Amman', name_ar: 'عمان', fee: 0 },
-                { id: 2, name_en: 'Zarqa', name_ar: 'الزرقاء', fee: 0 },
-                { id: 3, name_en: 'Irbid', name_ar: 'إربد', fee: 0 },
-                { id: 4, name_en: 'Aqaba', name_ar: 'العقبة', fee: 0 },
-                { id: 5, name_en: 'Madaba', name_ar: 'مادبا', fee: 0 },
-                { id: 6, name_en: 'Jerash', name_ar: 'جرش', fee: 0 },
-                { id: 7, name_en: 'Ajloun', name_ar: 'عجلون', fee: 0 },
-                { id: 8, name_en: 'Karak', name_ar: 'الكرك', fee: 0 },
-                { id: 9, name_en: 'Mafraq', name_ar: 'المفرق', fee: 0 },
-                { id: 10, name_en: 'Salt', name_ar: 'السلط', fee: 0 }
+                { id: 1, name_en: 'Amman', name_ar: 'عمان', delivery_fee: 0, fee: 0 },
+                { id: 2, name_en: 'Zarqa', name_ar: 'الزرقاء', delivery_fee: 0, fee: 0 },
+                { id: 3, name_en: 'Irbid', name_ar: 'إربد', delivery_fee: 0, fee: 0 },
+                { id: 4, name_en: 'Aqaba', name_ar: 'العقبة', delivery_fee: 0, fee: 0 },
+                { id: 5, name_en: 'Madaba', name_ar: 'مادبا', delivery_fee: 0, fee: 0 },
+                { id: 6, name_en: 'Jerash', name_ar: 'جرش', delivery_fee: 0, fee: 0 },
+                { id: 7, name_en: 'Ajloun', name_ar: 'عجلون', delivery_fee: 0, fee: 0 },
+                { id: 8, name_en: 'Karak', name_ar: 'الكرك', delivery_fee: 0, fee: 0 },
+                { id: 9, name_en: 'Mafraq', name_ar: 'المفرق', delivery_fee: 0, fee: 0 },
+                { id: 10, name_en: 'Salt', name_ar: 'السلط', delivery_fee: 0, fee: 0 }
             ]
         },
         {
             id: 2,
             name_en: 'Saudi Arabia',
             name_ar: 'المملكة العربية السعودية',
+            phone_prefix: '+966',
             phonePrefix: '+966',
+            default_fee: 15,
             defaultFee: 15,
             cities: [
-                { id: 11, name_en: 'Riyadh', name_ar: 'الرياض', fee: 15 },
-                { id: 12, name_en: 'Jeddah', name_ar: 'جدة', fee: 15 },
-                { id: 13, name_en: 'Mecca', name_ar: 'مكة المكرمة', fee: 15 },
-                { id: 14, name_en: 'Medina', name_ar: 'المدينة المنورة', fee: 15 },
-                { id: 15, name_en: 'Dammam', name_ar: 'الدمام', fee: 15 },
-                { id: 16, name_en: 'Khobar', name_ar: 'الخبر', fee: 15 },
-                { id: 17, name_en: 'Tabuk', name_ar: 'تبوك', fee: 20 },
-                { id: 18, name_en: 'Abha', name_ar: 'أبها', fee: 20 }
+                { id: 11, name_en: 'Riyadh', name_ar: 'الرياض', delivery_fee: 15, fee: 15 },
+                { id: 12, name_en: 'Jeddah', name_ar: 'جدة', delivery_fee: 15, fee: 15 },
+                { id: 13, name_en: 'Mecca', name_ar: 'مكة المكرمة', delivery_fee: 15, fee: 15 },
+                { id: 14, name_en: 'Medina', name_ar: 'المدينة المنورة', delivery_fee: 15, fee: 15 },
+                { id: 15, name_en: 'Dammam', name_ar: 'الدمام', delivery_fee: 15, fee: 15 },
+                { id: 16, name_en: 'Khobar', name_ar: 'الخبر', delivery_fee: 15, fee: 15 },
+                { id: 17, name_en: 'Tabuk', name_ar: 'تبوك', delivery_fee: 20, fee: 20 },
+                { id: 18, name_en: 'Abha', name_ar: 'أبها', delivery_fee: 20, fee: 20 }
             ]
         },
         {
             id: 3,
             name_en: 'United Arab Emirates',
             name_ar: 'الإمارات العربية المتحدة',
+            phone_prefix: '+971',
             phonePrefix: '+971',
+            default_fee: 20,
             defaultFee: 20,
             cities: [
-                { id: 19, name_en: 'Dubai', name_ar: 'دبي', fee: 20 },
-                { id: 20, name_en: 'Abu Dhabi', name_ar: 'أبو ظبي', fee: 20 },
-                { id: 21, name_en: 'Sharjah', name_ar: 'الشارقة', fee: 20 },
-                { id: 22, name_en: 'Ajman', name_ar: 'عجمان', fee: 20 },
-                { id: 23, name_en: 'Ras Al Khaimah', name_ar: 'رأس الخيمة', fee: 20 },
-                { id: 24, name_en: 'Fujairah', name_ar: 'الفجيرة', fee: 20 },
-                { id: 25, name_en: 'Umm Al Quwain', name_ar: 'أم القيوين', fee: 20 }
+                { id: 19, name_en: 'Dubai', name_ar: 'دبي', delivery_fee: 20, fee: 20 },
+                { id: 20, name_en: 'Abu Dhabi', name_ar: 'أبو ظبي', delivery_fee: 20, fee: 20 },
+                { id: 21, name_en: 'Sharjah', name_ar: 'الشارقة', delivery_fee: 20, fee: 20 },
+                { id: 22, name_en: 'Ajman', name_ar: 'عجمان', delivery_fee: 20, fee: 20 },
+                { id: 23, name_en: 'Ras Al Khaimah', name_ar: 'رأس الخيمة', delivery_fee: 20, fee: 20 },
+                { id: 24, name_en: 'Fujairah', name_ar: 'الفجيرة', delivery_fee: 20, fee: 20 },
+                { id: 25, name_en: 'Umm Al Quwain', name_ar: 'أم القيوين', delivery_fee: 20, fee: 20 }
             ]
         },
         {
             id: 4,
             name_en: 'Kuwait',
             name_ar: 'الكويت',
+            phone_prefix: '+965',
             phonePrefix: '+965',
+            default_fee: 12,
             defaultFee: 12,
             cities: [
-                { id: 26, name_en: 'Kuwait City', name_ar: 'مدينة الكويت', fee: 12 },
-                { id: 27, name_en: 'Hawalli', name_ar: 'حولي', fee: 12 },
-                { id: 28, name_en: 'Salmiya', name_ar: 'السالمية', fee: 12 },
-                { id: 29, name_en: 'Farwaniya', name_ar: 'الفروانية', fee: 12 },
-                { id: 30, name_en: 'Ahmadi', name_ar: 'الأحمدي', fee: 12 }
+                { id: 26, name_en: 'Kuwait City', name_ar: 'مدينة الكويت', delivery_fee: 12, fee: 12 },
+                { id: 27, name_en: 'Hawalli', name_ar: 'حولي', delivery_fee: 12, fee: 12 },
+                { id: 28, name_en: 'Salmiya', name_ar: 'السالمية', delivery_fee: 12, fee: 12 },
+                { id: 29, name_en: 'Farwaniya', name_ar: 'الفروانية', delivery_fee: 12, fee: 12 },
+                { id: 30, name_en: 'Ahmadi', name_ar: 'الأحمدي', delivery_fee: 12, fee: 12 }
             ]
         },
         {
             id: 5,
             name_en: 'Qatar',
             name_ar: 'قطر',
+            phone_prefix: '+974',
             phonePrefix: '+974',
+            default_fee: 18,
             defaultFee: 18,
             cities: [
-                { id: 31, name_en: 'Doha', name_ar: 'الدوحة', fee: 18 },
-                { id: 32, name_en: 'Al Rayyan', name_ar: 'الريان', fee: 18 },
-                { id: 33, name_en: 'Al Wakrah', name_ar: 'الوكرة', fee: 18 },
-                { id: 34, name_en: 'Al Khor', name_ar: 'الخور', fee: 18 }
+                { id: 31, name_en: 'Doha', name_ar: 'الدوحة', delivery_fee: 18, fee: 18 },
+                { id: 32, name_en: 'Al Rayyan', name_ar: 'الريان', delivery_fee: 18, fee: 18 },
+                { id: 33, name_en: 'Al Wakrah', name_ar: 'الوكرة', delivery_fee: 18, fee: 18 },
+                { id: 34, name_en: 'Al Khor', name_ar: 'الخور', delivery_fee: 18, fee: 18 }
             ]
         },
         {
             id: 6,
             name_en: 'Bahrain',
             name_ar: 'البحرين',
+            phone_prefix: '+973',
             phonePrefix: '+973',
+            default_fee: 10,
             defaultFee: 10,
             cities: [
-                { id: 35, name_en: 'Manama', name_ar: 'المنامة', fee: 10 },
-                { id: 36, name_en: 'Muharraq', name_ar: 'المحرق', fee: 10 },
-                { id: 37, name_en: 'Riffa', name_ar: 'الرفاع', fee: 10 },
-                { id: 38, name_en: 'Hamad Town', name_ar: 'مدينة حمد', fee: 10 }
+                { id: 35, name_en: 'Manama', name_ar: 'المنامة', delivery_fee: 10, fee: 10 },
+                { id: 36, name_en: 'Muharraq', name_ar: 'المحرق', delivery_fee: 10, fee: 10 },
+                { id: 37, name_en: 'Riffa', name_ar: 'الرفاع', delivery_fee: 10, fee: 10 },
+                { id: 38, name_en: 'Hamad Town', name_ar: 'مدينة حمد', delivery_fee: 10, fee: 10 }
             ]
         },
         {
             id: 7,
             name_en: 'Oman',
             name_ar: 'عمان',
+            phone_prefix: '+968',
             phonePrefix: '+968',
+            default_fee: 22,
             defaultFee: 22,
             cities: [
-                { id: 39, name_en: 'Muscat', name_ar: 'مسقط', fee: 22 },
-                { id: 40, name_en: 'Salalah', name_ar: 'صلالة', fee: 25 },
-                { id: 41, name_en: 'Sohar', name_ar: 'صحار', fee: 22 },
-                { id: 42, name_en: 'Nizwa', name_ar: 'نزوى', fee: 22 }
+                { id: 39, name_en: 'Muscat', name_ar: 'مسقط', delivery_fee: 22, fee: 22 },
+                { id: 40, name_en: 'Salalah', name_ar: 'صلالة', delivery_fee: 25, fee: 25 },
+                { id: 41, name_en: 'Sohar', name_ar: 'صحار', delivery_fee: 22, fee: 22 },
+                { id: 42, name_en: 'Nizwa', name_ar: 'نزوى', delivery_fee: 22, fee: 22 }
             ]
         },
         {
             id: 8,
             name_en: 'Lebanon',
             name_ar: 'لبنان',
+            phone_prefix: '+961',
             phonePrefix: '+961',
+            default_fee: 8,
             defaultFee: 8,
             cities: [
-                { id: 43, name_en: 'Beirut', name_ar: 'بيروت', fee: 8 },
-                { id: 44, name_en: 'Tripoli', name_ar: 'طرابلس', fee: 8 },
-                { id: 45, name_en: 'Sidon', name_ar: 'صيدا', fee: 8 },
-                { id: 46, name_en: 'Tyre', name_ar: 'صور', fee: 8 }
+                { id: 43, name_en: 'Beirut', name_ar: 'بيروت', delivery_fee: 8, fee: 8 },
+                { id: 44, name_en: 'Tripoli', name_ar: 'طرابلس', delivery_fee: 8, fee: 8 },
+                { id: 45, name_en: 'Sidon', name_ar: 'صيدا', delivery_fee: 8, fee: 8 },
+                { id: 46, name_en: 'Tyre', name_ar: 'صور', delivery_fee: 8, fee: 8 }
             ]
         },
         {
             id: 9,
             name_en: 'Palestine',
             name_ar: 'فلسطين',
+            phone_prefix: '+970',
             phonePrefix: '+970',
+            default_fee: 5,
             defaultFee: 5,
             cities: [
-                { id: 47, name_en: 'Ramallah', name_ar: 'رام الله', fee: 5 },
-                { id: 48, name_en: 'Nablus', name_ar: 'نابلس', fee: 5 },
-                { id: 49, name_en: 'Hebron', name_ar: 'الخليل', fee: 5 },
-                { id: 50, name_en: 'Gaza', name_ar: 'غزة', fee: 5 }
+                { id: 47, name_en: 'Ramallah', name_ar: 'رام الله', delivery_fee: 5, fee: 5 },
+                { id: 48, name_en: 'Nablus', name_ar: 'نابلس', delivery_fee: 5, fee: 5 },
+                { id: 49, name_en: 'Hebron', name_ar: 'الخليل', delivery_fee: 5, fee: 5 },
+                { id: 50, name_en: 'Gaza', name_ar: 'غزة', delivery_fee: 5, fee: 5 }
             ]
         },
         {
             id: 10,
             name_en: 'Egypt',
             name_ar: 'مصر',
+            phone_prefix: '+20',
             phonePrefix: '+20',
+            default_fee: 10,
             defaultFee: 10,
             cities: [
-                { id: 51, name_en: 'Cairo', name_ar: 'القاهرة', fee: 10 },
-                { id: 52, name_en: 'Alexandria', name_ar: 'الإسكندرية', fee: 10 },
-                { id: 53, name_en: 'Giza', name_ar: 'الجيزة', fee: 10 },
-                { id: 54, name_en: 'Sharm El Sheikh', name_ar: 'شرم الشيخ', fee: 15 },
-                { id: 55, name_en: 'Hurghada', name_ar: 'الغردقة', fee: 15 }
+                { id: 51, name_en: 'Cairo', name_ar: 'القاهرة', delivery_fee: 10, fee: 10 },
+                { id: 52, name_en: 'Alexandria', name_ar: 'الإسكندرية', delivery_fee: 10, fee: 10 },
+                { id: 53, name_en: 'Giza', name_ar: 'الجيزة', delivery_fee: 10, fee: 10 },
+                { id: 54, name_en: 'Sharm El Sheikh', name_ar: 'شرم الشيخ', delivery_fee: 15, fee: 15 },
+                { id: 55, name_en: 'Hurghada', name_ar: 'الغردقة', delivery_fee: 15, fee: 15 }
             ]
         }
     ];
-    
+
+    // Save to localStorage for future fallback
     localStorage.setItem('countriesWithCities', JSON.stringify(defaultCountries));
     return defaultCountries;
 }
 
-// Save countries data
+// ==================== SAVE COUNTRIES ====================
+
 function saveCountriesWithCities(countries) {
     localStorage.setItem('countriesWithCities', JSON.stringify(countries));
 }
 
-// Get cities for specific country
-function getCitiesByCountry(countryId) {
-    const countries = getCountriesWithCities();
-    const country = countries.find(c => c.id === parseInt(countryId));
+// ==================== GET CITIES BY COUNTRY ====================
+
+async function getCitiesByCountry(countryId) {
+    // Try API first
+    if (typeof getDeliveryCities === 'function') {
+        try {
+            const cities = await getDeliveryCities(countryId);
+            if (cities && cities.length > 0) {
+                return cities;
+            }
+        } catch (error) {
+            console.warn('API unavailable, using localStorage:', error);
+        }
+    }
+
+    // Fallback to localStorage
+    const countries = await getCountriesWithCities();
+    const country = countries.find(c => String(c.id) === String(countryId));
     return country ? country.cities : [];
 }
 
-// Get delivery fee for city
-function getDeliveryFee(countryId, cityId) {
-    const cities = getCitiesByCountry(countryId);
-    const city = cities.find(c => c.id === parseInt(cityId));
-    return city ? city.fee : 0;
+// ==================== GET DELIVERY FEE ====================
+
+async function getDeliveryFee(countryId, cityId) {
+    const cities = await getCitiesByCountry(countryId);
+    const city = cities.find(c => String(c.id) === String(cityId));
+    return city ? (city.delivery_fee || city.fee || 0) : 0;
 }
 
-// Export functions
+// ==================== EXPORT FUNCTIONS ====================
+
 if (typeof window !== 'undefined') {
     window.getCountriesWithCities = getCountriesWithCities;
     window.saveCountriesWithCities = saveCountriesWithCities;
     window.getCitiesByCountry = getCitiesByCountry;
     window.getDeliveryFee = getDeliveryFee;
+    window.getDefaultCountries = getDefaultCountries;
 }
+
+console.log('✅ countries-data.js loaded - Hybrid mode (API + localStorage fallback)');

@@ -1,660 +1,657 @@
-// Use the global API_URL or fallback
-const GENERAL_INFO_API = (typeof API_URL !== 'undefined')
-    ? API_URL
-    : 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+// ==================== ADMIN.JS - DATABASE CONNECTED ====================
+// All data now goes to Railway MySQL via admin-api.js
+// admin-api.js MUST be loaded BEFORE this file
 
-// Get data from localStorage
-function getProducts() {
-    return JSON.parse(localStorage.getItem('products')) || [];
-}
+// ==================== NAVIGATION ====================
 
-function saveProducts(products) {
-    localStorage.setItem('products', JSON.stringify(products));
-}
-
-function getOrders() {
-    return JSON.parse(localStorage.getItem('orders')) || [];
-}
-
-function saveOrders(orders) {
-    localStorage.setItem('orders', JSON.stringify(orders));
-}
-
-function getCategories() {
-    // Categories are now managed through admin panel
-    // Initialize empty array if none exists
-    const storedCategories = localStorage.getItem('categories');
-    if (!storedCategories) {
-        localStorage.setItem('categories', JSON.stringify([]));
-        return [];
-    }
-    return JSON.parse(storedCategories);
-}
-
-function saveCategories(categories) {
-    localStorage.setItem('categories', JSON.stringify(categories));
-}
-
-// Navigation
 function showSection(sectionId) {
     document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
-    document.getElementById(sectionId).classList.add('active');
-    document.querySelector(`[onclick="showSection('${sectionId}')"]`).classList.add('active');
+    const section = document.getElementById(sectionId);
+    if (section) section.classList.add('active');
+    
+    const link = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+    if (link) link.classList.add('active');
 
     const titles = {
         'dashboard': 'Dashboard',
         'products': 'Product Management',
         'categories': 'Category Management',
         'orders': 'Order Management',
+        'delivery': 'Delivery Management',
         'reports': 'Reports & Export'
     };
 
-    document.getElementById('pageTitle').textContent = titles[sectionId];
+    const titleEl = document.getElementById('pageTitle');
+    if (titleEl) titleEl.textContent = titles[sectionId] || sectionId;
 
     // Load section data
     if (sectionId === 'dashboard') loadDashboard();
     if (sectionId === 'products') loadProducts();
     if (sectionId === 'categories') loadCategories();
     if (sectionId === 'orders') loadOrders();
+    if (sectionId === 'delivery') loadDelivery();
     if (sectionId === 'reports') loadReports();
 }
 
-// Dashboard
-function loadDashboard() {
-    const products = getProducts();
-    const orders = getOrders();
-    const pendingOrders = orders.filter(o => o.status === 'pending');
-    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+// ==================== DASHBOARD ====================
 
-    document.getElementById('totalProducts').textContent = products.length;
-    document.getElementById('totalOrders').textContent = orders.length;
-    document.getElementById('pendingOrders').textContent = pendingOrders.length;
-    document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+async function loadDashboard() {
+    try {
+        showLoading('recentOrdersList', 'Loading dashboard...');
 
-    // Show recent orders
-    const recentOrders = orders.slice(-5).reverse();
-    const recentOrdersHTML = recentOrders.map(order => `
-        <div class="order-item">
-            <div>
-                <strong>${order.orderId}</strong><br>
-                ${order.customerName} - ${order.items.length} items
-            </div>
-            <div>
-                <strong>$${order.total.toFixed(2)}</strong><br>
-                <span class="status-badge status-${order.status}">${order.status}</span>
-            </div>
-        </div>
-    `).join('');
+        const [products, orders] = await Promise.all([
+            getProducts(),
+            getOrders()
+        ]);
 
-    document.getElementById('recentOrdersList').innerHTML = recentOrdersHTML || '<p>No orders yet</p>';
-}
+        const pendingOrders = orders.filter(o => (o.order_status || o.status) === 'pending');
+        const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
 
-// Products Management
+        setEl('totalProducts', products.length);
+        setEl('totalOrders', orders.length);
+        setEl('pendingOrders', pendingOrders.length);
+        setEl('totalRevenue', `$${totalRevenue.toFixed(2)}`);
 
-// Media Preview Functions
-function previewMainImage() {
-    const imageUrl = document.getElementById('productImage').value;
-    if (!imageUrl) {
-        alert('Please enter an image URL first');
-        return;
-    }
-
-    const previewContainer = document.getElementById('mediaPreview');
-    const previewContent = document.getElementById('previewContent');
-
-    previewContent.innerHTML = `
-        <div style="margin-bottom: 1rem;">
-            <strong>Main Product Image:</strong>
-        </div>
-        <img src="${imageUrl}" 
-             alt="Main Product" 
-             style="max-width: 400px; max-height: 400px; border: 2px solid var(--primary-black); display: block;"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <div style="display: none; padding: 2rem; background: #ffebee; border: 2px solid #c62828; color: #c62828;">
-            ⚠️ Failed to load image. Please check the URL.
-        </div>
-    `;
-
-    previewContainer.style.display = 'block';
-}
-
-function previewAdditionalImages() {
-    const imagesText = document.getElementById('productAdditionalImages').value;
-    if (!imagesText) {
-        alert('Please enter image URLs first');
-        return;
-    }
-
-    const imageUrls = imagesText.split(',').map(url => url.trim()).filter(url => url);
-    const previewContainer = document.getElementById('mediaPreview');
-    const previewContent = document.getElementById('previewContent');
-
-    let html = `
-        <div style="margin-bottom: 1rem;">
-            <strong>Additional Images (${imageUrls.length}):</strong>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-    `;
-
-    imageUrls.forEach((url, index) => {
-        html += `
-            <div style="border: 2px solid var(--primary-black); padding: 0.5rem; background: white;">
-                <div style="margin-bottom: 0.5rem; font-weight: 600;">Image ${index + 1}</div>
-                <img src="${url}" 
-                     alt="Additional ${index + 1}" 
-                     style="width: 100%; height: 200px; object-fit: cover;"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <div style="display: none; padding: 1rem; background: #ffebee; color: #c62828; text-align: center; font-size: 0.85rem;">
-                    ⚠️ Failed to load
+        const recentOrders = orders.slice(0, 5);
+        const recentHTML = recentOrders.map(order => {
+            const id = order.order_id || order.orderId;
+            const name = order.customer_name || order.customerName;
+            const status = order.order_status || order.status;
+            const items = order.items?.length || 0;
+            
+            return `
+                <div class="order-item">
+                    <div>
+                        <strong>${id}</strong><br>
+                        ${name} - ${items} items
+                    </div>
+                    <div>
+                        <strong>$${parseFloat(order.total || 0).toFixed(2)}</strong><br>
+                        <span class="status-badge status-${status}">${status}</span>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        }).join('');
 
-    html += '</div>';
-    previewContent.innerHTML = html;
-    previewContainer.style.display = 'block';
+        setEl('recentOrdersList', recentHTML || '<p>No orders yet</p>');
+
+    } catch (error) {
+        console.error('Dashboard error:', error);
+        setEl('recentOrdersList', '<p style="color:red">Error loading dashboard</p>');
+    }
 }
 
-function previewVideo() {
-    const videoUrl = document.getElementById('productVideo').value;
-    if (!videoUrl) {
-        alert('Please enter a video URL first');
-        return;
-    }
+// ==================== PRODUCTS ====================
 
-    const previewContainer = document.getElementById('mediaPreview');
-    const previewContent = document.getElementById('previewContent');
-
-    let videoHtml = '';
-
-    // Check if it's a YouTube URL
-    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-        let videoId = '';
-        if (videoUrl.includes('youtube.com/watch?v=')) {
-            videoId = videoUrl.split('v=')[1]?.split('&')[0];
-        } else if (videoUrl.includes('youtu.be/')) {
-            videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
-        }
-
-        if (videoId) {
-            videoHtml = `
-                <iframe width="560" height="315" 
-                        src="https://www.youtube.com/embed/${videoId}" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        style="border: 2px solid var(--primary-black);"></iframe>
-            `;
-        }
-    }
-    // Check if it's a Vimeo URL
-    else if (videoUrl.includes('vimeo.com')) {
-        const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
-        if (videoId) {
-            videoHtml = `
-                <iframe src="https://player.vimeo.com/video/${videoId}" 
-                        width="560" height="315" 
-                        frameborder="0" 
-                        allow="autoplay; fullscreen; picture-in-picture" 
-                        allowfullscreen
-                        style="border: 2px solid var(--primary-black);"></iframe>
-            `;
-        }
-    }
-    // Direct video file
-    else {
-        videoHtml = `
-            <video width="560" height="315" controls style="border: 2px solid var(--primary-black);">
-                <source src="${videoUrl}">
-                Your browser does not support the video tag.
-            </video>
-        `;
-    }
-
-    previewContent.innerHTML = `
-        <div style="margin-bottom: 1rem;">
-            <strong>Product Video:</strong>
-        </div>
-        ${videoHtml || '<div style="padding: 2rem; background: #ffebee; border: 2px solid #c62828; color: #c62828;">⚠️ Invalid video URL format</div>'}
-    `;
-
-    previewContainer.style.display = 'block';
-}
-
-function loadProducts() {
-    const products = getProducts();
+async function loadProducts() {
     const tbody = document.getElementById('productsTableBody');
+    if (!tbody) return;
 
-    if (products.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No products found</td></tr>';
-        return;
+    try {
+        showLoading('productsTableBody', 'Loading products...', 8);
+
+        const products = await getProducts();
+
+        console.log('📦 Products loaded:', products);
+
+        if (products.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No products found. Add your first product!</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = products.map(p => `
+            <tr>
+                <td>${p.id}</td>
+                <td><img src="${p.image || p.image_url || ''}" 
+                         class="product-img" 
+                         alt="${p.name_en}"
+                         onerror="this.src='https://placehold.co/60x60?text=No+Img'"
+                         style="width:60px;height:60px;object-fit:cover;"></td>
+                <td>${p.name_en}</td>
+                <td>${p.category || p.category_id || '-'}</td>
+                <td>$${parseFloat(p.newPrice || p.new_price || 0).toFixed(2)}</td>
+                <td>${p.stock || 0}</td>
+                <td>
+                    <span class="status-badge status-${(p.visible !== false && p.is_visible !== false) ? 'visible' : 'hidden'}">
+                        ${(p.visible !== false && p.is_visible !== false) ? 'Visible' : 'Hidden'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-info" onclick="editProduct(${p.id})">Edit</button>
+                    <button class="btn-danger" onclick="confirmDeleteProduct(${p.id})">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+
+        await loadCategoryOptions();
+
+    } catch (error) {
+        console.error('Load products error:', error);
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">
+            Error loading products: ${error.message}
+        </td></tr>`;
     }
-
-    tbody.innerHTML = products.map(product => `
-        <tr>
-            <td>${product.id}</td>
-            <td><img src="${product.image}" class="product-img" alt="${product.name_en}"></td>
-            <td>${product.name_en}</td>
-            <td>${product.category}</td>
-            <td>$${product.newPrice}</td>
-            <td>${product.stock}</td>
-            <td><span class="status-badge status-${product.visible !== false ? 'visible' : 'hidden'}">${product.visible !== false ? 'Visible' : 'Hidden'}</span></td>
-            <td>
-                <button class="btn-info" onclick="editProduct(${product.id})">Edit</button>
-                <button class="btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
-            </td>
-        </tr>
-    `).join('');
-
-    // Load categories into select
-    loadCategoryOptions();
 }
 
-function loadCategoryOptions() {
-    const categories = getCategories();
+async function loadCategoryOptions() {
     const select = document.getElementById('productCategory');
-    select.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.name_en}</option>`).join('');
+    if (!select) return;
+
+    try {
+        const categories = await getCategories();
+        select.innerHTML = '<option value="">-- Select Category --</option>' +
+            categories.map(cat => `<option value="${cat.id}">${cat.name_en}</option>`).join('');
+    } catch (e) {
+        console.error('Load category options error:', e);
+    }
 }
 
 function showAddProductForm() {
-    document.getElementById('productForm').style.display = 'block';
-    document.getElementById('formTitle').textContent = 'Add New Product';
-    document.getElementById('productFormElement').reset();
-    document.getElementById('productId').value = '';
+    const form = document.getElementById('productForm');
+    if (!form) return;
+    form.style.display = 'block';
+    setEl('formTitle', 'Add New Product');
+    document.getElementById('productFormElement')?.reset();
+    const idEl = document.getElementById('productId');
+    if (idEl) idEl.value = '';
     loadCategoryOptions();
+    form.scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideProductForm() {
-    document.getElementById('productForm').style.display = 'none';
+    const form = document.getElementById('productForm');
+    if (form) form.style.display = 'none';
+    const preview = document.getElementById('mediaPreview');
+    if (preview) preview.style.display = 'none';
 }
 
-function editProduct(id) {
-    const products = getProducts();
-    const product = products.find(p => p.id === id);
+async function editProduct(id) {
+    try {
+        const products = await getProducts();
+        const p = products.find(p => String(p.id) === String(id));
+        if (!p) { alert('Product not found'); return; }
 
-    if (!product) return;
+        const form = document.getElementById('productForm');
+        if (!form) return;
 
-    document.getElementById('productForm').style.display = 'block';
-    document.getElementById('formTitle').textContent = 'Edit Product';
-    document.getElementById('productId').value = product.id;
-    document.getElementById('productNameEn').value = product.name_en;
-    document.getElementById('productNameAr').value = product.name_ar;
-    document.getElementById('productDescEn').value = product.description_en;
-    document.getElementById('productDescAr').value = product.description_ar;
-    document.getElementById('productCategory').value = product.category;
-    document.getElementById('productStock').value = product.stock;
-    document.getElementById('productQuantityToSell').value = product.quantityToSell || product.stock;
-    document.getElementById('productCostPrice').value = product.costPrice || 0;
-    document.getElementById('productOldPrice').value = product.oldPrice;
-    document.getElementById('productNewPrice').value = product.newPrice;
-    document.getElementById('productImage').value = product.image;
-    document.getElementById('productAdditionalImages').value = product.additionalImages ? product.additionalImages.join(', ') : '';
-    document.getElementById('productVideo').value = product.videoUrl || '';
-    document.getElementById('productNew').checked = product.isNew || false;
-    document.getElementById('productTopSeller').checked = product.topSeller || false;
-    document.getElementById('productOffer').checked = product.isOffer || false;
-    document.getElementById('productVisible').checked = product.visible !== false;
+        form.style.display = 'block';
+        setEl('formTitle', 'Edit Product');
 
-    loadCategoryOptions();
+        setVal('productId', p.id);
+        setVal('productNameEn', p.name_en || '');
+        setVal('productNameAr', p.name_ar || '');
+        setVal('productDescEn', p.description_en || '');
+        setVal('productDescAr', p.description_ar || '');
+        setVal('productStock', p.stock || 0);
+        setVal('productQuantityToSell', p.quantityToSell || p.quantity_to_sell || p.stock || 0);
+        setVal('productCostPrice', p.costPrice || p.cost_price || 0);
+        setVal('productOldPrice', p.oldPrice || p.old_price || 0);
+        setVal('productNewPrice', p.newPrice || p.new_price || 0);
+        setVal('productImage', p.image || p.image_url || '');
+        setVal('productAdditionalImages',
+            Array.isArray(p.additionalImages) ? p.additionalImages.join(', ') :
+            (p.additional_images || ''));
+        setVal('productVideo', p.videoUrl || p.video_url || '');
 
-    // Scroll to form
-    document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        setChecked('productNew', p.isNew || p.is_new || false);
+        setChecked('productTopSeller', p.topSeller || p.is_top_seller || false);
+        setChecked('productOffer', p.isOffer || p.is_offer || false);
+        setChecked('productVisible', p.visible !== false && p.is_visible !== false);
+
+        await loadCategoryOptions();
+        setVal('productCategory', p.category || p.category_id || '');
+
+        form.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error('Edit product error:', error);
+        alert('Error loading product: ' + error.message);
+    }
 }
 
-function deleteProduct(id) {
+async function confirmDeleteProduct(id) {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
-    let products = getProducts();
-    products = products.filter(p => p.id !== id);
-    saveProducts(products);
-    loadProducts();
+    try {
+        const result = await deleteProduct(id);
+
+        if (result.error) {
+            alert('Error: ' + result.error);
+            return;
+        }
+
+        showToast('✅ Product deleted successfully!');
+        loadProducts();
+
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Error deleting product: ' + error.message);
+    }
 }
 
-document.getElementById('productFormElement').addEventListener('submit', function (e) {
+// Product Form Submit
+document.getElementById('productFormElement')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const productId = document.getElementById('productId').value;
-    let products = getProducts();
-
-    // Parse additional images
-    const additionalImagesText = document.getElementById('productAdditionalImages').value;
-    const additionalImages = additionalImagesText
-        ? additionalImagesText.split(',').map(url => url.trim()).filter(url => url)
-        : [];
-
-    const productData = {
-        id: productId ? parseInt(productId) : Date.now(),
-        name_en: document.getElementById('productNameEn').value,
-        name_ar: document.getElementById('productNameAr').value,
-        description_en: document.getElementById('productDescEn').value,
-        description_ar: document.getElementById('productDescAr').value,
-        category: document.getElementById('productCategory').value,
-        stock: parseInt(document.getElementById('productStock').value),
-        quantityToSell: parseInt(document.getElementById('productQuantityToSell').value),
-        costPrice: parseFloat(document.getElementById('productCostPrice').value || 0),
-        oldPrice: parseFloat(document.getElementById('productOldPrice').value),
-        newPrice: parseFloat(document.getElementById('productNewPrice').value),
-        image: document.getElementById('productImage').value,
-        additionalImages: additionalImages,
-        videoUrl: document.getElementById('productVideo').value,
-        isNew: document.getElementById('productNew').checked,
-        topSeller: document.getElementById('productTopSeller').checked,
-        isTopSeller: document.getElementById('productTopSeller').checked, // Add both for compatibility
-        isOffer: document.getElementById('productOffer').checked,
-        visible: document.getElementById('productVisible').checked
-    };
-
-    if (productId) {
-        // Update existing product
-        const index = products.findIndex(p => p.id === parseInt(productId));
-        products[index] = productData;
-    } else {
-        // Add new product
-        products.push(productData);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+        submitBtn.textContent = 'Saving...';
+        submitBtn.disabled = true;
     }
 
-    saveProducts(products);
-    hideProductForm();
-    loadProducts();
+    try {
+        const productId = document.getElementById('productId')?.value;
 
-    // Hide preview
-    document.getElementById('mediaPreview').style.display = 'none';
+        const additionalImagesText = document.getElementById('productAdditionalImages')?.value || '';
+        const additionalImages = additionalImagesText
+            .split(',').map(u => u.trim()).filter(u => u);
 
-    alert('Product saved successfully!');
+        const productData = {
+            name_en: document.getElementById('productNameEn')?.value || '',
+            name_ar: document.getElementById('productNameAr')?.value || '',
+            description_en: document.getElementById('productDescEn')?.value || '',
+            description_ar: document.getElementById('productDescAr')?.value || '',
+            category: document.getElementById('productCategory')?.value || '',
+            category_id: document.getElementById('productCategory')?.value || '',
+            stock: parseInt(document.getElementById('productStock')?.value || 0),
+            quantityToSell: parseInt(document.getElementById('productQuantityToSell')?.value || 0),
+            costPrice: parseFloat(document.getElementById('productCostPrice')?.value || 0),
+            oldPrice: parseFloat(document.getElementById('productOldPrice')?.value || 0),
+            newPrice: parseFloat(document.getElementById('productNewPrice')?.value || 0),
+            old_price: parseFloat(document.getElementById('productOldPrice')?.value || 0),
+            new_price: parseFloat(document.getElementById('productNewPrice')?.value || 0),
+            image: document.getElementById('productImage')?.value || '',
+            image_url: document.getElementById('productImage')?.value || '',
+            additionalImages: additionalImages,
+            videoUrl: document.getElementById('productVideo')?.value || '',
+            isNew: document.getElementById('productNew')?.checked || false,
+            is_new: document.getElementById('productNew')?.checked || false,
+            topSeller: document.getElementById('productTopSeller')?.checked || false,
+            is_top_seller: document.getElementById('productTopSeller')?.checked || false,
+            isOffer: document.getElementById('productOffer')?.checked || false,
+            is_offer: document.getElementById('productOffer')?.checked || false,
+            visible: document.getElementById('productVisible')?.checked !== false,
+            is_visible: document.getElementById('productVisible')?.checked !== false,
+        };
+
+        let result;
+        if (productId) {
+            result = await updateProduct(productId, productData);
+        } else {
+            result = await createProduct(productData);
+        }
+
+        if (result.error) {
+            alert('❌ Error: ' + result.error);
+            return;
+        }
+
+        showToast('✅ Product saved successfully!');
+        hideProductForm();
+        loadProducts();
+
+    } catch (error) {
+        console.error('Save product error:', error);
+        alert('❌ Error saving product: ' + error.message);
+    } finally {
+        if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    }
 });
 
-// Categories Management
-function loadCategories() {
-    const categories = getCategories();
-    const tbody = document.getElementById('categoriesTableBody');
+// ==================== MEDIA PREVIEW ====================
 
-    tbody.innerHTML = categories.map(cat => `
-        <tr>
-            <td>${cat.id}</td>
-            <td>${cat.name_en}</td>
-            <td>${cat.name_ar}</td>
-            <td>
-                <button class="btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
-            </td>
-        </tr>
-    `).join('');
+function previewMainImage() {
+    const url = document.getElementById('productImage')?.value;
+    if (!url) { alert('Enter an image URL first'); return; }
+    showPreview(`<img src="${url}" style="max-width:400px;max-height:400px;border:2px solid #000;"
+                      onerror="this.nextElementSibling.style.display='block';this.style.display='none';">
+                 <div style="display:none;padding:1rem;background:#ffebee;color:#c62828;">⚠️ Failed to load image</div>`);
+}
+
+function previewAdditionalImages() {
+    const text = document.getElementById('productAdditionalImages')?.value || '';
+    const urls = text.split(',').map(u => u.trim()).filter(u => u);
+    if (!urls.length) { alert('Enter image URLs first'); return; }
+
+    const html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
+        ${urls.map((url, i) => `
+            <div style="border:2px solid #000;padding:0.5rem;">
+                <div style="font-weight:600;margin-bottom:0.5rem;">Image ${i+1}</div>
+                <img src="${url}" style="width:100%;height:160px;object-fit:cover;"
+                     onerror="this.style.display='none'">
+            </div>`).join('')}
+    </div>`;
+    showPreview(html);
+}
+
+function previewVideo() {
+    const url = document.getElementById('productVideo')?.value;
+    if (!url) { alert('Enter a video URL first'); return; }
+
+    let html = '';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const id = url.includes('watch?v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
+        html = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;
+    } else {
+        html = `<video width="560" height="315" controls><source src="${url}">Video not supported.</video>`;
+    }
+    showPreview(html);
+}
+
+function showPreview(content) {
+    const container = document.getElementById('mediaPreview');
+    const inner = document.getElementById('previewContent');
+    if (container && inner) {
+        inner.innerHTML = content;
+        container.style.display = 'block';
+    }
+}
+
+// ==================== CATEGORIES ====================
+
+async function loadCategories() {
+    const tbody = document.getElementById('categoriesTableBody');
+    if (!tbody) return;
+
+    try {
+        showLoading('categoriesTableBody', 'Loading categories...', 4);
+
+        const categories = await getCategories();
+
+        console.log('📦 Categories loaded:', categories);
+
+        if (categories.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;">No categories yet. Add your first category!</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = categories.map(cat => `
+            <tr>
+                <td>${cat.id}</td>
+                <td>${cat.name_en}</td>
+                <td>${cat.name_ar}</td>
+                <td>
+                    <button class="btn-danger" onclick="confirmDeleteCategory('${cat.id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Load categories error:', error);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
+    }
 }
 
 function showAddCategoryForm() {
-    document.getElementById('categoryForm').style.display = 'block';
+    const form = document.getElementById('categoryForm');
+    if (form) form.style.display = 'block';
 }
 
 function hideCategoryForm() {
-    document.getElementById('categoryForm').style.display = 'none';
-    document.getElementById('categoryFormElement').reset();
+    const form = document.getElementById('categoryForm');
+    if (form) form.style.display = 'none';
+    document.getElementById('categoryFormElement')?.reset();
 }
 
-function deleteCategory(id) {
+async function confirmDeleteCategory(id) {
     if (!confirm('Are you sure? Products in this category may be affected.')) return;
 
-    let categories = getCategories();
-    categories = categories.filter(c => c.id !== id);
-    saveCategories(categories);
-    loadCategories();
+    try {
+        const result = await deleteCategory(id);
+        if (result.error) { alert('Error: ' + result.error); return; }
+        showToast('✅ Category deleted!');
+        loadCategories();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
 }
 
-document.getElementById('categoryFormElement').addEventListener('submit', function (e) {
+document.getElementById('categoryFormElement')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const categories = getCategories();
-    const newCategory = {
-        id: document.getElementById('categoryId').value,
-        name_en: document.getElementById('categoryNameEn').value,
-        name_ar: document.getElementById('categoryNameAr').value
-    };
+    try {
+        const categoryData = {
+            id: document.getElementById('categoryId')?.value,
+            name_en: document.getElementById('categoryNameEn')?.value,
+            name_ar: document.getElementById('categoryNameAr')?.value
+        };
 
-    if (categories.find(c => c.id === newCategory.id)) {
-        alert('Category ID already exists!');
-        return;
+        const result = await createCategory(categoryData);
+
+        if (result.error) { alert('❌ Error: ' + result.error); return; }
+
+        showToast('✅ Category added!');
+        hideCategoryForm();
+        loadCategories();
+
+    } catch (error) {
+        alert('❌ Error: ' + error.message);
     }
-
-    categories.push(newCategory);
-    saveCategories(categories);
-    hideCategoryForm();
-    loadCategories();
-    alert('Category added successfully!');
 });
 
-// Orders Management
-function loadOrders() {
-    const orders = getOrders();
+// ==================== ORDERS ====================
+
+async function loadOrders() {
     const tbody = document.getElementById('ordersTableBody');
+    if (!tbody) return;
 
-    if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No orders found</td></tr>';
-        return;
+    try {
+        showLoading('ordersTableBody', 'Loading orders...', 8);
+
+        const orders = await getOrders();
+
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No orders yet</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = orders.map(order => {
+            const id = order.order_id || order.orderId;
+            const name = order.customer_name || order.customerName;
+            const phone = order.customer_phone || order.customerPhone;
+            const status = order.order_status || order.status;
+            const total = parseFloat(order.total || 0);
+            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
+
+            return `
+            <tr>
+                <td>${id}</td>
+                <td>${name}</td>
+                <td>${phone}</td>
+                <td>${order.items?.length || '?'} items</td>
+                <td>$${total.toFixed(2)}</td>
+                <td>${date}</td>
+                <td><span class="status-badge status-${status}">${status}</span></td>
+                <td>
+                    <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
+                    <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
+                        <option value="">Change Status</option>
+                        <option value="pending" ${status==='pending'?'selected':''}>Pending</option>
+                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
+                        <option value="completed" ${status==='completed'?'selected':''}>Completed</option>
+                        <option value="cancelled" ${status==='cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                </td>
+            </tr>`;
+        }).join('');
+
+    } catch (error) {
+        console.error('Load orders error:', error);
+        tbody.innerHTML = `<tr><td colspan="8" style="color:red;text-align:center;">Error: ${error.message}</td></tr>`;
     }
-
-    tbody.innerHTML = orders.map(order => `
-        <tr>
-            <td>${order.orderId}</td>
-            <td>${order.customerName}</td>
-            <td>${order.customerPhone}</td>
-            <td>${order.items.length} items</td>
-            <td>$${order.total.toFixed(2)}</td>
-            <td>${new Date(order.orderDate).toLocaleDateString()}</td>
-            <td><span class="status-badge status-${order.status}">${order.status}</span></td>
-            <td>
-                <button class="btn-info" onclick="viewOrderDetails('${order.orderId}')">View</button>
-                <select onchange="updateOrderStatus('${order.orderId}', this.value)">
-                    <option value="">Change Status</option>
-                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                    <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
-            </td>
-        </tr>
-    `).join('');
 }
 
-function updateOrderStatus(orderId, newStatus) {
+async function changeOrderStatus(orderId, newStatus) {
     if (!newStatus) return;
 
-    const orders = getOrders();
-    const order = orders.find(o => o.orderId === orderId);
-    if (order) {
-        order.status = newStatus;
-        saveOrders(orders);
+    try {
+        const result = await updateOrderStatus(orderId, newStatus);
+        if (result.error) { alert('Error: ' + result.error); return; }
+        showToast('✅ Order status updated!');
         loadOrders();
         loadDashboard();
-        alert('Order status updated!');
+    } catch (error) {
+        alert('Error: ' + error.message);
     }
 }
 
-function viewOrderDetails(orderId) {
-    const orders = getOrders();
-    const order = orders.find(o => o.orderId === orderId);
+async function viewOrderDetails(orderId) {
+    try {
+        const orders = await getOrders();
+        const order = orders.find(o => (o.order_id || o.orderId) == orderId);
+        if (!order) { alert('Order not found'); return; }
 
-    if (!order) return;
+        const status = order.order_status || order.status;
+        const name = order.customer_name || order.customerName;
+        const phone = order.customer_phone || order.customerPhone;
+        const address = order.complete_address || order.deliveryAddress || '';
+        const total = parseFloat(order.total || 0);
 
-    // Format address
-    let addressHtml = '';
-    if (order.deliveryCity) {
-        addressHtml = `
-            <strong>City:</strong> ${order.deliveryCity}<br>
-            <strong>Street:</strong> ${order.deliveryStreet || 'N/A'}<br>
-            <strong>Building:</strong> ${order.deliveryBuilding || 'N/A'}<br>
-            ${order.deliveryFloor ? `<strong>Floor/Apt:</strong> ${order.deliveryFloor}<br>` : ''}
+        document.getElementById('orderDetailsContent').innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <strong>Order ID:</strong> ${order.order_id || order.orderId}<br>
+                <strong>Date:</strong> ${new Date(order.created_at || order.orderDate).toLocaleString()}<br>
+                <strong>Status:</strong> <span class="status-badge status-${status}">${status}</span>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <h4>Customer</h4>
+                <strong>Name:</strong> ${name}<br>
+                <strong>Phone:</strong> ${phone}<br>
+                <strong>Address:</strong> ${address}<br>
+                ${order.order_notes || order.orderNotes ? `<strong>Notes:</strong> ${order.order_notes || order.orderNotes}<br>` : ''}
+                <strong>Payment:</strong> ${order.payment_method || order.paymentMethod || 'N/A'}
+            </div>
+            <div style="margin-top:1rem;text-align:right;">
+                <strong style="font-size:1.5rem;">Total: $${total.toFixed(2)}</strong>
+            </div>
         `;
-    } else {
-        addressHtml = `<strong>Address:</strong> ${order.deliveryAddress}<br>`;
+
+        document.getElementById('orderModal')?.classList.add('show');
+
+    } catch (error) {
+        alert('Error: ' + error.message);
     }
-
-    // Format currency
-    const currencyInfo = order.currency ? `
-        <strong>Currency:</strong> ${order.currency} 
-        ${order.currencyRate ? `(Rate: ${order.currencyRate})` : ''}<br>
-    ` : '';
-
-    const detailsHTML = `
-        <div style="margin-bottom: 1rem;">
-            <strong>Order ID:</strong> ${order.orderId}<br>
-            <strong>Date:</strong> ${new Date(order.orderDate).toLocaleString()}<br>
-            <strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status}</span><br>
-            ${currencyInfo}
-        </div>
-        <div style="margin-bottom: 1rem;">
-            <h4>Customer Information</h4>
-            <strong>Name:</strong> ${order.customerName}<br>
-            <strong>Phone:</strong> ${order.customerPhone}<br>
-            ${addressHtml}
-            ${order.orderNotes ? `<strong>Notes:</strong> ${order.orderNotes}<br>` : ''}
-            <strong>Payment:</strong> ${order.paymentMethod}
-        </div>
-        <div>
-            <h4>Order Items</h4>
-            <table class="data-table" style="margin-top: 1rem;">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${order.items.map(item => `
-                        <tr>
-                            <td>${item.productName}</td>
-                            <td>${item.quantity}</td>
-                            <td>$${item.price.toFixed(2)}</td>
-                            <td>$${item.total.toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-        <div style="margin-top: 1rem; text-align: right;">
-            <strong style="font-size: 1.5rem;">Total: $${order.total.toFixed(2)}</strong>
-            ${order.currency && order.currency !== 'JOD' ? `<br><span style="font-size: 1rem; color: #666;">(Original: ${order.total.toFixed(2)} ${order.currency})</span>` : ''}
-        </div>
-    `;
-
-    document.getElementById('orderDetailsContent').innerHTML = detailsHTML;
-    document.getElementById('orderModal').classList.add('show');
 }
 
 function closeOrderModal() {
-    document.getElementById('orderModal').classList.remove('show');
+    document.getElementById('orderModal')?.classList.remove('show');
 }
 
-// Reports
-function loadReports() {
-    const orders = getOrders();
-    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
-    const completedOrders = orders.filter(o => o.status === 'completed');
-    const completedRevenue = completedOrders.reduce((sum, o) => sum + o.total, 0);
+// ==================== REPORTS ====================
 
-    document.getElementById('reportStats').innerHTML = `
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Orders</h3>
-                <p class="stat-number">${orders.length}</p>
-            </div>
-            <div class="stat-card">
-                <h3>Completed Orders</h3>
-                <p class="stat-number">${completedOrders.length}</p>
-            </div>
-            <div class="stat-card">
-                <h3>Total Revenue</h3>
-                <p class="stat-number">$${totalRevenue.toFixed(2)}</p>
-            </div>
-            <div class="stat-card">
-                <h3>Completed Revenue</h3>
-                <p class="stat-number">$${completedRevenue.toFixed(2)}</p>
-            </div>
-        </div>
-    `;
-}
-
-function exportOrders() {
-    const fromDate = document.getElementById('reportFromDate').value;
-    const toDate = document.getElementById('reportToDate').value;
-
-    let orders = getOrders();
-
-    // Filter by date if provided
-    if (fromDate) {
-        orders = orders.filter(o => new Date(o.orderDate) >= new Date(fromDate));
-    }
-    if (toDate) {
-        orders = orders.filter(o => new Date(o.orderDate) <= new Date(toDate));
-    }
-
-    // Create CSV
-    let csv = 'Order ID,Customer Name,Phone,Address,Items Count,Total,Status,Date\n';
-
-    orders.forEach(order => {
-        csv += `"${order.orderId}","${order.customerName}","${order.customerPhone}","${order.deliveryAddress}",${order.items.length},${order.total},"${order.status}","${new Date(order.orderDate).toLocaleString()}"\n`;
-    });
-
-    // Download CSV
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `orders_${Date.now()}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-// Load general info
-async function loadGeneralInfo() {
+async function loadReports() {
     try {
-        const response = await fetch(`${API_URL}/general-info`);
-        const data = await response.json();
+        const orders = await getOrders();
+        const total = orders.reduce((s, o) => s + parseFloat(o.total || 0), 0);
+        const completed = orders.filter(o => (o.order_status || o.status) === 'completed');
+        const completedRevenue = completed.reduce((s, o) => s + parseFloat(o.total || 0), 0);
 
-        if (data.success) {
-            document.getElementById('brandName').value = data.info.brand_name;
-            document.getElementById('phoneNumber').value = data.info.phone_number;
-            document.getElementById('emailAddress').value = data.info.email_address;
-        }
+        setEl('reportStats', `
+            <div class="stats-grid">
+                <div class="stat-card"><h3>Total Orders</h3><p class="stat-number">${orders.length}</p></div>
+                <div class="stat-card"><h3>Completed</h3><p class="stat-number">${completed.length}</p></div>
+                <div class="stat-card"><h3>Total Revenue</h3><p class="stat-number">$${total.toFixed(2)}</p></div>
+                <div class="stat-card"><h3>Completed Revenue</h3><p class="stat-number">$${completedRevenue.toFixed(2)}</p></div>
+            </div>
+        `);
     } catch (error) {
-        console.error('Error loading general info:', error);
+        console.error('Reports error:', error);
     }
 }
 
-// Save general info
-document.getElementById('generalInfoForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const info = {
-        brand_name: document.getElementById('brandName').value,
-        phone_number: document.getElementById('phoneNumber').value,
-        email_address: document.getElementById('emailAddress').value
-    };
-
+async function exportOrders() {
     try {
-        const response = await fetch(`${API_URL}/general-info`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(info)
+        const fromDate = document.getElementById('reportFromDate')?.value;
+        const toDate = document.getElementById('reportToDate')?.value;
+
+        let orders = await getOrders();
+
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
+        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
+
+        let csv = 'Order ID,Customer,Phone,Address,Items,Total,Status,Date\n';
+        orders.forEach(o => {
+            const id = o.order_id || o.orderId;
+            const name = o.customer_name || o.customerName;
+            const phone = o.customer_phone || o.customerPhone;
+            const addr = o.complete_address || o.deliveryAddress || '';
+            const status = o.order_status || o.status;
+            const date = new Date(o.created_at || o.orderDate).toLocaleString();
+            csv += `"${id}","${name}","${phone}","${addr}",${o.items?.length||0},${o.total},"${status}","${date}"\n`;
         });
 
-        const data = await response.json();
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `orders_${Date.now()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
 
-        if (data.success) {
-            alert('✅ General info updated successfully!');
-        } else {
-            alert('❌ Failed to update: ' + data.error);
-        }
+        showToast('✅ Orders exported!');
     } catch (error) {
-        console.error('Error updating general info:', error);
-        alert('❌ Error updating general info');
+        alert('Export error: ' + error.message);
     }
-});
+}
 
-// Load on page load
-loadGeneralInfo();
-// Initialize on page load
+// ==================== DELIVERY ====================
+
+async function loadDelivery() {
+    if (typeof loadDeliverySection === 'function') {
+        loadDeliverySection();
+    }
+}
+
+// ==================== HELPER FUNCTIONS ====================
+
+function setEl(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+}
+
+function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+}
+
+function setChecked(id, checked) {
+    const el = document.getElementById(id);
+    if (el) el.checked = checked;
+}
+
+function showLoading(id, msg = 'Loading...', cols = 1) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isTable = el.tagName === 'TBODY';
+    el.innerHTML = isTable
+        ? `<tr><td colspan="${cols}" style="text-align:center;padding:2rem;">${msg}</td></tr>`
+        : `<div style="text-align:center;padding:2rem;color:#888;">${msg}</div>`;
+}
+
+function showToast(msg, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position:fixed;bottom:30px;right:30px;
+        background:#1a8a4a;color:white;
+        padding:14px 24px;border-radius:8px;
+        font-weight:600;font-size:0.95rem;
+        z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.2);
+        transition:opacity 0.3s;
+    `;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// ==================== INIT ====================
+
 loadDashboard();

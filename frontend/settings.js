@@ -1,108 +1,114 @@
-/**
- * General Settings Management
- * Brand name, contact info, copyright, etc.
- */
+// ==================== GENERAL SETTINGS MANAGEMENT ====================
+// Hybrid system: Uses database via general-info.js, localStorage as fallback
 
-// Get general settings from localStorage
-function getGeneralSettings() {
+// ==================== GET GENERAL SETTINGS ====================
+
+async function getGeneralSettings() {
+    // Try to get from API first (via general-info.js or api.js)
+    if (typeof window.loadGeneralInfo === 'function') {
+        try {
+            const info = await window.loadGeneralInfo();
+            if (info) {
+                return {
+                    brandName: info.brand_name || 'PRIMEJO',
+                    brandNameAr: info.brand_name_ar || 'بريميجو',
+                    contactPhone: info.phone_number || '+962777777777',
+                    contactEmail: info.email_address || 'Info@primejo.store',
+                    copyrightYear: new Date().getFullYear().toString(),
+                    location: 'Amman, Jordan',
+                    locationAr: 'عمان، الأردن',
+                    minimumOrderAmount: info.minimum_order_amount || 25
+                };
+            }
+        } catch (error) {
+            console.warn('API unavailable, using defaults:', error);
+        }
+    }
+
+    // Fallback to localStorage
     const settingsData = localStorage.getItem('generalSettings');
     if (settingsData) {
         return JSON.parse(settingsData);
     }
-    
-    // Default settings
-    const defaultSettings = {
+
+    // Ultimate fallback: Default settings
+    return {
         brandName: 'PRIMEJO',
         brandNameAr: 'بريميجو',
-        contactPhone: '+962 79 123 4567',
-        contactEmail: 'support@primejo.com',
-        copyrightYear: '2024',
+        contactPhone: '+962777777777',
+        contactEmail: 'Info@primejo.store',
+        copyrightYear: new Date().getFullYear().toString(),
         location: 'Amman, Jordan',
         locationAr: 'عمان، الأردن',
-        tagline: 'Premium Automotive Accessories',
-        taglineAr: 'إكسسوارات سيارات مميزة',
-        description: 'Your trusted partner for premium automotive accessories. We deliver quality, style, and performance.',
-        descriptionAr: 'شريكك الموثوق للإكسسوارات السيارات المميزة. نقدم الجودة والأناقة والأداء.'
+        minimumOrderAmount: 25
     };
-    
-    localStorage.setItem('generalSettings', JSON.stringify(defaultSettings));
-    return defaultSettings;
 }
 
-// Save general settings
+// ==================== SAVE GENERAL SETTINGS ====================
+
 function saveGeneralSettings(settings) {
     localStorage.setItem('generalSettings', JSON.stringify(settings));
     return true;
 }
 
-// Apply settings to page - RUNS ON EVERY PAGE
-function applyGeneralSettings() {
-    const settings = getGeneralSettings();
-    
-    // Update brand name
-    const brandElements = document.querySelectorAll('.topbaic-logo, .brand-name');
-    brandElements.forEach(el => {
-        if (el.hasAttribute('data-en')) {
-            el.setAttribute('data-en', settings.brandName);
-            el.setAttribute('data-ar', settings.brandNameAr);
-            if (currentLanguage === 'ar') {
-                el.textContent = settings.brandNameAr;
+// ==================== APPLY SETTINGS TO PAGE ====================
+
+async function applyGeneralSettings() {
+    try {
+        const settings = await getGeneralSettings();
+        const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'en';
+
+        // Update brand name
+        const brandElements = document.querySelectorAll('.topbaic-logo, .brand-name, [data-brand]');
+        brandElements.forEach(el => {
+            if (el.hasAttribute('data-en')) {
+                el.setAttribute('data-en', settings.brandName);
+                el.setAttribute('data-ar', settings.brandNameAr || settings.brandName);
+                el.textContent = currentLang === 'ar' ? (settings.brandNameAr || settings.brandName) : settings.brandName;
             } else {
                 el.textContent = settings.brandName;
             }
-        } else {
-            el.textContent = settings.brandName;
-        }
-    });
-    
-    // Update contact email
-    document.querySelectorAll('[href^="mailto:"]').forEach(el => {
-        if (el.textContent.includes('@')) {
-            el.href = `mailto:${settings.contactEmail}`;
-            el.textContent = settings.contactEmail;
-        }
-    });
-    
-    // Update phone numbers
-    document.querySelectorAll('a[href^="tel:"], span').forEach(el => {
-        if (el.textContent.includes('+962') || el.textContent.includes('📞')) {
-            const text = el.textContent.replace(/\+\d+\s*\d+\s*\d+\s*\d+/, settings.contactPhone);
-            el.textContent = text;
-            if (el.tagName === 'A') {
-                el.href = `tel:${settings.contactPhone.replace(/\s/g, '')}`;
+        });
+
+        // Update copyright year
+        document.querySelectorAll('.footer-bottom p, .copyright').forEach(el => {
+            if (el.textContent.includes('©') || el.textContent.includes('2024') || el.textContent.includes('2025') || el.textContent.includes('2026')) {
+                el.textContent = `© ${settings.copyrightYear} ${settings.brandName}. All rights reserved.`;
             }
-        }
-    });
-    
-    // Update copyright year
-    document.querySelectorAll('.footer-bottom p, .copyright').forEach(el => {
-        el.textContent = el.textContent.replace(/\d{4}/, settings.copyrightYear);
-    });
-    
-    // Update location
-    document.querySelectorAll('.location, [data-en*="Amman"]').forEach(el => {
-        if (el.hasAttribute('data-en')) {
-            el.setAttribute('data-en', settings.location);
-            el.setAttribute('data-ar', settings.locationAr);
-            if (currentLanguage === 'ar') {
-                el.textContent = settings.locationAr;
+        });
+
+        // Update location
+        document.querySelectorAll('.location').forEach(el => {
+            if (el.hasAttribute('data-en')) {
+                el.setAttribute('data-en', settings.location);
+                el.setAttribute('data-ar', settings.locationAr);
+                el.textContent = currentLang === 'ar' ? settings.locationAr : settings.location;
             } else {
                 el.textContent = settings.location;
             }
-        }
-    });
+        });
+
+        console.log('✅ General settings applied');
+
+    } catch (error) {
+        console.error('Error applying general settings:', error);
+    }
 }
 
-// Auto-apply settings when page loads
+// ==================== AUTO-APPLY ON PAGE LOAD ====================
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyGeneralSettings);
 } else {
     applyGeneralSettings();
 }
 
-// Export for use in other scripts
+// ==================== EXPORT FUNCTIONS ====================
+
 if (typeof window !== 'undefined') {
     window.getGeneralSettings = getGeneralSettings;
     window.saveGeneralSettings = saveGeneralSettings;
     window.applyGeneralSettings = applyGeneralSettings;
 }
+
+console.log('✅ settings.js loaded - Using database via general-info.js');

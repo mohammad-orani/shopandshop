@@ -1,71 +1,74 @@
-// ========================================
-// DELIVERY FEES FUNCTIONALITY
-// ========================================
+// ==================== CHECKOUT.JS - DELIVERY & ORDER PROCESSING ====================
+// Uses api.js for database calls
 
 let selectedDeliveryFee = 0;
 let selectedActualFee = 0;
-const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
-// Get delivery data from localStorage (NEW SYSTEM)
-function getDeliveryCountries() {
-    return getCountriesWithCities(); // Use new function from countries-data.js
-}
+// ==================== DELIVERY COUNTRIES ====================
 
-// Load countries on page load
-function loadDeliveryCountries() {
-    const countries = getCountriesWithCities();
+async function loadDeliveryCountries() {
     const countrySelect = document.getElementById('deliveryCountry');
-
     if (!countrySelect) return;
 
-    if (countries.length === 0) {
-        countrySelect.innerHTML = '<option value="">No delivery available yet</option>';
-        return;
-    }
+    try {
+        const countries = await getDeliveryCountries();
 
-    // Find Jordan's ID (common IDs: 'JO', 'jordan', or number)
-    const jordanCountry = countries.find(c =>
-        c.id === 'JO' ||
-        c.id === 'jordan' ||
-        c.name_en.toLowerCase() === 'jordan' ||
-        c.name_ar === 'الأردن'
-    );
-
-    const jordanId = jordanCountry ? jordanCountry.id : null;
-
-    countrySelect.innerHTML = '<option value="" data-en="-- Select Country --" data-ar="-- اختر الدولة --">-- Select Country --</option>' +
-        countries.map(country => `
-            <option value="${country.id}" 
-                    data-name-en="${country.name_en}" 
-                    data-name-ar="${country.name_ar}"
-                    data-prefix="${country.phonePrefix}"
-                    ${country.id === jordanId ? 'selected' : ''}>
-                ${country.name_en} / ${country.name_ar}
-            </option>
-        `).join('');
-
-    // If Jordan is found, trigger city load
-    if (jordanId) {
-        loadDeliveryCities(jordanId);
-
-        // Update phone prefix if function exists
-        if (typeof updatePhonePrefix === 'function') {
-            const prefix = jordanCountry.phonePrefix || '+962';
-            updatePhonePrefix(prefix);
+        if (countries.length === 0) {
+            countrySelect.innerHTML = '<option value="">No delivery available yet</option>';
+            return;
         }
+
+        // Find Jordan (default)
+        const jordanCountry = countries.find(c =>
+            c.id === 'JO' ||
+            c.id === 'jordan' ||
+            (c.name_en && c.name_en.toLowerCase() === 'jordan') ||
+            c.name_ar === 'الأردن'
+        );
+
+        const jordanId = jordanCountry ? jordanCountry.id : null;
+
+        countrySelect.innerHTML = '<option value="" data-en="-- Select Country --" data-ar="-- اختر الدولة --">-- Select Country --</option>' +
+            countries.map(country => `
+                <option value="${country.id}" 
+                        data-name-en="${country.name_en}" 
+                        data-name-ar="${country.name_ar}"
+                        data-prefix="${country.phone_prefix || country.phonePrefix || ''}"
+                        ${country.id === jordanId ? 'selected' : ''}>
+                    ${country.name_en} / ${country.name_ar}
+                </option>
+            `).join('');
+
+        // Auto-load Jordan's cities
+        if (jordanId) {
+            await loadDeliveryCities(jordanId);
+
+            // Update phone prefix
+            const prefix = jordanCountry.phone_prefix || jordanCountry.phonePrefix || '+962';
+            if (typeof updatePhonePrefix === 'function') {
+                updatePhonePrefix(prefix);
+            } else {
+                const prefixEl = document.getElementById('phonePrefix');
+                if (prefixEl) prefixEl.value = prefix;
+            }
+        }
+
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        countrySelect.innerHTML = '<option value="">Error loading countries</option>';
     }
 }
 
-// Load cities when country is selected
+// ==================== DELIVERY CITIES ====================
+
 async function loadDeliveryCities(countryId) {
     const citySelect = document.getElementById('deliveryCity');
     if (!citySelect) return;
 
     try {
-        const response = await fetch(`${API_URL}/delivery/cities/${countryId}`);
-        const data = await response.json();
+        const cities = await getDeliveryCities(countryId);
 
-        if (!data.cities || data.cities.length === 0) {
+        if (!cities || cities.length === 0) {
             citySelect.innerHTML = '<option value="">No cities available</option>';
             citySelect.disabled = true;
             resetDeliveryFee();
@@ -73,19 +76,15 @@ async function loadDeliveryCities(countryId) {
         }
 
         citySelect.disabled = false;
-        citySelect.innerHTML = '<option value="">-- Select City --</option>' +
-            data.cities.map(city => `
+        citySelect.innerHTML = '<option value="" data-en="-- Select City --" data-ar="-- اختر المدينة --">-- Select City --</option>' +
+            cities.map(city => `
                 <option value="${city.id}" 
                         data-name-en="${city.name_en}"
                         data-name-ar="${city.name_ar}"
-                        data-delivery-fee="${city.delivery_fee || 0}"
-                        data-actual-fee="${city.delivery_fee || 0}">
+                        data-delivery-fee="${city.delivery_fee || 0}">
                     ${city.name_en} / ${city.name_ar} - ${formatPrice(city.delivery_fee || 0)}
                 </option>
             `).join('');
-
-        // Trigger delivery fee update
-        citySelect.addEventListener('change', updateDeliveryFee);
 
     } catch (error) {
         console.error('Error loading cities:', error);
@@ -94,7 +93,8 @@ async function loadDeliveryCities(countryId) {
     }
 }
 
-// Update delivery fee when city is selected
+// ==================== UPDATE DELIVERY FEE ====================
+
 async function updateDeliveryFee() {
     const citySelect = document.getElementById('deliveryCity');
     const selectedOption = citySelect.options[citySelect.selectedIndex];
@@ -104,12 +104,13 @@ async function updateDeliveryFee() {
         return;
     }
 
-    // Get delivery fee from database (stored in data attribute)
-    const cityDeliveryFee = parseFloat(selectedOption.dataset.deliveryFee || selectedOption.dataset.actualFee) || 0;
+    // Get delivery fee from city
+    const cityDeliveryFee = parseFloat(selectedOption.dataset.deliveryFee) || 0;
 
     // Get current cart total
     const cart = getCart();
-    const products = getProducts();
+    const products = await getProducts(); // ✅ Now async!
+    
     const cartTotal = cart.reduce((total, item) => {
         const product = products.find(p => String(p.id) === String(item.productId));
         if (product) {
@@ -119,31 +120,25 @@ async function updateDeliveryFee() {
         return total;
     }, 0);
 
-    // Get minimum order amount from general info (uses cache if available)
-    let minimumOrderAmount = 15; // Default fallback
+    // Get minimum order amount
+    let minimumOrderAmount = 15;
     try {
-        // Use the global loadGeneralInfo function if available
         if (typeof window.loadGeneralInfo === 'function') {
             const info = await window.loadGeneralInfo();
             minimumOrderAmount = parseFloat(info.minimum_order_amount) || 15;
-        } else {
-            // Fallback to direct API call
-            const response = await fetch(`${API_URL}/general-info`);
-            const data = await response.json();
-            if (data.success && data.info) {
-                minimumOrderAmount = parseFloat(data.info.minimum_order_amount) || 15;
-            }
+        } else if (typeof API !== 'undefined' && typeof API.getGeneralInfo === 'function') {
+            const info = await API.getGeneralInfo();
+            minimumOrderAmount = parseFloat(info.minimum_order_amount) || 15;
         }
     } catch (error) {
         console.error('Error fetching minimum order amount:', error);
-        minimumOrderAmount = 15; // Use default on error
     }
 
-    // Check if cart total meets minimum for free delivery
+    // Check if free delivery applies
     if (cartTotal >= minimumOrderAmount && minimumOrderAmount > 0) {
-        // FREE DELIVERY - order meets minimum
+        // FREE DELIVERY
         selectedDeliveryFee = 0;
-        selectedActualFee = cityDeliveryFee; // Keep actual cost for internal tracking
+        selectedActualFee = cityDeliveryFee;
 
         const freeText = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
             ? 'مجاناً ✓'
@@ -160,7 +155,7 @@ async function updateDeliveryFee() {
             </span>
         `;
     } else {
-        // PAID DELIVERY - order below minimum
+        // PAID DELIVERY
         selectedDeliveryFee = cityDeliveryFee;
         selectedActualFee = cityDeliveryFee;
 
@@ -188,7 +183,7 @@ function resetDeliveryFee() {
 
     const displayEl = document.getElementById('deliveryFeeDisplay');
     if (displayEl) {
-        displayEl.innerHTML = currentLanguage === 'ar'
+        displayEl.innerHTML = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
             ? '<span style="color:#999;">اختر المدينة أولاً</span>'
             : '<span style="color:#999;">Select city first</span>';
     }
@@ -196,35 +191,26 @@ function resetDeliveryFee() {
     updateOrderTotal();
 }
 
-function resetDeliveryFee() {
-    selectedDeliveryFee = 0;
-    selectedActualFee = 0;
+// ==================== ORDER TOTAL ====================
 
-    const displayEl = document.getElementById('deliveryFeeDisplay');
-    if (displayEl) {
-        displayEl.innerHTML = currentLanguage === 'ar'
-            ? '<span style="color:#999;">اختر المدينة أولاً</span>'
-            : '<span style="color:#999;">Select city first</span>';
-    }
-
-    updateOrderTotal();
-}
-
-// Update order total
 function updateOrderTotal() {
-    const subtotalText = document.getElementById('orderSubtotal').textContent;
+    const subtotalEl = document.getElementById('orderSubtotal');
+    if (!subtotalEl) return;
+
+    const subtotalText = subtotalEl.textContent;
     const subtotal = parseFloat(subtotalText.replace(/[^0-9.]/g, '')) || 0;
     const total = subtotal + selectedDeliveryFee;
-    document.getElementById('orderTotal').textContent = formatPrice(total);
+    
+    const totalEl = document.getElementById('orderTotal');
+    if (totalEl) {
+        totalEl.textContent = formatPrice(total);
+    }
 }
 
-// ========================================
-// ORDER SUMMARY
-// ========================================
+// ==================== ORDER SUMMARY ====================
 
-function loadOrderSummary() {
+async function loadOrderSummary() {
     const cart = getCart();
-    const products = getProducts();
     const orderItemsContainer = document.getElementById('orderItems');
 
     if (cart.length === 0) {
@@ -232,126 +218,192 @@ function loadOrderSummary() {
         return;
     }
 
-    let orderHTML = '';
-    let subtotal = 0;
+    try {
+        const products = await getProducts(); // ✅ Now async!
+        
+        let orderHTML = '';
+        let subtotal = 0;
 
-    cart.forEach(item => {
-        const product = products.find(p => p.id === item.productId);
-        if (!product) return;
+        cart.forEach(item => {
+            const product = products.find(p => String(p.id) === String(item.productId));
+            if (!product) return;
 
-        const nameKey = `name_${currentLanguage}`;
-        const itemTotal = product.newPrice * item.quantity;
-        subtotal += itemTotal;
+            const nameKey = `name_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
+            const price = parseFloat(product.newPrice || product.new_price || 0);
+            const itemTotal = price * item.quantity;
+            subtotal += itemTotal;
 
-        orderHTML += `
-            <div class="order-item">
-                <div class="order-item-info">
-                    <div class="order-item-name">${product[nameKey]}</div>
-                    <div class="order-item-qty">Qty: ${item.quantity}</div>
+            orderHTML += `
+                <div class="order-item">
+                    <div class="order-item-info">
+                        <div class="order-item-name">${product[nameKey] || product.name_en}</div>
+                        <div class="order-item-qty">Qty: ${item.quantity}</div>
+                    </div>
+                    <div class="order-item-price">${formatPrice(itemTotal)}</div>
                 </div>
-                <div class="order-item-price">${formatPrice(itemTotal)}</div>
-            </div>
-        `;
-    });
+            `;
+        });
 
-    orderItemsContainer.innerHTML = orderHTML;
-    document.getElementById('orderSubtotal').textContent = subtotal;
-    updateOrderTotal();
+        orderItemsContainer.innerHTML = orderHTML;
+        
+        const subtotalEl = document.getElementById('orderSubtotal');
+        if (subtotalEl) {
+            subtotalEl.textContent = formatPrice(subtotal);
+        }
+        
+        updateOrderTotal();
+
+    } catch (error) {
+        console.error('Error loading order summary:', error);
+    }
 }
 
-function saveOrder(orderData) {
-    let orders = JSON.parse(localStorage.getItem('orders')) || [];
-    orders.push(orderData);
-    localStorage.setItem('orders', JSON.stringify(orders));
-}
+// ==================== FORM SUBMISSION ====================
 
-// ========================================
-// FORM SUBMISSION
-// ========================================
-
-document.getElementById('checkoutForm').addEventListener('submit', function (e) {
+document.getElementById('checkoutForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const cart = getCart();
-    const products = getProducts();
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+        submitBtn.textContent = 'Processing...';
+        submitBtn.disabled = true;
+    }
 
-    // Get selected country and city details
-    const countrySelect = document.getElementById('deliveryCountry');
-    const citySelect = document.getElementById('deliveryCity');
+    try {
+        const cart = getCart();
+        const products = await getProducts(); // ✅ Now async!
 
-    const selectedCountryOption = countrySelect.options[countrySelect.selectedIndex];
-    const selectedCityOption = citySelect.options[citySelect.selectedIndex];
+        // Get selected country and city
+        const countrySelect = document.getElementById('deliveryCountry');
+        const citySelect = document.getElementById('deliveryCity');
 
-    const countryName = selectedCountryOption.dataset.nameEn;
-    const cityName = selectedCityOption.dataset.nameEn;
+        const selectedCountryOption = countrySelect.options[countrySelect.selectedIndex];
+        const selectedCityOption = citySelect.options[citySelect.selectedIndex];
 
-    // Calculate totals with current currency
-    let subtotal = 0;
-    const orderItems = cart.map(item => {
-        const product = products.find(p => p.id === item.productId);
-        const itemTotal = product.newPrice * item.quantity;
-        subtotal += itemTotal;
-        return {
-            productId: product.id,
-            productName: product.name_en,
-            productNameAr: product.name_ar,
-            quantity: item.quantity,
-            price: product.newPrice,
-            costPrice: product.cost_price || 0, // Include cost price for reports
-            total: itemTotal
+        const countryName = selectedCountryOption.dataset.nameEn;
+        const cityName = selectedCityOption.dataset.nameEn;
+
+        // Calculate totals
+        let subtotal = 0;
+        const orderItems = cart.map(item => {
+            const product = products.find(p => String(p.id) === String(item.productId));
+            if (!product) return null;
+            
+            const price = parseFloat(product.newPrice || product.new_price || 0);
+            const itemTotal = price * item.quantity;
+            subtotal += itemTotal;
+            
+            return {
+                productId: product.id,
+                productName: product.name_en,
+                productNameAr: product.name_ar,
+                quantity: item.quantity,
+                price: price,
+                costPrice: product.costPrice || product.cost_price || 0,
+                total: itemTotal
+            };
+        }).filter(Boolean);
+
+        // Build complete address
+        const street = document.getElementById('deliveryStreet')?.value || '';
+        const building = document.getElementById('deliveryBuilding')?.value || '';
+        const floor = document.getElementById('deliveryFloor')?.value || '';
+        const completeAddress = `${street}, ${building}${floor ? ', ' + floor : ''}`;
+
+        // Create order ID
+        const orderId = 'ORD-' + Date.now();
+
+        // Get phone
+        const phonePrefix = document.getElementById('phonePrefix')?.value || '';
+        const phoneNumber = document.getElementById('customerPhone')?.value || '';
+        const fullPhoneNumber = phonePrefix + phoneNumber;
+
+        const orderData = {
+            order_id: orderId,
+            customer_name: document.getElementById('customerName')?.value,
+            customer_phone: fullPhoneNumber,
+            customer_email: document.getElementById('customerEmail')?.value || '',
+            delivery_country: countryName,
+            delivery_city: cityName,
+            complete_address: completeAddress,
+            order_notes: document.getElementById('orderNotes')?.value || '',
+            payment_method: document.querySelector('input[name="payment"]:checked')?.value || 'cash',
+            items: orderItems,
+            subtotal: subtotal,
+            delivery_fee: selectedDeliveryFee,
+            actual_delivery_fee: selectedActualFee,
+            total: subtotal + selectedDeliveryFee,
+            currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
+            order_status: 'pending'
         };
-    });
 
-    // Get complete address
-    const completeAddress = document.getElementById('deliveryAddress').value;
+        // Save to database via API
+        const result = await createOrder(orderData);
 
-    // Create order
-    const orderId = 'ORD-' + Date.now();
+        if (result.success || result.order) {
+            // Clear cart
+            clearCart();
 
-    // Get phone prefix and number
-    const phonePrefix = document.getElementById('phonePrefix').value;
-    const phoneNumber = document.getElementById('customerPhone').value;
-    const fullPhoneNumber = phonePrefix + phoneNumber;
+            // Show success modal
+            const orderIdEl = document.getElementById('orderIdDisplay');
+            if (orderIdEl) orderIdEl.textContent = orderId;
+            
+            const modal = document.getElementById('successModal');
+            if (modal) modal.classList.add('show');
+            
+            if (typeof switchLanguage === 'function' && typeof currentLanguage !== 'undefined') {
+                switchLanguage(currentLanguage);
+            }
+        } else {
+            throw new Error(result.error || 'Failed to create order');
+        }
 
-    const orderData = {
-        orderId: orderId,
-        customerName: document.getElementById('customerName').value,
-        customerPhone: fullPhoneNumber, // Combined prefix + number
-        deliveryCountry: countryName,
-        deliveryCity: cityName,
-        deliveryAddress: completeAddress,
-        orderNotes: document.getElementById('orderNotes').value,
-        paymentMethod: document.querySelector('input[name="payment"]:checked').value,
-        items: orderItems,
-        subtotal: subtotal,
-        displayedShipping: selectedDeliveryFee, // What customer sees
-        actualShipping: selectedActualFee, // Real cost for reports
-        total: subtotal + selectedDeliveryFee,
-        currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'USD',
-        currencyRate: (typeof currencyRates !== 'undefined') ? currencyRates[currentCurrency || 'USD'] : 1,
-        status: 'pending',
-        orderDate: new Date().toISOString(),
-        language: (typeof currentLanguage !== 'undefined') ? currentLanguage : 'en'
-    };
-
-    // Save order
-    saveOrder(orderData);
-
-    // Clear cart
-    localStorage.setItem('cart', JSON.stringify([]));
-    updateCartCount();
-
-    // Show success modal
-    document.getElementById('orderIdDisplay').textContent = orderId;
-    document.getElementById('successModal').classList.add('show');
-    switchLanguage(currentLanguage);
+    } catch (error) {
+        console.error('Order submission error:', error);
+        alert('Error creating order: ' + error.message);
+    } finally {
+        if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    }
 });
 
-// ========================================
-// INITIALIZATION
-// ========================================
+// ==================== COUNTRY CHANGE HANDLER ====================
 
-// Load everything on page load
-loadDeliveryCountries();
-loadOrderSummary();
-switchLanguage(currentLanguage);
+document.getElementById('deliveryCountry')?.addEventListener('change', async function() {
+    const countryId = this.value;
+    if (countryId) {
+        await loadDeliveryCities(countryId);
+        
+        // Update phone prefix
+        const selectedOption = this.options[this.selectedIndex];
+        const prefix = selectedOption.dataset.prefix || '+962';
+        const prefixEl = document.getElementById('phonePrefix');
+        if (prefixEl) prefixEl.value = prefix;
+    }
+});
+
+// ==================== CITY CHANGE HANDLER ====================
+
+document.getElementById('deliveryCity')?.addEventListener('change', updateDeliveryFee);
+
+// ==================== MODAL CLOSE ====================
+
+function closeSuccessModal() {
+    window.location.href = 'index.html';
+}
+
+// ==================== INITIALIZATION ====================
+
+(async function initCheckout() {
+    await loadDeliveryCountries();
+    await loadOrderSummary();
+    
+    if (typeof switchLanguage === 'function' && typeof currentLanguage !== 'undefined') {
+        switchLanguage(currentLanguage);
+    }
+    
+    console.log('✅ Checkout initialized');
+})();
