@@ -54,11 +54,11 @@
             el.textContent = info.brand_name;
         });
 
-        // ✅ NEW: Update minimum order amount
-        const minAmount = info.minimum_order_amount || 15;
+        // ✅ Update minimum order amount in banner
+        const minAmount = parseFloat(info.minimum_order_amount) || 15;
         const currentLang = localStorage.getItem('selectedLanguage') || 'en';
 
-        document.querySelectorAll('.delivery-minimum-text').forEach(el => {
+        document.querySelectorAll('.delivery-banner-subtitle').forEach(el => {
             const template = currentLang === 'ar'
                 ? el.getAttribute('data-ar-template')
                 : el.getAttribute('data-en-template');
@@ -67,6 +67,7 @@
                 el.textContent = template.replace('{amount}', minAmount);
             }
         });
+
 
         // Update any elements still showing "Loading..."
         document.querySelectorAll('[data-email], [data-phone]').forEach(el => {
@@ -81,6 +82,7 @@
         });
 
         console.log('✅ General info loaded:', info);
+        console.log('✅ Minimum order amount:', minAmount);
     }
 
     // Update topbar info

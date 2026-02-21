@@ -1,6 +1,6 @@
 // ==================== ADMIN API CONFIGURATION ====================
 
-const API_URL = 'https://primejo-backend-demo.up.railway.app/api';
+const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
 // ==================== AUTH ====================
 
