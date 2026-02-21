@@ -15,7 +15,7 @@
         if (generalInfoCache) return generalInfoCache;
 
         try {
-            const response = await fetch(`${API}/general-info`);
+            const response = await fetch(`/general-info`);
             const data = await response.json();
 
             return getDefaultInfo();
