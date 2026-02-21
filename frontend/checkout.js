@@ -4,7 +4,7 @@
 
 let selectedDeliveryFee = 0;
 let selectedActualFee = 0;
-const API_URL = 'https://primejo-backend-demo.up.railway.app/api';
+const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
 // Get delivery data from localStorage (NEW SYSTEM)
 function getDeliveryCountries() {

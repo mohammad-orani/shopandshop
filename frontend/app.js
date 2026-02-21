@@ -1,7 +1,7 @@
 // Language Management
 let currentLanguage = 'en';
 let currentCurrency = 'USD';
-const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app';
+const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 // Currency exchange rates (update these regularly or use an API)
 const currencyRates = {
     USD: 1,
