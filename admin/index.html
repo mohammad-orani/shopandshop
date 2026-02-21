@@ -9,6 +9,11 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
+    <div class="user-info">
+        <span>Admin User</span>
+        <button onclick="adminLogout()" class="btn-secondary">Logout</button>
+        <a href="../index.html" class="btn-secondary">View Store</a>
+    </div>
 </head>
 
 <body>
@@ -496,6 +501,8 @@
             <button type="submit" class="btn-primary">💾 Save General Info</button>
         </form>
     </section>
+
+    <script src="auth-check.js"></script>
     <script src="admin-api.js"></script>
     <script src="../frontend/countries-data.js"></script>
     <script src="admin.js"></script>

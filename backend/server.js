@@ -567,45 +567,99 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        const [users] = await pool.query(
+            'SELECT * FROM users WHERE email = ? AND password = ?',
+            [email, password]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid email or password'
+            });
+        }
+
+        const user = users[0];
+        const token = jwt.sign(
+            { userId: user.id, email: user.email },
+            'your-secret-key',
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            success: true,
+            token: token,
+            user: { id: user.id, email: user.email }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Login failed' });
+    }
+});
+// Start server
+app.listen(PORT, () => {
+    console.log(`Primejo E-Commerce API running on port ${PORT}`);
+    console.log(`Database: ${dbConfig.database} @ ${dbConfig.host}`);
+});
+
+module.exports = app;
+
+// ==================== AUTHENTICATION ENDPOINTS ====================
+// Add these to your server.js
+
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+// JWT Secret (use environment variable in production)
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+
+// ==================== LOGIN ENDPOINT ====================
+
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
         // Get user from database
         const [users] = await pool.query(
-            'SELECT * FROM users WHERE email = ? AND role = "admin"',
+            'SELECT * FROM users WHERE email = ?',
             [email]
         );
 
         if (users.length === 0) {
             return res.status(401).json({
                 success: false,
-                error: 'Invalid credentials'
+                error: 'Invalid email or password'
             });
         }
 
         const user = users[0];
 
-        // Check password
-        const validPassword = await bcrypt.compare(password, user.password);
+        // Check password (assuming it's hashed with bcrypt)
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-        if (!validPassword) {
+        if (!passwordMatch) {
             return res.status(401).json({
                 success: false,
-                error: 'Invalid credentials'
+                error: 'Invalid email or password'
             });
         }
 
-        // Generate token
+        // Generate JWT token
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
-            process.env.JWT_SECRET || 'primejo-secret',
-            { expiresIn: '7d' }
+            {
+                userId: user.id,
+                email: user.email
+            },
+            JWT_SECRET,
+            { expiresIn: '7d' } // Token valid for 7 days
         );
 
         res.json({
             success: true,
-            token,
+            token: token,
             user: {
                 id: user.id,
                 email: user.email,
-                role: user.role
+                name: user.name || user.email
             }
         });
 
@@ -617,10 +671,71 @@ app.post('/api/auth/login', async (req, res) => {
         });
     }
 });
-// Start server
-app.listen(PORT, () => {
-    console.log(`Primejo E-Commerce API running on port ${PORT}`);
-    console.log(`Database: ${dbConfig.database} @ ${dbConfig.host}`);
+
+// ==================== MIDDLEWARE TO VERIFY TOKEN ====================
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            error: 'Access denied. No token provided.'
+        });
+    }
+
+    try {
+        const verified = jwt.verify(token, JWT_SECRET);
+        req.user = verified;
+        next();
+    } catch (error) {
+        res.status(403).json({
+            success: false,
+            error: 'Invalid token'
+        });
+    }
+}
+
+// ==================== UPDATE PROTECTED ROUTES ====================
+
+// Products (protected)
+app.post('/api/products', authenticateToken, async (req, res) => {
+    // ... your existing create product code
 });
 
-module.exports = app;
+app.put('/api/products/:id', authenticateToken, async (req, res) => {
+    // ... your existing update product code
+});
+
+app.delete('/api/products/:id', authenticateToken, async (req, res) => {
+    // ... your existing delete product code
+});
+
+// Categories (protected)
+app.post('/api/categories', authenticateToken, async (req, res) => {
+    // ... your existing create category code
+});
+
+app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
+    // ... your existing delete category code
+});
+
+// Orders (protected)
+app.get('/api/orders', authenticateToken, async (req, res) => {
+    // ... your existing get orders code
+});
+
+app.patch('/api/orders/:id/status', authenticateToken, async (req, res) => {
+    // ... your existing update order status code
+});
+
+// General Info (protected)
+app.put('/api/general-info', authenticateToken, async (req, res) => {
+    // ... your existing update general info code
+});
+
+// ==================== INSTALL REQUIRED PACKAGES ====================
+// Run these commands in your backend directory:
+// npm install bcrypt jsonwebtoken
+
