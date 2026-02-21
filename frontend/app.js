@@ -444,3 +444,36 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 console.log('✅ app.js loaded - Using database for products and categories');
+
+// Load ALL products on homepage (for filter system)
+if (document.getElementById('topbaicProductsGrid')) {
+    (async function loadAllProducts() {
+        try {
+            const products = await getProducts();
+            const grid = document.getElementById('topbaicProductsGrid');
+
+            if (products.length === 0) {
+                grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#999;" data-en="No products available" data-ar="لا توجد منتجات متاحة">No products available</p>';
+                return;
+            }
+
+            // Render all products
+            grid.innerHTML = products.map(createProductCard).join('');
+
+            // Update product count
+            updateProductCount();
+
+            // Re-apply language
+            if (typeof switchLanguage === 'function' && typeof currentLanguage !== 'undefined') {
+                switchLanguage(currentLanguage);
+            }
+
+            console.log('✅ Loaded', products.length, 'products to homepage');
+
+        } catch (error) {
+            console.error('Error loading products:', error);
+            document.getElementById('topbaicProductsGrid').innerHTML =
+                '<p style="text-align:center;padding:3rem;color:#e74c3c;">Failed to load products</p>';
+        }
+    })();
+}
