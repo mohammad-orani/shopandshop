@@ -15,10 +15,17 @@
         if (generalInfoCache) return generalInfoCache;
 
         try {
-            const response = await fetch(`/general-info`);
+            // ✅ Make sure it's using the API, not the .js file!
+            const response = await fetch(`${GENERAL_INFO_API}/general-info`);
             const data = await response.json();
 
-            return getDefaultInfo();
+            if (data.success && data.info) {
+                generalInfoCache = data.info;
+                return data.info;
+            } else {
+                console.warn('General info not found, using defaults');
+                return getDefaultInfo();
+            }
         } catch (error) {
             console.error('Error loading general info:', error);
             return getDefaultInfo();
