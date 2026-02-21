@@ -1,8 +1,3 @@
-// Use the global API_URL or fallback
-const GENERAL_INFO_API = (typeof API_URL !== 'undefined')
-    ? API_URL
-    : 'https://primejo-backend-demo.up.railway.app/api';
-
 // Get data from localStorage
 function getProducts() {
     return JSON.parse(localStorage.getItem('products')) || [];

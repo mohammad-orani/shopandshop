@@ -15,9 +15,31 @@
         if (generalInfoCache) return generalInfoCache;
 
         try {
-            const response = await fetch(`${API}/general-info`);
-            const data = await response.json();
+            app.get('/general-info', async (req, res) => {
+                try {
+                    const [rows] = await pool.query(
+                        'SELECT brand_name, phone_number, email_address, minimum_order_amount FROM general_info WHERE id = 1'
+                    );
 
+                    if (rows.length === 0) {
+                        return res.json({
+                            success: false,
+                            error: 'General info not found'
+                        });
+                    }
+
+                    res.json({
+                        success: true,
+                        info: rows[0]
+                    });
+                } catch (error) {
+                    console.error('Error fetching general info:', error);
+                    res.status(500).json({
+                        success: false,
+                        error: error.message
+                    });
+                }
+            });
             return getDefaultInfo();
         } catch (error) {
             console.error('Error loading general info:', error);

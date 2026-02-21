@@ -513,7 +513,8 @@ app.get('/api/general-info', async (req, res) => {
             info: {
                 brand_name: info[0].gi_brand_name,
                 phone_number: info[0].gi_phone_number,
-                email_address: info[0].gi_email_address
+                email_address: info[0].gi_email_address,
+                minimum_order_amount: info[0].gi_minimum_order_amount,
             }
         });
     } catch (error) {
@@ -528,7 +529,7 @@ app.get('/api/general-info', async (req, res) => {
 // Update general info (admin only)
 app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { brand_name, phone_number, email_address } = req.body;
+        const { brand_name, phone_number, email_address, minimum_order_amount } = req.body;
 
         // Check if record exists
         const [existing] = await pool.query('SELECT * FROM general_info LIMIT 1');
@@ -536,14 +537,14 @@ app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
         if (existing.length === 0) {
             // Insert new record
             await pool.query(
-                'INSERT INTO general_info (gi_brand_name, gi_phone_number, gi_email_address) VALUES (?, ?, ?)',
-                [brand_name, phone_number, email_address]
+                'INSERT INTO general_info (gi_brand_name, gi_phone_number, gi_email_address, gi_minimum_order_amount) VALUES (?, ?, ?)',
+                [brand_name, phone_number, email_address, minimum_order_amount]
             );
         } else {
             // Update existing record
             await pool.query(
-                'UPDATE general_info SET gi_brand_name = ?, gi_phone_number = ?, gi_email_address = ? WHERE gi_id = ?',
-                [brand_name, phone_number, email_address, existing[0].gi_id]
+                'UPDATE general_info SET gi_brand_name = ?, gi_phone_number = ?, gi_email_address = ?, gi_minimum_order_amount = ? WHERE gi_id = ?',
+                [brand_name, phone_number, email_address, minimum_order_amount, existing[0].gi_id]
             );
         }
 
