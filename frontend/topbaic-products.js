@@ -13,7 +13,7 @@ function createTopBaicProductCard(product) {
         : 0;
     
     // Determine stock status
-    const availableQty = product.quantityToSell || product.stock || 0;
+    const availableQty = product.quantityToSell  || product.quantity_to_sell  || 0;
     let stockClass = 'stock-dot';
     let stockText = 'In Stock';
     let stockTextAr = 'متوفر';

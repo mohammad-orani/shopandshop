@@ -10,7 +10,7 @@ const currencyRates = {
     USD: 1,
     EUR: 0.92,
     GBP: 0.79,
-    JOD: 0.71,
+    JOD: 1,
     AED: 3.67,
     SAR: 3.75
 };

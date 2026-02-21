@@ -185,15 +185,27 @@ async function editProduct(id) {
         setVal('productDescEn', p.description_en || '');
         setVal('productDescAr', p.description_ar || '');
         setVal('productStock', p.stock || 0);
-        setVal('productQuantityToSell', p.quantityToSell || p.quantity_to_sell || p.stock || 0);
-        setVal('productCostPrice', p.costPrice || p.cost_price || 0);
-        setVal('productOldPrice', p.oldPrice || p.old_price || 0);
-        setVal('productNewPrice', p.newPrice || p.new_price || 0);
-        setVal('productImage', p.image || p.image_url || '');
-        setVal('productAdditionalImages',
-            Array.isArray(p.additionalImages) ? p.additionalImages.join(', ') :
-            (p.additional_images || ''));
-        setVal('productVideo', p.videoUrl || p.video_url || '');
+        setVal('productQuantityToSell', p.quantity_to_sell || p.quantityToSell || p.stock || 0);
+        setVal('productCostPrice', p.cost_price || p.costPrice || 0);
+        setVal('productOldPrice', p.old_price || p.oldPrice || 0);
+        setVal('productNewPrice', p.new_price || p.newPrice || 0);
+        setVal('productImage', p.image_url || p.image || '');
+        
+        // ✅ Parse additional_images properly
+        let additionalImagesStr = '';
+        if (p.additional_images) {
+            try {
+                const imgs = typeof p.additional_images === 'string' 
+                    ? JSON.parse(p.additional_images) 
+                    : p.additional_images;
+                additionalImagesStr = Array.isArray(imgs) ? imgs.join(', ') : '';
+            } catch (e) {
+                additionalImagesStr = p.additional_images;
+            }
+        }
+        setVal('productAdditionalImages', additionalImagesStr);
+        
+        setVal('productVideo', p.video_url || p.videoUrl || '');
 
         setChecked('productNew', p.isNew || p.is_new || false);
         setChecked('productTopSeller', p.topSeller || p.is_top_seller || false);
@@ -254,28 +266,22 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
             name_ar: document.getElementById('productNameAr')?.value || '',
             description_en: document.getElementById('productDescEn')?.value || '',
             description_ar: document.getElementById('productDescAr')?.value || '',
-            category: document.getElementById('productCategory')?.value || '',
             category_id: document.getElementById('productCategory')?.value || '',
             stock: parseInt(document.getElementById('productStock')?.value || 0),
-            quantityToSell: parseInt(document.getElementById('productQuantityToSell')?.value || 0),
-            costPrice: parseFloat(document.getElementById('productCostPrice')?.value || 0),
-            oldPrice: parseFloat(document.getElementById('productOldPrice')?.value || 0),
-            newPrice: parseFloat(document.getElementById('productNewPrice')?.value || 0),
+            quantity_to_sell: parseInt(document.getElementById('productQuantityToSell')?.value || 0),
+            cost_price: parseFloat(document.getElementById('productCostPrice')?.value || 0),
             old_price: parseFloat(document.getElementById('productOldPrice')?.value || 0),
             new_price: parseFloat(document.getElementById('productNewPrice')?.value || 0),
-            image: document.getElementById('productImage')?.value || '',
             image_url: document.getElementById('productImage')?.value || '',
-            additionalImages: additionalImages,
-            videoUrl: document.getElementById('productVideo')?.value || '',
-            isNew: document.getElementById('productNew')?.checked || false,
+            additional_images: JSON.stringify(additionalImages), // ✅ Convert to JSON string
+            video_url: document.getElementById('productVideo')?.value || '',
             is_new: document.getElementById('productNew')?.checked || false,
-            topSeller: document.getElementById('productTopSeller')?.checked || false,
             is_top_seller: document.getElementById('productTopSeller')?.checked || false,
-            isOffer: document.getElementById('productOffer')?.checked || false,
             is_offer: document.getElementById('productOffer')?.checked || false,
-            visible: document.getElementById('productVisible')?.checked !== false,
             is_visible: document.getElementById('productVisible')?.checked !== false,
         };
+
+        console.log('📤 Sending product data:', productData);
 
         let result;
         if (productId) {

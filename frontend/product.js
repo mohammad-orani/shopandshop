@@ -50,49 +50,62 @@ function displayProductDetails(product) {
     const nameKey = `name_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
     const descKey = `description_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
 
+    // ✅ Parse additional images if it's a string
+    let additionalImages = product.additionalImages || [];
+    if (typeof additionalImages === 'string') {
+        try {
+            additionalImages = JSON.parse(additionalImages);
+        } catch (e) {
+            additionalImages = [];
+        }
+    }
+    if (!Array.isArray(additionalImages)) {
+        additionalImages = [];
+    }
+
     const productHTML = `
         <div class="product-images">
             <div class="main-image">
                 <img id="mainImage" src="${product.image}" alt="${product[nameKey] || product.name_en}">
             </div>
-            ${product.additionalImages && product.additionalImages.length > 0 ? `
-                <div class="thumbnail-container">
-                    <div class="thumbnail active">
-                        <img src="${product.image}" 
-                             alt="${product[nameKey] || product.name_en}" 
-                             onclick="changeMainImage('${product.image}', this)">
-                    </div>
-                    ${product.additionalImages.map(img => `
-                        <div class="thumbnail">
-                            <img src="${img}" 
-                                 alt="${product[nameKey] || product.name_en}" 
-                                 onclick="changeMainImage('${img}', this)">
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
         </div>
 
         <div class="product-info-section">
-            <h1 class="product-title">${product[nameKey] || product.name_en}</h1>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                ${product.isOffer ? '<div class="product-badge sale-badge">SALE</div>' : ''}
+                ${product.isNew ? '<div class="product-badge new-badge">NEW</div>' : ''}
+                ${product.topSeller ? '<div class="product-badge" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000;">⭐ TOP SELLER</div>' : ''}
+            </div>
             
-            ${product.isOffer ? '<div class="product-badge sale-badge">SALE</div>' : ''}
-            ${product.isNew ? '<div class="product-badge new-badge">NEW</div>' : ''}
+            <h1 class="product-title">${product[nameKey] || product.name_en}</h1>
             
             <div class="product-price-section">
                 <span class="current-price">${formatPrice(product.newPrice)}</span>
-                ${product.oldPrice && product.oldPrice !== product.newPrice ? 
-                    `<span class="old-price">${formatPrice(product.oldPrice)}</span>
-                     <span class="discount-badge">-${Math.round((1 - product.newPrice / product.oldPrice) * 100)}%</span>` 
-                : ''}
+                ${product.oldPrice && product.oldPrice !== product.newPrice ?
+            `<span class="old-price">${formatPrice(product.oldPrice)}</span>
+                     <span class="discount-badge">-${Math.round((1 - product.newPrice / product.oldPrice) * 100)}%</span>`
+            : ''}
             </div>
 
             <div class="product-description">
-                <h3 data-en="Description" data-ar="الوصف">Description</h3>
-                <p>${product[descKey] || product.description_en || ''}</p>
+                <h3 data-en="Product Description" data-ar="وصف المنتج">Product Description</h3>
+                <div style="white-space: pre-wrap; line-height: 1.8;">${product[descKey] || product.description_en || 'No description available'}</div>
             </div>
 
-            ${product.stock > 0 ? `
+            ${product[descKey] && product[descKey].includes('✔') ? `
+                <div class="product-features">
+                    <h3 data-en="Key Features" data-ar="المميزات الرئيسية">Key Features</h3>
+                    <ul>
+                        ${(product[descKey] || '')
+                .split('\n')
+                .filter(line => line.includes('✔'))
+                .map(line => `<li>${line.replace('✔', '').trim()}</li>`)
+                .join('')}
+                    </ul>
+                </div>
+            ` : ''}
+
+            ${(product.quantity_to_sell || product.quantityToSell || 0) > 0 ? `
                 <div class="quantity-selector">
                     <label data-en="Quantity:" data-ar="الكمية:">Quantity:</label>
                     <div class="quantity-controls">
@@ -101,12 +114,12 @@ function displayProductDetails(product) {
                                id="quantityInput" 
                                value="1" 
                                min="1" 
-                               max="${product.stock}"
+                               max="${product.quantity_to_sell || product.quantityToSell}"
                                onchange="updateQuantity()">
                         <button class="qty-btn" onclick="increaseQuantity()">+</button>
                     </div>
                     <span class="stock-info" style="color: #666; font-size: 0.9rem;">
-                        ${product.stock} available
+                        ${product.quantity_to_sell || product.quantityToSell} available
                     </span>
                 </div>
 
