@@ -102,9 +102,9 @@ async function loadCategoriesMenu() {
 
     try {
         const categories = await getCategories();
-        
+
         let menuHTML = '<li><a href="category.html" data-en="All Products" data-ar="جميع المنتجات">All Products</a></li>';
-        
+
         categories.forEach(cat => {
             menuHTML += `<li><a href="category.html?cat=${cat.id}" data-en="${cat.name_en}" data-ar="${cat.name_ar}">${cat.name_en}</a></li>`;
         });
@@ -174,8 +174,8 @@ function createProductCard(product) {
                         ${formatPrice(newPrice)}
                     </span>
                     ${oldPrice && oldPrice !== newPrice
-                        ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
-                        : ''}
+            ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
+            : ''}
                 </div>
                 <div class="product-actions">
                     <button class="btn"
@@ -195,12 +195,22 @@ function createProductCard(product) {
 async function reloadHomeProducts() {
     try {
         const products = await getProducts();
-
+        // ✅ ADD THIS DEBUG CODE:
+        console.log('=== DEBUG HOME PRODUCTS ===');
+        console.log('Total products from API:', products.length);
+        console.log('Products:', products);
+        console.log('Filtering for top sellers...');
+        const topSellers = products.filter(p => {
+            console.log(`- ${p.name_en}: topSeller=${p.topSeller || p.is_top_seller}, visible=${p.visible || p.is_visible}`);
+            return (p.topSeller || p.is_top_seller) && (p.visible !== false && p.is_visible !== false);
+        });
+        console.log('Top Sellers found:', topSellers.length);
+        console.log('===========================');
         // Top Sellers
         const topSellersEl = document.getElementById('topSellers');
         if (topSellersEl) {
             const topSellers = products.filter(p => p.topSeller && p.visible).slice(0, 4);
-            topSellersEl.innerHTML = topSellers.map(createProductCard).join('') || 
+            topSellersEl.innerHTML = topSellers.map(createProductCard).join('') ||
                 '<p style="text-align:center;padding:2rem;">No top sellers yet</p>';
         }
 
@@ -208,7 +218,7 @@ async function reloadHomeProducts() {
         const randomEl = document.getElementById('randomProducts');
         if (randomEl) {
             const random = products.filter(p => p.visible).sort(() => 0.5 - Math.random()).slice(0, 4);
-            randomEl.innerHTML = random.map(createProductCard).join('') || 
+            randomEl.innerHTML = random.map(createProductCard).join('') ||
                 '<p style="text-align:center;padding:2rem;">No products available</p>';
         }
 
@@ -216,7 +226,7 @@ async function reloadHomeProducts() {
         const offersEl = document.getElementById('offerProducts');
         if (offersEl) {
             const offers = products.filter(p => p.isOffer && p.visible).slice(0, 4);
-            offersEl.innerHTML = offers.map(createProductCard).join('') || 
+            offersEl.innerHTML = offers.map(createProductCard).join('') ||
                 '<p style="text-align:center;padding:2rem;">No offers available</p>';
         }
 
@@ -366,7 +376,7 @@ function updateProductCount() {
     const visibleProducts = document.querySelectorAll('.product-card[style*="display: block"], .product-card:not([style*="display: none"])');
     const count = visibleProducts.length;
 
-    productCountElement.textContent = currentLanguage === 'ar' 
+    productCountElement.textContent = currentLanguage === 'ar'
         ? `عرض ${count} منتج`
         : `Showing ${count} products`;
 }
@@ -416,7 +426,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const currencySelector = document.getElementById('currencySelector');
     if (currencySelector) {
         currencySelector.value = savedCurrency;
-        currencySelector.addEventListener('change', function() {
+        currencySelector.addEventListener('change', function () {
             changeCurrency(this.value);
         });
     }

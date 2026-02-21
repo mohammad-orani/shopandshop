@@ -212,9 +212,9 @@ async function getProducts() {
         oldPrice: parseFloat(p.oldPrice || p.old_price || 0),
         image: p.image || p.image_url,
         stock: p.stock || 0,
-        visible: p.visible !== false && p.is_visible !== false,
+        visible: !!(p.visible || p.is_visible),
         isNew: p.isNew || p.is_new || false,
-        topSeller: p.topSeller || p.is_top_seller || false,
+        topSeller: !!(p.topSeller || p.is_top_seller),
         isOffer: p.isOffer || p.is_offer || false,
         additionalImages: p.additionalImages || p.additional_images || [],
         videoUrl: p.videoUrl || p.video_url || ''
