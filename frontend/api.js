@@ -201,24 +201,41 @@ async function getGeneralInfoFromAPI() {
 // Get products for display (handles both DB formats)
 async function getProducts() {
     const products = await getProductsFromAPI();
-    return products.map(p => ({
-        id: p.id,
-        name_en: p.name_en,
-        name_ar: p.name_ar,
-        description_en: p.description_en,
-        description_ar: p.description_ar,
-        category: p.category || p.category_id,
-        newPrice: parseFloat(p.newPrice || p.new_price || 0),
-        oldPrice: parseFloat(p.oldPrice || p.old_price || 0),
-        image: p.image || p.image_url,
-        stock: p.stock || 0,
-        visible: !!(p.visible || p.is_visible),
-        isNew: p.isNew || p.is_new || false,
-        topSeller: !!(p.topSeller || p.is_top_seller),
-        isOffer: p.isOffer || p.is_offer || false,
-        additionalImages: p.additionalImages || p.additional_images || [],
-        videoUrl: p.videoUrl || p.video_url || ''
-    }));
+
+    console.log('🔄 Processing products from API:', products.length);
+
+    const processed = products.map(p => {
+        // ✅ Convert MySQL TINYINT (0/1) to JavaScript boolean using !!
+        const visible = !!(p.visible || p.is_visible);
+        const isNew = !!(p.isNew || p.is_new);
+        const topSeller = !!(p.topSeller || p.is_top_seller);
+        const isOffer = !!(p.isOffer || p.is_offer);
+
+        return {
+            id: p.id,
+            name_en: p.name_en,
+            name_ar: p.name_ar,
+            description_en: p.description_en,
+            description_ar: p.description_ar,
+            category: p.category || p.category_id,
+            newPrice: parseFloat(p.newPrice || p.new_price || 0),
+            oldPrice: parseFloat(p.oldPrice || p.old_price || 0),
+            image: p.image || p.image_url,
+            stock: p.stock || 0,
+            visible: visible,
+            isNew: isNew,
+            topSeller: topSeller,
+            isOffer: isOffer,
+            additionalImages: p.additionalImages || p.additional_images || [],
+            videoUrl: p.videoUrl || p.video_url || ''
+        };
+    });
+
+    console.log('✅ Processed products:', processed);
+    console.log('📊 Top sellers:', processed.filter(p => p.topSeller).length);
+    console.log('📊 Visible:', processed.filter(p => p.visible).length);
+
+    return processed;
 }
 
 // Get categories
