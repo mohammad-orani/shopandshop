@@ -4,9 +4,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +26,7 @@ const dbConfig = {
     queueLimit: 0
 };
 
-// Log database config on startup (hide password)
+// Log database config on startup
 console.log('Database Config:', {
     host: dbConfig.host,
     port: dbConfig.port,
@@ -40,30 +38,110 @@ console.log('Database Config:', {
 // Create database connection pool
 const pool = mysql.createPool(dbConfig);
 
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'primejo-secret-2026';
+
 // ============ AUTHENTICATION MIDDLEWARE ============
+
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        return res.status(401).json({ 
+            success: false, 
+            error: 'No token provided' 
+        });
+    }
 
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
-        if (err) return res.sendStatus(403);
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ 
+                success: false, 
+                error: 'Invalid or expired token' 
+            });
+        }
         req.user = user;
         next();
     });
 };
 
+// Admin check (optional - checks if user has admin role)
 const isAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Admin access required' });
-    }
+    // For now, anyone with a valid token is admin
+    // Later you can add: if (req.user.role !== 'admin') return res.status(403)...
     next();
 };
 
+// ============ AUTH ENDPOINTS ============
+
+// Login endpoint (PLAIN TEXT PASSWORD - for testing only!)
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        console.log('🔐 Login attempt:', email);
+
+        // Query user from database
+        const [users] = await pool.query(
+            'SELECT id, email, name, password FROM users WHERE email = ?',
+            [email]
+        );
+
+        if (users.length === 0) {
+            console.log('❌ User not found:', email);
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Invalid email or password' 
+            });
+        }
+
+        const user = users[0];
+
+        // Plain text password comparison (NOT secure - for testing only!)
+        if (password !== user.password) {
+            console.log('❌ Password mismatch for:', email);
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Invalid email or password' 
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                userId: user.id, 
+                email: user.email,
+                name: user.name 
+            },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        console.log('✅ Login successful:', email);
+
+        res.json({
+            success: true,
+            token: token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name || user.email
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Login failed: ' + error.message 
+        });
+    }
+});
+
 // ============ CATEGORIES ENDPOINTS ============
 
-// Get all categories
+// Get all categories (PUBLIC)
 app.get('/api/categories', async (req, res) => {
     try {
         const [categories] = await pool.query('SELECT * FROM categories ORDER BY name_en');
@@ -73,7 +151,7 @@ app.get('/api/categories', async (req, res) => {
     }
 });
 
-// Add category (admin only)
+// Add category (PROTECTED)
 app.post('/api/categories', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { id, name_en, name_ar } = req.body;
@@ -81,25 +159,25 @@ app.post('/api/categories', authenticateToken, isAdmin, async (req, res) => {
             'INSERT INTO categories (id, name_en, name_ar) VALUES (?, ?, ?)',
             [id, name_en, name_ar]
         );
-        res.status(201).json({ message: 'Category created', id });
+        res.status(201).json({ success: true, message: 'Category created', id });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Delete category (admin only)
+// Delete category (PROTECTED)
 app.delete('/api/categories/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM categories WHERE id = ?', [req.params.id]);
-        res.json({ message: 'Category deleted' });
+        res.json({ success: true, message: 'Category deleted' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============ PRODUCTS ENDPOINTS ============
 
-// Get all products (with filters)
+// Get all products (PUBLIC with filters)
 app.get('/api/products', async (req, res) => {
     try {
         const { category, offer, topSeller, visible, search } = req.query;
@@ -134,7 +212,7 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-// Get single product
+// Get single product (PUBLIC)
 app.get('/api/products/:id', async (req, res) => {
     try {
         const [products] = await pool.query(
@@ -144,13 +222,13 @@ app.get('/api/products/:id', async (req, res) => {
         if (products.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        res.json(products[0]);
+        res.json({ success: true, product: products[0] });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Create product (admin only)
+// Create product (PROTECTED)
 app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
     try {
         const {
@@ -175,13 +253,14 @@ app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
             ]
         );
 
-        res.status(201).json({ message: 'Product created', id: result.insertId });
+        res.status(201).json({ success: true, message: 'Product created', id: result.insertId });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Create product error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Update product (admin only)
+// Update product (PROTECTED)
 app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const {
@@ -207,25 +286,25 @@ app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
             ]
         );
 
-        res.json({ message: 'Product updated' });
+        res.json({ success: true, message: 'Product updated' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Delete product (admin only)
+// Delete product (PROTECTED)
 app.delete('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id = ?', [req.params.id]);
-        res.json({ message: 'Product deleted' });
+        res.json({ success: true, message: 'Product deleted' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============ ORDERS ENDPOINTS ============
 
-// Create order
+// Create order (PUBLIC)
 app.post('/api/orders', async (req, res) => {
     const connection = await pool.getConnection();
 
@@ -234,73 +313,60 @@ app.post('/api/orders', async (req, res) => {
 
         const {
             customer_name, customer_phone, customer_email,
-            delivery_country, delivery_city, delivery_address,
+            delivery_country, delivery_city, complete_address,
             order_notes, payment_method,
-            displayed_shipping, actual_shipping,  // NEW!
-            items, language
+            delivery_fee, actual_delivery_fee,
+            items, subtotal, total, currency
         } = req.body;
 
-        // Calculate totals
-        let subtotal = 0;
-        for (const item of items) {
-            subtotal += item.price * item.quantity;
-        }
-
-        const total = subtotal + (displayed_shipping || 0);
         const order_id = 'ORD-' + Date.now();
 
         // Insert order
         const [orderResult] = await connection.query(
             `INSERT INTO orders (
                 order_id, customer_name, customer_phone, customer_email,
-                delivery_country, delivery_city, delivery_address, order_notes, payment_method,
-                subtotal, displayed_shipping_cost, actual_shipping_cost, total, language
+                delivery_country, delivery_city, complete_address, order_notes, payment_method,
+                subtotal, delivery_fee, actual_delivery_fee, total, currency
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 order_id, customer_name, customer_phone, customer_email,
-                delivery_country, delivery_city, delivery_address, order_notes, payment_method,
-                subtotal, displayed_shipping || 0, actual_shipping || 0, total, language
+                delivery_country, delivery_city, complete_address, order_notes, payment_method,
+                subtotal, delivery_fee || 0, actual_delivery_fee || 0, total, currency || 'USD'
             ]
         );
 
         const orderId = orderResult.insertId;
 
-        // Insert order items and update stock
+        // Insert order items
         for (const item of items) {
             await connection.query(
                 `INSERT INTO order_items (
-                    order_id, product_id, product_name_en, product_name_ar,
-                    quantity, cost_price, price, subtotal
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    order_id, product_id, product_name, quantity, price, total
+                ) VALUES (?, ?, ?, ?, ?, ?)`,
                 [
-                    orderId, item.product_id, item.product_name_en, item.product_name_ar,
-                    item.quantity, item.cost_price || 0, item.price, item.price * item.quantity
+                    orderId, item.productId, item.productName, 
+                    item.quantity, item.price, item.total
                 ]
-            );
-
-            // Update product stock
-            await connection.query(
-                'UPDATE products SET stock = stock - ? WHERE id = ?',
-                [item.quantity, item.product_id]
             );
         }
 
         await connection.commit();
 
         res.status(201).json({
+            success: true,
             message: 'Order created successfully',
-            order_id: order_id,
-            total: total
+            order_id: order_id
         });
     } catch (error) {
         await connection.rollback();
-        res.status(500).json({ error: error.message });
+        console.error('Create order error:', error);
+        res.status(500).json({ success: false, error: error.message });
     } finally {
         connection.release();
     }
 });
 
-// Get all orders (admin only)
+// Get all orders (PROTECTED)
 app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { status, from_date, to_date } = req.query;
@@ -330,33 +396,7 @@ app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// Get order details
-app.get('/api/orders/:id', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const [orders] = await pool.query(
-            'SELECT * FROM orders WHERE id = ?',
-            [req.params.id]
-        );
-
-        if (orders.length === 0) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        const [items] = await pool.query(
-            'SELECT * FROM order_items WHERE order_id = ?',
-            [req.params.id]
-        );
-
-        res.json({
-            ...orders[0],
-            items: items
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Update order status (admin only)
+// Update order status (PROTECTED)
 app.patch('/api/orders/:id/status', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { order_status } = req.body;
@@ -366,19 +406,96 @@ app.patch('/api/orders/:id/status', authenticateToken, isAdmin, async (req, res)
             [order_status, req.params.id]
         );
 
-        res.json({ message: 'Order status updated' });
+        res.json({ success: true, message: 'Order status updated' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ============ STATS & REPORTS ============
+// ============ DELIVERY ENDPOINTS ============
+
+// Get countries (PUBLIC)
+app.get('/api/delivery/countries', async (req, res) => {
+    try {
+        const [countries] = await pool.query(
+            'SELECT * FROM delivery_countries WHERE is_active = TRUE ORDER BY country_name_en'
+        );
+        res.json({ success: true, countries });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get cities by country (PUBLIC)
+app.get('/api/delivery/cities/:countryId', async (req, res) => {
+    try {
+        const [cities] = await pool.query(
+            'SELECT * FROM delivery_cities WHERE country_id = ? AND is_active = TRUE ORDER BY city_name_en',
+            [req.params.countryId]
+        );
+        res.json({ success: true, cities });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============ GENERAL INFO ENDPOINT ============
+
+// Get general info (PUBLIC)
+app.get('/api/general-info', async (req, res) => {
+    try {
+        const [info] = await pool.query('SELECT * FROM general_info LIMIT 1');
+
+        if (info.length === 0) {
+            return res.json({ success: false, message: 'No general info found' });
+        }
+
+        res.json({
+            success: true,
+            info: {
+                brand_name: info[0].gi_brand_name,
+                phone_number: info[0].gi_phone_number,
+                email_address: info[0].gi_email_address,
+                minimum_order_amount: info[0].gi_minimum_order_amount
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update general info (PROTECTED)
+app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { brand_name, phone_number, email_address, minimum_order_amount } = req.body;
+
+        const [existing] = await pool.query('SELECT * FROM general_info LIMIT 1');
+
+        if (existing.length === 0) {
+            await pool.query(
+                'INSERT INTO general_info (gi_brand_name, gi_phone_number, gi_email_address, gi_minimum_order_amount) VALUES (?, ?, ?, ?)',
+                [brand_name, phone_number, email_address, minimum_order_amount]
+            );
+        } else {
+            await pool.query(
+                'UPDATE general_info SET gi_brand_name = ?, gi_phone_number = ?, gi_email_address = ?, gi_minimum_order_amount = ? WHERE gi_id = ?',
+                [brand_name, phone_number, email_address, minimum_order_amount, existing[0].gi_id]
+            );
+        }
+
+        res.json({ success: true, message: 'General info updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============ STATS (PROTECTED) ============
 
 app.get('/api/stats', authenticateToken, isAdmin, async (req, res) => {
     try {
         const [productCount] = await pool.query('SELECT COUNT(*) as count FROM products');
         const [orderCount] = await pool.query('SELECT COUNT(*) as count FROM orders');
-        const [revenue] = await pool.query('SELECT SUM(total) as total FROM orders WHERE order_status = "delivered"');
+        const [revenue] = await pool.query('SELECT SUM(total) as total FROM orders WHERE order_status = "completed"');
         const [pending] = await pool.query('SELECT COUNT(*) as count FROM orders WHERE order_status = "pending"');
 
         res.json({
@@ -392,350 +509,11 @@ app.get('/api/stats', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ============ DELIVERY FEES ENDPOINTS ============
-
-// Get all countries
-app.get('/api/delivery/countries', async (req, res) => {
-    try {
-        const [countries] = await pool.query(
-            'SELECT * FROM delivery_countries WHERE is_active = TRUE ORDER BY country_name_en'
-        );
-
-        res.json({
-            success: true,
-            count: countries.length,
-            countries: countries
-        });
-    } catch (error) {
-        console.error('Error fetching countries:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch countries',
-            message: error.message
-        });
-    }
-});
-
-// Get cities by country
-app.get('/api/delivery/cities/:countryId', async (req, res) => {
-    try {
-        const { countryId } = req.params;
-
-        const [cities] = await pool.query(
-            'SELECT * FROM delivery_cities WHERE country_id = ? AND is_active = TRUE ORDER BY city_name_en',
-            [countryId]
-        );
-
-        res.json({
-            success: true,
-            count: cities.length,
-            cities: cities
-        });
-    } catch (error) {
-        console.error('Error fetching cities:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch cities'
-        });
-    }
-});
-
-// Get all cities
-app.get('/api/delivery/cities', async (req, res) => {
-    try {
-        const [cities] = await pool.query(
-            'SELECT * FROM delivery_cities WHERE is_active = TRUE ORDER BY country_id, city_name_en'
-        );
-
-        res.json({
-            success: true,
-            count: cities.length,
-            cities: cities
-        });
-    } catch (error) {
-        console.error('Error fetching cities:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch cities'
-        });
-    }
-});
-
-// Get delivery fee for specific city
-app.get('/api/delivery/fee/:cityId', async (req, res) => {
-    try {
-        const { cityId } = req.params;
-
-        const [cities] = await pool.query(
-            'SELECT displayed_fee, actual_fee FROM delivery_cities WHERE id = ?',
-            [cityId]
-        );
-
-        if (cities.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'City not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            displayedFee: cities[0].displayed_fee,
-            actualFee: cities[0].actual_fee
-        });
-    } catch (error) {
-        console.error('Error fetching delivery fee:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch delivery fee'
-        });
-    }
-});
-
-// ============ GENERAL INFO ENDPOINT ============
-
-// Get general info (brand name, phone, email)
-app.get('/api/general-info', async (req, res) => {
-    try {
-        const [info] = await pool.query(
-            'SELECT * FROM general_info LIMIT 1'
-        );
-
-        if (info.length === 0) {
-            return res.json({
-                success: false,
-                message: 'No general info found'
-            });
-        }
-
-        res.json({
-            success: true,
-            info: {
-                brand_name: info[0].gi_brand_name,
-                phone_number: info[0].gi_phone_number,
-                email_address: info[0].gi_email_address,
-                minimum_order_amount: info[0].gi_minimum_order_amount,
-            }
-        });
-    } catch (error) {
-        console.error('Error fetching general info:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch general info'
-        });
-    }
-});
-
-// Update general info (admin only)
-app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const { brand_name, phone_number, email_address, minimum_order_amount } = req.body;
-
-        // Check if record exists
-        const [existing] = await pool.query('SELECT * FROM general_info LIMIT 1');
-
-        if (existing.length === 0) {
-            // Insert new record
-            await pool.query(
-                'INSERT INTO general_info (gi_brand_name, gi_phone_number, gi_email_address, gi_minimum_order_amount) VALUES (?, ?, ?)',
-                [brand_name, phone_number, email_address, minimum_order_amount]
-            );
-        } else {
-            // Update existing record
-            await pool.query(
-                'UPDATE general_info SET gi_brand_name = ?, gi_phone_number = ?, gi_email_address = ?, gi_minimum_order_amount = ? WHERE gi_id = ?',
-                [brand_name, phone_number, email_address, minimum_order_amount, existing[0].gi_id]
-            );
-        }
-
-        res.json({
-            success: true,
-            message: 'General info updated successfully'
-        });
-    } catch (error) {
-        console.error('Error updating general info:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to update general info'
-        });
-    }
-});
-// ============ AUTH ENDPOINTS ============
-
-// Admin Login
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const [users] = await pool.query(
-            'SELECT * FROM users WHERE email = ? AND password = ?',
-            [email, password]
-        );
-
-        if (users.length === 0) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Invalid email or password' 
-            });
-        }
-
-        const user = users[0];
-        const token = jwt.sign(
-            { userId: user.id, email: user.email },
-            'your-secret-key',
-            { expiresIn: '7d' }
-        );
-
-        res.json({
-            success: true,
-            token: token,
-            user: { id: user.id, email: user.email }
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Login failed' });
-    }
-});
 // Start server
 app.listen(PORT, () => {
-    console.log(`Primejo E-Commerce API running on port ${PORT}`);
-    console.log(`Database: ${dbConfig.database} @ ${dbConfig.host}`);
+    console.log(`✅ Primejo E-Commerce API running on port ${PORT}`);
+    console.log(`✅ Database: ${dbConfig.database} @ ${dbConfig.host}`);
+    console.log(`✅ Authentication enabled`);
 });
 
 module.exports = app;
-
-// ==================== AUTHENTICATION ENDPOINTS ====================
-// Add these to your server.js
-
- bcrypt = require('bcrypt');
- jwt = require('jsonwebtoken');
-
-// JWT Secret (use environment variable in production)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
-
-// ==================== LOGIN ENDPOINT ====================
-
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // Get user from database
-        const [users] = await pool.query(
-            'SELECT * FROM users WHERE email = ?',
-            [email]
-        );
-
-        if (users.length === 0) {
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid email or password'
-            });
-        }
-
-        const user = users[0];
-
-        // Check password (assuming it's hashed with bcrypt)
-        const passwordMatch = await bcrypt.compare(password, user.password);
-
-        if (!passwordMatch) {
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid email or password'
-            });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-            {
-                userId: user.id,
-                email: user.email
-            },
-            JWT_SECRET,
-            { expiresIn: '7d' } // Token valid for 7 days
-        );
-
-        res.json({
-            success: true,
-            token: token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name || user.email
-            }
-        });
-
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Login failed'
-        });
-    }
-});
-
-// ==================== MIDDLEWARE TO VERIFY TOKEN ====================
-
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            error: 'Access denied. No token provided.'
-        });
-    }
-
-    try {
-        const verified = jwt.verify(token, JWT_SECRET);
-        req.user = verified;
-        next();
-    } catch (error) {
-        res.status(403).json({
-            success: false,
-            error: 'Invalid token'
-        });
-    }
-}
-
-// ==================== UPDATE PROTECTED ROUTES ====================
-
-// Products (protected)
-app.post('/api/products', authenticateToken, async (req, res) => {
-    // ... your existing create product code
-});
-
-app.put('/api/products/:id', authenticateToken, async (req, res) => {
-    // ... your existing update product code
-});
-
-app.delete('/api/products/:id', authenticateToken, async (req, res) => {
-    // ... your existing delete product code
-});
-
-// Categories (protected)
-app.post('/api/categories', authenticateToken, async (req, res) => {
-    // ... your existing create category code
-});
-
-app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
-    // ... your existing delete category code
-});
-
-// Orders (protected)
-app.get('/api/orders', authenticateToken, async (req, res) => {
-    // ... your existing get orders code
-});
-
-app.patch('/api/orders/:id/status', authenticateToken, async (req, res) => {
-    // ... your existing update order status code
-});
-
-// General Info (protected)
-app.put('/api/general-info', authenticateToken, async (req, res) => {
-    // ... your existing update general info code
-});
-
-// ==================== INSTALL REQUIRED PACKAGES ====================
-// Run these commands in your backend directory:
-// npm install bcrypt jsonwebtoken
-
