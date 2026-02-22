@@ -78,7 +78,18 @@ async function getDeliveryCountries() {
         const response = await fetch(`${API_URL}/delivery/countries`);
         if (!response.ok) throw new Error('Failed to fetch countries');
         const data = await response.json();
-        return data.countries || [];
+        
+        // Map database fields to frontend format
+        const countries = (data.countries || []).map(c => ({
+            id: c.id,
+            name_en: c.name_en || c.country_name_en,
+            name_ar: c.name_ar || c.country_name_ar,
+            phone_prefix: c.phone_prefix,
+            delivery_fee: parseFloat(c.delivery_fee || c.default_fee || 0),
+            is_active: c.is_active
+        }));
+        
+        return countries;
     } catch (error) {
         console.error('❌ Error fetching countries:', error);
         return [];
@@ -90,7 +101,19 @@ async function getDeliveryCities(countryId) {
         const response = await fetch(`${API_URL}/delivery/cities/${countryId}`);
         if (!response.ok) throw new Error('Failed to fetch cities');
         const data = await response.json();
-        return data.cities || [];
+        
+        // Map database fields to frontend format
+        const cities = (data.cities || []).map(c => ({
+            id: c.id,
+            country_id: c.country_id,
+            name_en: c.name_en || c.city_name_en,
+            name_ar: c.name_ar || c.city_name_ar,
+            delivery_fee: parseFloat(c.delivery_fee || c.displayed_fee || 0),
+            actual_fee: parseFloat(c.actual_fee || 0),
+            is_active: c.is_active
+        }));
+        
+        return cities;
     } catch (error) {
         console.error('❌ Error fetching cities:', error);
         return [];

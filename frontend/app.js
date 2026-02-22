@@ -2,7 +2,7 @@
 // Uses api.js for all data fetching from database
 
 // Language Management
-let currentLanguage = 'en';
+let currentLanguage = 'ar';
 let currentCurrency = 'JOD';
 
 // Currency exchange rates
@@ -147,7 +147,7 @@ async function loadHeaderCategories() {
 
 function createProductCard(product) {
     const nameKey = `name_${currentLanguage}`;
-    const descKey = `description_${currentLanguage}`;
+    // const descKey = `description_${currentLanguage}`;
 
     const imageUrl = product.image || 'https://placehold.co/300x260?text=No+Image';
     const newPrice = parseFloat(product.newPrice || product.new_price || 0);
@@ -168,7 +168,7 @@ function createProductCard(product) {
             </div>
             <div class="product-info">
                 <h3 class="product-name">${product[nameKey] || product.name_en}</h3>
-                <p class="product-description">${product[descKey] || product.description_en || ''}</p>
+                
                 <div class="product-price">
                     <span class="price-new" data-base-price="${newPrice}">
                         ${formatPrice(newPrice)}

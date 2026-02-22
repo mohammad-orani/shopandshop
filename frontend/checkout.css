@@ -61,7 +61,7 @@
     outline: none;
     border-color: var(--primary-black);
     background: var(--primary-white);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-group textarea {
@@ -148,7 +148,7 @@
 .payment-option.selected {
     border-color: var(--primary-black);
     background: var(--primary-white);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .payment-option.disabled {
@@ -183,25 +183,25 @@
 
 .submit-order-btn {
     width: 100%;
-    padding: 1.2rem;
-    background: var(--primary-black);
-    color: var(--primary-white);
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-black) 0%, #2d2d2d 100%);
+    color: white;
     border: none;
-    font-size: 1.1rem;
+    border-radius: 12px;
+    font-size: 1.2rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border-radius: 4px;
     margin-top: 1.5rem;
-    font-family: 'Work Sans', sans-serif;
+    position: relative;
+    overflow: hidden;
 }
 
 .submit-order-btn:hover {
-    background: #222;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
 }
 
 .submit-order-btn:active {
@@ -360,8 +360,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .modal.show {
@@ -379,7 +384,7 @@
     text-align: center;
     animation: slideUp 0.4s ease;
     border-radius: 4px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes slideUp {
@@ -387,6 +392,7 @@
         opacity: 0;
         transform: translateY(40px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -408,8 +414,13 @@
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0); }
-    to { transform: scale(1); }
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
 }
 
 .modal-content h2 {
@@ -458,7 +469,7 @@
 .modal-btn:hover {
     background: #222;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* ==================== RESPONSIVE ==================== */
@@ -470,7 +481,8 @@
 
     .order-summary {
         position: static;
-        order: -1; /* Show summary first on mobile */
+        order: -1;
+        /* Show summary first on mobile */
     }
 
     .address-grid {

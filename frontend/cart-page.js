@@ -1,95 +1,123 @@
-function loadCartItems() {
-    // Ensure currency is initialized
-    if (typeof formatPrice !== 'function') {
-        console.error('Currency functions not loaded yet');
-        setTimeout(loadCartItems, 100);
-        return;
-    }
-    
+// ==================== CART PAGE ====================
+
+// Load cart items and display
+async function loadCartItems() {
     const cart = getCart();
-    const products = getProducts();
     const cartItemsContainer = document.getElementById('cartItems');
-    
+    const emptyCartMessage = document.getElementById('emptyCart');
+
+    if (!cartItemsContainer) return;
+
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = `
-            <div class="empty-cart">
-                <h2 data-en="Your cart is empty" data-ar="سلتك فارغة">Your cart is empty</h2>
-                <p data-en="Add some items to get started" data-ar="أضف بعض المنتجات للبدء">Add some items to get started</p>
-                <a href="index.html" class="empty-cart-btn" data-en="Start Shopping" data-ar="ابدأ التسوق">Start Shopping</a>
-            </div>
-        `;
-        updateCartSummary(0);
-        switchLanguage(currentLanguage);
+        cartItemsContainer.style.display = 'none';
+        if (emptyCartMessage) emptyCartMessage.style.display = 'block';
+        updateOrderSummary();
         return;
     }
-    
-    let cartHTML = '';
-    let subtotal = 0;
-    
-    cart.forEach(item => {
-        const product = products.find(p => p.id === item.productId);
-        if (!product) return;
-        
-        const nameKey = `name_${currentLanguage}`;
-        const itemTotal = product.newPrice * item.quantity;
-        subtotal += itemTotal;
-        
-        cartHTML += `
-            <div class="cart-item">
-                <div class="cart-item-image">
-                    <img src="${product.image}" alt="${product[nameKey]}">
-                </div>
-                <div class="cart-item-details">
-                    <h3>${product[nameKey]}</h3>
-                    <div class="cart-item-price">${formatPrice(product.newPrice)}</div>
-                    <div class="cart-item-controls">
-                        <div class="quantity-control">
-                            <button class="qty-btn" onclick="updateItemQuantity(${product.id}, ${item.quantity - 1})">-</button>
-                            <span class="qty-display">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateItemQuantity(${product.id}, ${item.quantity + 1})">+</button>
-                        </div>
-                        <button class="remove-btn" onclick="removeFromCart(${product.id})" data-en="Remove" data-ar="إزالة">Remove</button>
+
+    try {
+        // ✅ AWAIT the async function
+        const products = await getProducts();
+
+        if (!Array.isArray(products)) {
+            console.error('❌ getProducts() did not return an array:', products);
+            return;
+        }
+
+        let cartHTML = '';
+
+        cart.forEach(item => {
+            const product = products.find(p => String(p.id) === String(item.productId));
+
+            if (!product) {
+                console.warn('Product not found:', item.productId);
+                return;
+            }
+
+            const nameKey = `name_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
+            const total = product.newPrice * item.quantity;
+
+            cartHTML += `
+                <div class="cart-item" data-product-id="${product.id}">
+                    <img src="${product.image}" alt="${product[nameKey]}" class="cart-item-image">
+                    <div class="cart-item-details">
+                        <h3>${product[nameKey]}</h3>
+                        <p class="cart-item-price">${product.newPrice.toFixed(2)} JOD</p>
                     </div>
+                    <div class="cart-item-quantity">
+                        <button onclick="updateQuantity(${product.id}, ${item.quantity - 1})" class="qty-btn">-</button>
+                        <input type="number" value="${item.quantity}" min="1" readonly>
+                        <button onclick="updateQuantity(${product.id}, ${item.quantity + 1})" class="qty-btn">+</button>
+                    </div>
+                    <div class="cart-item-total">
+                        <p>${total.toFixed(2)} JOD</p>
+                    </div>
+                    <button onclick="removeItem(${product.id})" class="remove-btn">×</button>
                 </div>
-                <div class="cart-item-actions">
-                    <div class="item-total">${formatPrice(itemTotal)}</div>
-                </div>
-            </div>
-        `;
-    });
-    
-    cartItemsContainer.innerHTML = cartHTML;
-    updateCartSummary(subtotal);
-    switchLanguage(currentLanguage);
+            `;
+        });
+
+        cartItemsContainer.innerHTML = cartHTML;
+        cartItemsContainer.style.display = 'block';
+        if (emptyCartMessage) emptyCartMessage.style.display = 'none';
+
+        updateOrderSummary();
+
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        cartItemsContainer.innerHTML = '<p style="color: red; padding: 2rem;">Error loading cart items</p>';
+    }
 }
 
-function updateItemQuantity(productId, newQuantity) {
-    if (newQuantity < 1) {
-        removeFromCart(productId);
-        return;
-    }
-    
+async function updateOrderSummary() {
     const cart = getCart();
-    const item = cart.find(item => item.productId === productId);
-    if (item) {
-        item.quantity = newQuantity;
-        saveCart(cart);
+
+    try {
+        const products = await getProducts();
+
+        let subtotal = 0;
+        cart.forEach(item => {
+            const product = products.find(p => String(p.id) === String(item.productId));
+            if (product) {
+                subtotal += product.newPrice * item.quantity;
+            }
+        });
+
+        const subtotalEl = document.getElementById('subtotal');
+        const totalEl = document.getElementById('total');
+
+        if (subtotalEl) subtotalEl.textContent = `${subtotal.toFixed(2)} JOD`;
+        if (totalEl) totalEl.textContent = `${subtotal.toFixed(2)} JOD`;
+
+    } catch (error) {
+        console.error('Error updating summary:', error);
+    }
+}
+
+function updateQuantity(productId, newQuantity) {
+    if (newQuantity < 1) return;
+    updateCartItemQuantity(productId, newQuantity);
+    loadCartItems();
+}
+
+function removeItem(productId) {
+    removeFromCart(productId);
+    loadCartItems();
+}
+
+function clearCartAndReload() {
+    if (confirm('Are you sure you want to clear the cart?')) {
+        clearCart();
         loadCartItems();
     }
 }
 
-function removeFromCart(productId) {
-    const cart = getCart();
-    const updatedCart = cart.filter(item => item.productId !== productId);
-    saveCart(updatedCart);
+// Initialize cart on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadCartItems);
+} else {
     loadCartItems();
 }
-
-function updateCartSummary(subtotal) {
-    document.getElementById('subtotal').textContent = formatPrice(subtotal);
-    document.getElementById('total').textContent = formatPrice(subtotal);
-}
-
 function proceedToCheckout() {
     const cart = getCart();
     if (cart.length === 0) {
@@ -98,6 +126,4 @@ function proceedToCheckout() {
     }
     window.location.href = 'checkout.html';
 }
-
-// Load cart items on page load
-loadCartItems();
+console.log('✅ cart-page.js loaded');
