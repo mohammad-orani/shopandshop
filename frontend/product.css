@@ -422,3 +422,215 @@
     left: auto;
     right: 0;
 }
+
+/* Expandable Description */
+.description-content {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.description-content.truncated {
+    max-height: 120px;
+    position: relative;
+}
+
+.description-content.truncated::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, #f8f9fa);
+    pointer-events: none;
+}
+
+.description-content.expanded {
+    max-height: 2000px;
+}
+
+.description-content.expanded::after {
+    display: none;
+}
+
+.read-more-btn {
+    background: transparent;
+    border: none;
+    color: #d4af37;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 0.75rem;
+    padding: 0.5rem 0;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.read-more-btn:hover {
+    color: #c9a033;
+    transform: translateX(5px);
+}
+
+/* Improved Thumbnail Gallery */
+.thumbnail-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.thumbnail {
+    aspect-ratio: 1;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.thumbnail:hover img {
+    transform: scale(1.1);
+}
+
+.thumbnail:hover {
+    border-color: #d4af37;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.thumbnail.active {
+    border-color: #d4af37;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    background: #fff;
+}
+
+.thumbnail.active::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #d4af37;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Main Image Zoom on Hover */
+.main-image {
+    cursor: zoom-in;
+    position: relative;
+    overflow: hidden;
+}
+
+.main-image img {
+    transition: transform 0.4s ease;
+}
+
+.main-image:hover img {
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .thumbnail-container {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .thumbnail-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ==================== IMAGE GALLERY IMPROVEMENTS ==================== */
+
+.main-image {
+    transition: opacity 0.3s ease;
+}
+
+.main-image img {
+    transition: opacity 0.3s ease;
+}
+
+.thumbnail-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.25rem;
+}
+
+/* Custom scrollbar for thumbnails */
+.thumbnail-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.thumbnail-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.thumbnail-container::-webkit-scrollbar-thumb {
+    background: #d4af37;
+    border-radius: 10px;
+}
+
+.thumbnail-container::-webkit-scrollbar-thumb:hover {
+    background: #c9a033;
+}
+
+.thumbnail {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.thumbnail img {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.thumbnail:hover img {
+    transform: scale(1.1);
+}
+
+.thumbnail.active {
+    box-shadow: 0 0 0 3px #d4af37;
+}
+
+/* Image count badge */
+.image-count-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 10;
+}
+
+/* Zoom on hover for main image */
+.main-image:hover img {
+    transform: scale(1.05);
+}

@@ -67,7 +67,30 @@ function displayProductDetails(product) {
         <div class="product-images">
             <div class="main-image">
                 <img id="mainImage" src="${product.image}" alt="${product[nameKey] || product.name_en}">
+                ${additionalImages && additionalImages.length > 0 ? `
+                    <div class="image-count-badge">
+                        📸 ${additionalImages.length + 1} Photos
+                    </div>
+                ` : ''}
             </div>
+            
+            ${(additionalImages && additionalImages.length > 0) || product.image ? `
+                <div class="thumbnail-container">
+                    <!-- Main Image Thumbnail -->
+                    <div class="thumbnail active" onclick="changeMainImage('${product.image}', this)">
+                        <img src="${product.image}" alt="${product[nameKey] || product.name_en}">
+                    </div>
+                    
+                    <!-- Additional Images Thumbnails -->
+                    ${additionalImages && additionalImages.length > 0 ? additionalImages.map((img, index) => `
+                        <div class="thumbnail" onclick="changeMainImage('${img}', this)">
+                            <img src="${img}" 
+                                 alt="${product[nameKey] || product.name_en} - Image ${index + 2}"
+                                 onerror="this.parentElement.style.display='none'">
+                        </div>
+                    `).join('') : ''}
+                </div>
+            ` : ''}
         </div>
 
         <div class="product-info-section">
@@ -89,23 +112,21 @@ function displayProductDetails(product) {
 
             <div class="product-description">
                 <h3 data-en="Product Description" data-ar="وصف المنتج">Product Description</h3>
-                <div style="white-space: pre-wrap; line-height: 1.8;">${product[descKey] || product.description_en || 'No description available'}</div>
+                <div class="description-content ${(product[descKey] || product.description_en || '').length > 200 ? 'truncated' : ''}" 
+                     id="productDescription"
+                     style="white-space: pre-wrap; line-height: 1.8;">
+                    ${product[descKey] || product.description_en || 'No description available'}
+                </div>
+                ${(product[descKey] || product.description_en || '').length > 200 ? `
+                    <button class="read-more-btn" onclick="toggleDescription()" id="readMoreBtn">
+                        <span data-en="Read More ▼" data-ar="اقرأ المزيد ▼">Read More ▼</span>
+                    </button>
+                ` : ''}
             </div>
 
-            ${product[descKey] && product[descKey].includes('✔') ? `
-                <div class="product-features">
-                    <h3 data-en="Key Features" data-ar="المميزات الرئيسية">Key Features</h3>
-                    <ul>
-                        ${(product[descKey] || '')
-                .split('\n')
-                .filter(line => line.includes('✔'))
-                .map(line => `<li>${line.replace('✔', '').trim()}</li>`)
-                .join('')}
-                    </ul>
-                </div>
-            ` : ''}
+            
 
-            ${(product.quantity_to_sell || product.quantityToSell || 0) > 0 ? `
+            ${(product.quantity_to_sell || product.quantityToSell || product.stock || 0) > 0 ? `
                 <div class="quantity-selector">
                     <label data-en="Quantity:" data-ar="الكمية:">Quantity:</label>
                     <div class="quantity-controls">
@@ -114,12 +135,12 @@ function displayProductDetails(product) {
                                id="quantityInput" 
                                value="1" 
                                min="1" 
-                               max="${product.quantity_to_sell || product.quantityToSell}"
+                               max="${product.quantity_to_sell || product.quantityToSell || product.stock}"
                                onchange="updateQuantity()">
                         <button class="qty-btn" onclick="increaseQuantity()">+</button>
                     </div>
                     <span class="stock-info" style="color: #666; font-size: 0.9rem;">
-                        ${product.quantity_to_sell || product.quantityToSell} available
+                        ${product.quantity_to_sell || product.quantityToSell || product.stock} available
                     </span>
                 </div>
 
@@ -172,9 +193,23 @@ function getYouTubeId(url) {
 }
 
 function changeMainImage(src, thumbnail) {
-    document.getElementById('mainImage').src = src;
+    const mainImg = document.getElementById('mainImage');
+    if (mainImg) {
+        // Add fade animation
+        mainImg.style.opacity = '0.5';
+        mainImg.src = src;
+
+        // Fade back in after image loads
+        mainImg.onload = function () {
+            mainImg.style.opacity = '1';
+        };
+    }
+
+    // Update active state on thumbnails
     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-    thumbnail.parentElement.classList.add('active');
+    if (thumbnail) {
+        thumbnail.classList.add('active');
+    }
 }
 
 function increaseQuantity() {
@@ -231,6 +266,34 @@ function addProductToCart() {
     const qtyInput = document.getElementById('quantityInput');
     if (qtyInput) qtyInput.value = 1;
 }
+
+// ==================== TOGGLE DESCRIPTION ====================
+
+function toggleDescription() {
+    const descEl = document.getElementById('productDescription');
+    const btnEl = document.getElementById('readMoreBtn');
+
+    if (!descEl || !btnEl) return;
+
+    const isExpanded = descEl.classList.contains('expanded');
+
+    if (isExpanded) {
+        descEl.classList.remove('expanded');
+        descEl.classList.add('truncated');
+        btnEl.innerHTML = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
+            ? '<span data-en="Read More ▼" data-ar="اقرأ المزيد ▼">اقرأ المزيد ▼</span>'
+            : '<span data-en="Read More ▼" data-ar="اقرأ المزيد ▼">Read More ▼</span>';
+    } else {
+        descEl.classList.remove('truncated');
+        descEl.classList.add('expanded');
+        btnEl.innerHTML = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
+            ? '<span data-en="Read Less ▲" data-ar="اقرأ أقل ▲">اقرأ أقل ▲</span>'
+            : '<span data-en="Read Less ▲" data-ar="اقرأ أقل ▲">Read Less ▲</span>';
+    }
+}
+
+// Make function available globally
+window.toggleDescription = toggleDescription;
 
 // ==================== INITIALIZE ====================
 

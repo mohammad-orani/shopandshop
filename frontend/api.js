@@ -201,16 +201,16 @@ async function getGeneralInfoFromAPI() {
 // Get products for display (handles both DB formats)
 async function getProducts() {
     const products = await getProductsFromAPI();
-
+    
     console.log('🔄 Processing products from API:', products.length);
-
+    
     const processed = products.map(p => {
         // ✅ Convert MySQL TINYINT (0/1) to JavaScript boolean using !!
         const visible = !!(p.visible || p.is_visible);
         const isNew = !!(p.isNew || p.is_new);
         const topSeller = !!(p.topSeller || p.is_top_seller);
         const isOffer = !!(p.isOffer || p.is_offer);
-
+        
         return {
             id: p.id,
             name_en: p.name_en,
@@ -222,19 +222,23 @@ async function getProducts() {
             oldPrice: parseFloat(p.oldPrice || p.old_price || 0),
             image: p.image || p.image_url,
             stock: p.stock || 0,
+            quantity_to_sell: p.quantity_to_sell || p.quantityToSell || 0,
+            quantityToSell: p.quantity_to_sell || p.quantityToSell || 0,
+            additional_images: p.additional_images || p.additionalImages || [], // ✅ Database field
+            additionalImages: p.additional_images || p.additionalImages || [],   // ✅ Frontend field
+            video_url: p.video_url || p.videoUrl || '',
+            videoUrl: p.video_url || p.videoUrl || '',
             visible: visible,
             isNew: isNew,
             topSeller: topSeller,
-            isOffer: isOffer,
-            additionalImages: p.additionalImages || p.additional_images || [],
-            videoUrl: p.videoUrl || p.video_url || ''
+            isOffer: isOffer
         };
     });
-
+    
     console.log('✅ Processed products:', processed);
     console.log('📊 Top sellers:', processed.filter(p => p.topSeller).length);
     console.log('📊 Visible:', processed.filter(p => p.visible).length);
-
+    
     return processed;
 }
 
