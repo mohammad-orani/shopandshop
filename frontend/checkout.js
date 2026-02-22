@@ -82,7 +82,7 @@ async function loadDeliveryCities(countryId) {
                         data-name-en="${city.name_en}"
                         data-name-ar="${city.name_ar}"
                         data-delivery-fee="${city.delivery_fee || 0}">
-                    ${city.name_en} / ${city.name_ar} - ${formatPrice(city.delivery_fee || 0)}
+                    ${city.name_en} / ${city.name_ar} 
                 </option>
             `).join('');
 
@@ -144,14 +144,14 @@ async function updateDeliveryFee() {
             ? 'مجاناً ✓'
             : 'FREE ✓';
 
-        const metText = currentLanguage === 'ar'
-            ? `تم تجاوز الحد الأدنى ${formatPrice(minimumOrderAmount)}`
-            : `Minimum ${formatPrice(minimumOrderAmount)} met`;
+        // const metText = currentLanguage === 'ar'
+        //     ? `تم تجاوز الحد الأدنى ${formatPrice(minimumOrderAmount)}`
+        //     : `Minimum ${formatPrice(minimumOrderAmount)} met`;
 
         document.getElementById('deliveryFeeDisplay').innerHTML = `
             <span style="color: #10b981; font-weight: 700;">${freeText}</span>
             <span style="display:block;font-size:0.75rem;color:#666;margin-top:2px;">
-                ${metText}
+               
             </span>
         `;
     } else {
@@ -326,7 +326,10 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             customer_email: document.getElementById('customerEmail')?.value || '',
             delivery_country: countryName,
             delivery_city: cityName,
-            complete_address: completeAddress,
+            delivery_street: street,
+            delivery_building: building,
+            delivery_floor: floor || '',
+            delivery_address: completeAddress,
             order_notes: document.getElementById('orderNotes')?.value || '',
             payment_method: document.querySelector('input[name="payment"]:checked')?.value || 'cash',
             items: orderItems,
@@ -335,6 +338,7 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             actual_delivery_fee: selectedActualFee,
             total: subtotal + selectedDeliveryFee,
             currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
+            language: (typeof currentLanguage !== 'undefined') ? currentLanguage : 'en',
             order_status: 'pending'
         };
 
