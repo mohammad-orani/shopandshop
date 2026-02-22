@@ -10,7 +10,7 @@ function showSection(sectionId) {
 
     const section = document.getElementById(sectionId);
     if (section) section.classList.add('active');
-    
+
     const link = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
     if (link) link.classList.add('active');
 
@@ -60,7 +60,7 @@ async function loadDashboard() {
             const name = order.customer_name || order.customerName;
             const status = order.order_status || order.status;
             const items = order.items?.length || 0;
-            
+
             return `
                 <div class="order-item">
                     <div>
@@ -190,13 +190,13 @@ async function editProduct(id) {
         setVal('productOldPrice', p.old_price || p.oldPrice || 0);
         setVal('productNewPrice', p.new_price || p.newPrice || 0);
         setVal('productImage', p.image_url || p.image || '');
-        
+
         // ✅ Parse additional_images properly
         let additionalImagesStr = '';
         if (p.additional_images) {
             try {
-                const imgs = typeof p.additional_images === 'string' 
-                    ? JSON.parse(p.additional_images) 
+                const imgs = typeof p.additional_images === 'string'
+                    ? JSON.parse(p.additional_images)
                     : p.additional_images;
                 additionalImagesStr = Array.isArray(imgs) ? imgs.join(', ') : '';
             } catch (e) {
@@ -204,7 +204,7 @@ async function editProduct(id) {
             }
         }
         setVal('productAdditionalImages', additionalImagesStr);
-        
+
         setVal('productVideo', p.video_url || p.videoUrl || '');
 
         setChecked('productNew', p.isNew || p.is_new || false);
@@ -259,7 +259,12 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
 
         const additionalImagesText = document.getElementById('productAdditionalImages')?.value || '';
         const additionalImages = additionalImagesText
-            .split(',').map(u => u.trim()).filter(u => u);
+            .split(',')
+            .map(u => u.trim())
+            .filter(u => u);
+
+        console.log('📸 Additional images array:', additionalImages);
+        console.log('📸 Will stringify to:', JSON.stringify(additionalImages));
 
         const productData = {
             name_en: document.getElementById('productNameEn')?.value || '',
@@ -273,7 +278,7 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
             old_price: parseFloat(document.getElementById('productOldPrice')?.value || 0),
             new_price: parseFloat(document.getElementById('productNewPrice')?.value || 0),
             image_url: document.getElementById('productImage')?.value || '',
-            additional_images: JSON.stringify(additionalImages), // ✅ Convert to JSON string
+            additional_images: JSON.stringify(additionalImages), // ✅ This should create proper JSON
             video_url: document.getElementById('productVideo')?.value || '',
             is_new: document.getElementById('productNew')?.checked || false,
             is_top_seller: document.getElementById('productTopSeller')?.checked || false,
@@ -282,6 +287,7 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
         };
 
         console.log('📤 Sending product data:', productData);
+        console.log('📤 additional_images value:', productData.additional_images);
 
         let result;
         if (productId) {
@@ -328,7 +334,7 @@ function previewAdditionalImages() {
     const html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
         ${urls.map((url, i) => `
             <div style="border:2px solid #000;padding:0.5rem;">
-                <div style="font-weight:600;margin-bottom:0.5rem;">Image ${i+1}</div>
+                <div style="font-weight:600;margin-bottom:0.5rem;">Image ${i + 1}</div>
                 <img src="${url}" style="width:100%;height:160px;object-fit:cover;"
                      onerror="this.style.display='none'">
             </div>`).join('')}
@@ -478,10 +484,10 @@ async function loadOrders() {
                     <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
                     <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
                         <option value="">Change Status</option>
-                        <option value="pending" ${status==='pending'?'selected':''}>Pending</option>
-                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
-                        <option value="completed" ${status==='completed'?'selected':''}>Completed</option>
-                        <option value="cancelled" ${status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
             </tr>`;
@@ -589,7 +595,7 @@ async function exportOrders() {
             const addr = o.complete_address || o.deliveryAddress || '';
             const status = o.order_status || o.status;
             const date = new Date(o.created_at || o.orderDate).toLocaleString();
-            csv += `"${id}","${name}","${phone}","${addr}",${o.items?.length||0},${o.total},"${status}","${date}"\n`;
+            csv += `"${id}","${name}","${phone}","${addr}",${o.items?.length || 0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
