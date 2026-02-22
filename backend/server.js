@@ -249,7 +249,7 @@ app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
             [
                 name_en, name_ar, description_en, description_ar,
                 category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
-                image_url, JSON.stringify(additional_images || []), video_url,
+                image_url, additional_images , video_url,
                 is_offer || false, is_top_seller || false, is_visible !== false
             ]
         );
@@ -281,7 +281,7 @@ app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
             [
                 name_en, name_ar, description_en, description_ar,
                 category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
-                image_url, JSON.stringify(additional_images || []), video_url,
+                image_url, additional_images , video_url,
                 is_offer, is_top_seller, is_visible,
                 req.params.id
             ]
