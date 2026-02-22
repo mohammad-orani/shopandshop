@@ -314,7 +314,7 @@ app.post('/api/orders', async (req, res) => {
 
         const {
             customer_name, customer_phone, customer_email,
-            delivery_country, delivery_city, complete_address,
+            delivery_country, delivery_city, delivery_address,
             order_notes, payment_method,
             delivery_fee, actual_delivery_fee,
             items, subtotal, total, currency
@@ -326,12 +326,12 @@ app.post('/api/orders', async (req, res) => {
         const [orderResult] = await connection.query(
             `INSERT INTO orders (
                 order_id, customer_name, customer_phone, customer_email,
-                delivery_country, delivery_city, complete_address, order_notes, payment_method,
+                delivery_country, delivery_city, delivery_address, order_notes, payment_method,
                 subtotal, delivery_fee, actual_delivery_fee, total, currency
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 order_id, customer_name, customer_phone, customer_email,
-                delivery_country, delivery_city, complete_address, order_notes, payment_method,
+                delivery_country, delivery_city, delivery_address, order_notes, payment_method,
                 subtotal, delivery_fee || 0, actual_delivery_fee || 0, total, currency || 'USD'
             ]
         );

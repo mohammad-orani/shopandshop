@@ -306,10 +306,10 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
         }).filter(Boolean);
 
         // Build complete address
-        const street = document.getElementById('deliveryStreet')?.value || '';
-        const building = document.getElementById('deliveryBuilding')?.value || '';
-        const floor = document.getElementById('deliveryFloor')?.value || '';
-        const completeAddress = `${street}, ${building}${floor ? ', ' + floor : ''}`;
+        const street = '';
+        const building = '';
+        const floor = '';
+        const completeAddress = document.getElementById('deliveryAddress');
 
         // Create order ID
         const orderId = 'ORD-' + Date.now();
@@ -326,9 +326,9 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             customer_email: document.getElementById('customerEmail')?.value || '',
             delivery_country: countryName,
             delivery_city: cityName,
-            delivery_street: street,
-            delivery_building: building,
-            delivery_floor: floor || '',
+            // delivery_street: street,
+            // delivery_building: building,
+            // delivery_floor: floor || '',
             delivery_address: completeAddress,
             order_notes: document.getElementById('orderNotes')?.value || '',
             payment_method: document.querySelector('input[name="payment"]:checked')?.value || 'cash',
