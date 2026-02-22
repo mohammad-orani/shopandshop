@@ -206,7 +206,7 @@ app.get('/api/products', async (req, res) => {
         query += ' ORDER BY created_at DESC';
 
         const [products] = await pool.query(query, params);
-        res.json(products);
+        res.json(products[0]);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
