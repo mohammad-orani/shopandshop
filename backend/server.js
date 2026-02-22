@@ -206,7 +206,7 @@ app.get('/api/products', async (req, res) => {
         query += ' ORDER BY created_at DESC';
 
         const [products] = await pool.query(query, params);
-        res.json(products[0]);
+        res.json(products);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -222,7 +222,8 @@ app.get('/api/products/:id', async (req, res) => {
         if (products.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        res.json({ success: true, product: products[0] });
+        // res.json({ success: true, product: products[0] });
+           res.json(products[0]);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
