@@ -1,63 +1,54 @@
 // ==================== MOBILE MENU FUNCTIONALITY ====================
+// Works with header.js which already injects #mobileMenuToggle, #mobileNav, #mobileMenuOverlay
 
-(function() {
-    // Create hamburger button and overlay
+(function () {
     function initMobileMenu() {
-        const header = document.querySelector('.header-main-inner');
-        if (!header) return;
+        // Prevent double init
+        if (window._mobileMenuInitialized) return;
+        window._mobileMenuInitialized = true;
 
-        // Create hamburger button
-        const hamburger = document.createElement('button');
-        hamburger.className = 'mobile-menu-toggle';
-        hamburger.innerHTML = '☰';
-        hamburger.setAttribute('aria-label', 'Toggle menu');
+        const toggle = document.getElementById('mobileMenuToggle');
+        const nav = document.getElementById('mobileNav');
+        const overlay = document.getElementById('mobileMenuOverlay');
 
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'mobile-menu-overlay';
-
-        // Insert hamburger at the beginning of header
-        header.insertBefore(hamburger, header.firstChild);
-        document.body.appendChild(overlay);
-
-        // Get navigation
-        const nav = document.querySelector('.topbaic-nav');
-        if (!nav) return;
-
-        // Toggle menu function
-        function toggleMenu() {
-            nav.classList.toggle('active');
-            overlay.classList.toggle('active');
-            hamburger.innerHTML = nav.classList.contains('active') ? '✕' : '☰';
-            
-            // Prevent body scroll when menu is open
-            if (nav.classList.contains('active')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
+        if (!toggle || !nav) {
+            console.warn('Mobile menu elements not found');
+            return;
         }
 
-        // Event listeners
-        hamburger.addEventListener('click', toggleMenu);
-        overlay.addEventListener('click', toggleMenu);
+        function openMenu() {
+            nav.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            toggle.innerHTML = '✕';
+            document.body.style.overflow = 'hidden';
+        }
 
-        // Close menu when clicking a link
+        function closeMenu() {
+            nav.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+            toggle.innerHTML = '☰';
+            document.body.style.overflow = '';
+        }
+
+        function toggleMenu() {
+            nav.classList.contains('active') ? closeMenu() : openMenu();
+        }
+
+        toggle.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', closeMenu);
+
+        // Close when a nav link is clicked
         nav.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (nav.classList.contains('active')) {
-                    toggleMenu();
-                }
-            });
+            link.addEventListener('click', closeMenu);
         });
 
         console.log('✅ Mobile menu initialized');
     }
 
-    // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initMobileMenu);
     } else {
-        initMobileMenu();
+        // header.js injects HTML synchronously, but IDs may need a tick
+        setTimeout(initMobileMenu, 0);
     }
 })();

@@ -48,11 +48,10 @@ async function loadCartItems() {
                         <button onclick="updateQuantity(${product.id}, ${item.quantity - 1})" class="qty-btn">-</button>
                         <input type="number" value="${item.quantity}" min="1" readonly>
                         <button onclick="updateQuantity(${product.id}, ${item.quantity + 1})" class="qty-btn">+</button>
+                         <button onclick="removeItem(${product.id})" class="remove-btn">×</button>
                     </div>
-                    <div class="cart-item-total">
-                        <p>${total.toFixed(2)} JOD</p>
-                    </div>
-                    <button onclick="removeItem(${product.id})" class="remove-btn">×</button>
+                    
+                   
                 </div>
             `;
         });

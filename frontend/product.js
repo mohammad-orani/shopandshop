@@ -126,7 +126,7 @@ function displayProductDetails(product) {
 
             
 
-            ${(product.quantity_to_sell || product.quantityToSell || product.stock || 0) > 0 ? `
+            ${(product.quantity_to_sell || product.quantityToSell || 0) > 0 ? `
                 <div class="quantity-selector">
                     <label data-en="Quantity:" data-ar="الكمية:">Quantity:</label>
                     <div class="quantity-controls">

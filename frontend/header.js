@@ -2,97 +2,91 @@
  * ============================================================
  *  PRIMEJO - SHARED HEADER COMPONENT
  *  File: header.js
- *
- *  HOW TO USE ON EVERY PAGE:
- *  1. Delete entire <header>...</header> from your HTML
- *  2. Add <div id="site-header"></div> where header was
- *  3. Add <script src="header.js"></script> as FIRST script
- *
- *  TO UPDATE HEADER SITEWIDE:
- *  → Edit ONLY this file → changes apply to ALL pages
  * ============================================================
  */
 
 (function () {
 
-    const headerHTML = `
-    <header class="topbaic-header">
-        <!-- Top Bar -->
-        <div class="header-top">
-            <div class="header-top-content">
-                <div class="contact-info">
-                    <span class="contact-email" data-email>📧 Loading...</span>
-                    <span class="contact-phone" data-phone>📞 Loading...</span>
-                </div>
-                <div>
-                    <!-- <a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a>
-                    <a href="#" data-en="Help" data-ar="مساعدة">Help</a> -->
-                    <!-- Language & Currency Controls -->
-                    <div class="lang-toggle" style="display: inline-block;">
-                        <button onclick="switchLanguage('en')" class="lang-btn active" id="lang-en"
-                            style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer; margin: 0 4px;">EN</button>
-                        <button onclick="switchLanguage('ar')" class="lang-btn" id="lang-ar"
-                            style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 12px; cursor: pointer;">ع</button>
-                    </div>
-                  
-                </div>
-            </div>
-        </div>
+    var headerHTML = '<header class="topbaic-header">' +
+        '<div class="header-main">' +
+            '<div class="header-main-inner">' +
+                '<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open menu">&#9776;</button>' +
+                '<a href="index.html" class="topbaic-logo">PRIMEJO</a>' +
+                '<nav class="topbaic-nav" id="mobileNav">' +
+                    '<a href="index.html" data-en="Home" data-ar="\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629">Home</a>' +
+                    '<div class="nav-item" id="navCategories">' +
+                        '<span data-en="Categories" data-ar="\u0627\u0644\u0641\u0626\u0627\u062a">Categories <span class="dropdown-arrow">&#9660;</span></span>' +
+                        '<div class="categories-dropdown" id="categoriesDropdown"></div>' +
+                    '</div>' +
+                    '<a href="about.html" data-en="About" data-ar="\u0645\u0646 \u0646\u062d\u0646">About</a>' +
+                    '<a href="contact.html" data-en="Contact" data-ar="\u0627\u062a\u0635\u0644 \u0628\u0646\u0627">Contact</a>' +
+                '</nav>' +
+                '<div class="header-icons">' +
+                    '<button class="icon-btn" onclick="window.location.href=\'favorites.html\'" title="Favorites">\u2764\ufe0f</button>' +
+                    '<button class="icon-btn" onclick="window.location.href=\'cart.html\'" title="Cart">' +
+                        '\uD83D\uDED2<span class="icon-badge" id="cartCount">0</span>' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>' +
+    '</header>';
 
-        <!-- Main Header -->
-        <div class="header-main">
-            <a href="index.html" class="topbaic-logo">PRIMEJO</a>
-
-            <nav class="topbaic-nav">
-                <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
-
-                <!-- Categories Dropdown -->
-                <div class="nav-item">
-                    <!-- <a href="category.html"> -->
-                    <span data-en="Categories" data-ar="الفئات">Categories</span>
-                    <span class="dropdown-arrow">▼</span>
-                    <!-- </a> -->
-                    <div class="categories-dropdown" id="categoriesDropdown">
-                        <!-- Categories loaded dynamically from database -->
-                    </div>
-                </div>
-
-                <a href="about.html" data-en="About" data-ar="من نحن">About</a>
-                <a href="contact.html" data-en="Contact" data-ar="اتصل بنا">Contact</a>
-            </nav>
-
-            <div class="header-icons">
-                <!-- <button class="icon-btn" onclick="window.location.href='#'" title="Search">
-                    🔍
-                </button> -->
-                <button class="icon-btn" onclick="window.location.href='favorites.html'" title="Favorites">
-                    ❤️
-                </button>
-                <button class="icon-btn" onclick="window.location.href='cart.html'" title="Cart">
-                    🛒
-                    <span class="icon-badge" id="cartCount">0</span>
-                </button>
-            </div>
-        </div>
-    </header>`;
-
-    //   <select id="currencySelector" onchange="changeCurrency(this.value)">
-    //                     <option value="USD" data-en="$ USD" data-ar="دولار $">$ USD</option>
-    //                     <option value="JOD" data-en="JOD دينار" data-ar="دينار JOD">JOD دينار</option>
-    //                 </select>
-    // Inject header
-    const placeholder = document.getElementById('site-header');
+    // Inject
+    var placeholder = document.getElementById('site-header');
     if (placeholder) {
         placeholder.outerHTML = headerHTML;
     } else {
         document.body.insertAdjacentHTML('afterbegin', headerHTML);
     }
 
-    // Attach currency listener after DOM ready
+    // ── Mobile menu ──
+    var toggle  = document.getElementById('mobileMenuToggle');
+    var nav     = document.getElementById('mobileNav');
+    var overlay = document.getElementById('mobileMenuOverlay');
+
+    function openMenu() {
+        nav.classList.add('active');
+        if (overlay) overlay.classList.add('active');
+        toggle.innerHTML = '&#10005;';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+        nav.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        toggle.innerHTML = '&#9776;';
+        document.body.style.overflow = '';
+    }
+
+    if (toggle && nav) {
+        toggle.addEventListener('click', function () {
+            nav.classList.contains('active') ? closeMenu() : openMenu();
+        });
+        if (overlay) overlay.addEventListener('click', closeMenu);
+        nav.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', closeMenu);
+        });
+
+        // ── Categories tap-to-toggle on mobile ──
+        var catItem = document.getElementById('navCategories');
+        if (catItem) {
+            var catSpan = catItem.querySelector('span');
+            if (catSpan) {
+                catSpan.addEventListener('click', function () {
+                    catItem.classList.toggle('open');
+                });
+            }
+        }
+
+        console.log('✅ Mobile menu ready');
+    }
+
+    // Currency selector
     document.addEventListener('DOMContentLoaded', function () {
-        const sel = document.getElementById('currencySelector');
+        var sel = document.getElementById('currencySelector');
         if (!sel) return;
-        const saved = localStorage.getItem('preferredCurrency') || 'JOD';
+        var saved = localStorage.getItem('preferredCurrency') || 'JOD';
         sel.value = saved;
         sel.addEventListener('change', function () {
             if (typeof changeCurrency === 'function') changeCurrency(this.value);

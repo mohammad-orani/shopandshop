@@ -46,13 +46,11 @@ function changeCurrency(currency) {
 function refreshAllPricesNow() {
     console.log('🔄 Refreshing prices for:', currentCurrency);
 
-    // Update all elements with data-base-price
     document.querySelectorAll('[data-base-price]').forEach(el => {
         const base = parseFloat(el.getAttribute('data-base-price'));
         if (!isNaN(base)) el.textContent = formatPrice(base);
     });
 
-    // Re-render products if functions exist
     if (typeof renderProductsPage === 'function') renderProductsPage();
     if (typeof reloadHomeProducts === 'function') reloadHomeProducts();
     if (typeof loadCartItems === 'function') loadCartItems();
@@ -66,15 +64,14 @@ function refreshAllPricesNow() {
 
 function switchLanguage(lang) {
     currentLanguage = lang;
+    lang = 'ar';
     document.documentElement.lang = lang;
     document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-    // Update active button
     document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
     const langBtn = document.getElementById(`lang-${lang}`);
     if (langBtn) langBtn.classList.add('active');
 
-    // Update all translatable elements
     document.querySelectorAll('[data-en][data-ar]').forEach(element => {
         const translation = element.getAttribute(`data-${lang}`);
         if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
@@ -84,7 +81,6 @@ function switchLanguage(lang) {
         }
     });
 
-    // Update breadcrumb
     const breadcrumb = document.getElementById('breadcrumb-current');
     if (breadcrumb) {
         const breadcrumbText = breadcrumb.getAttribute(`data-${lang}`);
@@ -147,7 +143,6 @@ async function loadHeaderCategories() {
 
 function createProductCard(product) {
     const nameKey = `name_${currentLanguage}`;
-    // const descKey = `description_${currentLanguage}`;
 
     const imageUrl = product.image || 'https://placehold.co/300x260?text=No+Image';
     const newPrice = parseFloat(product.newPrice || product.new_price || 0);
@@ -168,14 +163,13 @@ function createProductCard(product) {
             </div>
             <div class="product-info">
                 <h3 class="product-name">${product[nameKey] || product.name_en}</h3>
-                
                 <div class="product-price">
                     <span class="price-new" data-base-price="${newPrice}">
                         ${formatPrice(newPrice)}
                     </span>
                     ${oldPrice && oldPrice !== newPrice
-            ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
-            : ''}
+                        ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
+                        : ''}
                 </div>
                 <div class="product-actions">
                     <button class="btn"
@@ -195,18 +189,7 @@ function createProductCard(product) {
 async function reloadHomeProducts() {
     try {
         const products = await getProducts();
-        // ✅ ADD THIS DEBUG CODE:
-        console.log('=== DEBUG HOME PRODUCTS ===');
-        console.log('Total products from API:', products.length);
-        console.log('Products:', products);
-        console.log('Filtering for top sellers...');
-        const topSellers = products.filter(p => {
-            console.log(`- ${p.name_en}: topSeller=${p.topSeller || p.is_top_seller}, visible=${p.visible || p.is_visible}`);
-            return (p.topSeller || p.is_top_seller) && (p.visible !== false && p.is_visible !== false);
-        });
-        console.log('Top Sellers found:', topSellers.length);
-        console.log('===========================');
-        // Top Sellers
+
         const topSellersEl = document.getElementById('topSellers');
         if (topSellersEl) {
             const topSellers = products.filter(p => p.topSeller && p.visible).slice(0, 4);
@@ -214,7 +197,6 @@ async function reloadHomeProducts() {
                 '<p style="text-align:center;padding:2rem;">No top sellers yet</p>';
         }
 
-        // Random Products
         const randomEl = document.getElementById('randomProducts');
         if (randomEl) {
             const random = products.filter(p => p.visible).sort(() => 0.5 - Math.random()).slice(0, 4);
@@ -222,7 +204,6 @@ async function reloadHomeProducts() {
                 '<p style="text-align:center;padding:2rem;">No products available</p>';
         }
 
-        // Offers
         const offersEl = document.getElementById('offerProducts');
         if (offersEl) {
             const offers = products.filter(p => p.isOffer && p.visible).slice(0, 4);
@@ -237,99 +218,15 @@ async function reloadHomeProducts() {
     }
 }
 
-// Load homepage products if on homepage
 if (document.getElementById('topSellers')) {
     reloadHomeProducts();
 }
 
-// ==================== HERO SLIDER ====================
-
-(function initSlider() {
-    let currentSlide = 0;
-    let autoplayInterval = null;
-    const autoplayDelay = 5000;
-
-    const slides = document.querySelectorAll('.slide');
-    const dotsContainer = document.getElementById('dotsContainer');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const sliderWrapper = document.querySelector('.slider-wrapper');
-
-    if (!slides.length || !dotsContainer) return;
-
-    console.log('✅ Slider initialized with', slides.length, 'slides');
-
-    function createDots() {
-        dotsContainer.innerHTML = '';
-        slides.forEach((_, index) => {
-            const dot = document.createElement('div');
-            dot.classList.add('dot');
-            if (index === 0) dot.classList.add('active');
-            dot.addEventListener('click', () => goToSlide(index));
-            dotsContainer.appendChild(dot);
-        });
-    }
-
-    function updateDots() {
-        const dots = dotsContainer.querySelectorAll('.dot');
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentSlide);
-        });
-    }
-
-    function showSlide(index) {
-        slides.forEach(slide => slide.classList.remove('active'));
-        if (index >= slides.length) currentSlide = 0;
-        else if (index < 0) currentSlide = slides.length - 1;
-        else currentSlide = index;
-        slides[currentSlide].classList.add('active');
-        updateDots();
-    }
-
-    function nextSlide() { showSlide(currentSlide + 1); }
-    function prevSlide() { showSlide(currentSlide - 1); }
-    function goToSlide(index) { showSlide(index); resetAutoplay(); }
-
-    function startAutoplay() {
-        autoplayInterval = setInterval(nextSlide, autoplayDelay);
-    }
-
-    function stopAutoplay() {
-        if (autoplayInterval) {
-            clearInterval(autoplayInterval);
-            autoplayInterval = null;
-        }
-    }
-
-    function resetAutoplay() {
-        stopAutoplay();
-        startAutoplay();
-    }
-
-    if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAutoplay(); });
-    if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAutoplay(); });
-    if (sliderWrapper) {
-        sliderWrapper.addEventListener('mouseenter', stopAutoplay);
-        sliderWrapper.addEventListener('mouseleave', startAutoplay);
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') { prevSlide(); resetAutoplay(); }
-        else if (e.key === 'ArrowRight') { nextSlide(); resetAutoplay(); }
-    });
-
-    createDots();
-    showSlide(0);
-    startAutoplay();
-
-    console.log('🎉 Slider running!');
-})();
+// NOTE: Slider is initialized in slider.js — do NOT init it here.
 
 // ==================== PRODUCT FILTERING ====================
 
 function filterProducts(category) {
-    console.log('Filtering products:', category);
-
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
         btn.classList.remove('active');
@@ -403,9 +300,151 @@ function toggleFavorite(productId) {
         favorites.push(productId);
     }
     saveFavorites(favorites);
-
     const btn = event.target;
     btn.classList.toggle('active');
+}
+
+// ==================== LOAD FAVORITES PAGE ====================
+
+async function loadFavorites() {
+    const container = document.getElementById('favoritesGrid');
+    if (!container) return;
+
+    const favoriteIds = getFavorites();
+
+    // Empty state
+    if (favoriteIds.length === 0) {
+        container.innerHTML = `
+            <div class="empty-favorites">
+                <div class="empty-favorites-icon">🤍</div>
+                <h2 data-en="No Favorites Yet" data-ar="لا توجد مفضلة بعد">No Favorites Yet</h2>
+                <p data-en="Items you heart will appear here." data-ar="ستظهر المنتجات التي تضيفها للمفضلة هنا.">
+                    Items you heart will appear here.
+                </p>
+                <button class="fav-shop-btn" onclick="window.location.href='index.html'"
+                    data-en="Start Shopping" data-ar="ابدأ التسوق">Start Shopping</button>
+            </div>`;
+        switchLanguage(currentLanguage);
+        return;
+    }
+
+    // Loading state
+    container.innerHTML = `<div class="fav-loading">Loading...</div>`;
+
+    try {
+        const allProducts = await getProducts();
+        const nameKey = `name_${currentLanguage}`;
+
+        // Filter only favorited products
+        const favoriteProducts = allProducts.filter(p => favoriteIds.includes(p.id));
+
+        if (favoriteProducts.length === 0) {
+            // IDs saved but products not found (deleted from DB)
+            saveFavorites([]);
+            container.innerHTML = `
+                <div class="empty-favorites">
+                    <div class="empty-favorites-icon">🤍</div>
+                    <h2 data-en="No Favorites Found" data-ar="لم يتم العثور على مفضلة">No Favorites Found</h2>
+                    <button class="fav-shop-btn" onclick="window.location.href='index.html'"
+                        data-en="Browse Products" data-ar="تصفح المنتجات">Browse Products</button>
+                </div>`;
+            switchLanguage(currentLanguage);
+            return;
+        }
+
+        // Render favorite cards
+        container.innerHTML = favoriteProducts.map(product => {
+            const imageUrl = product.image || 'https://placehold.co/300x300?text=No+Image';
+            const newPrice = parseFloat(product.newPrice || product.new_price || 0);
+            const oldPrice = parseFloat(product.oldPrice || product.old_price || 0);
+            const name = product[nameKey] || product.name_en || 'Product';
+
+            return `
+                <div class="favorite-card" data-product-id="${product.id}">
+                    <div class="fav-card-image" onclick="viewProduct(${product.id})">
+                        <img src="${imageUrl}"
+                             alt="${name.replace(/"/g, '&quot;')}"
+                             loading="lazy"
+                             onerror="this.onerror=null;this.src='https://placehold.co/300x300?text=No+Image'">
+                        <button class="fav-remove-btn"
+                                title="Remove from favorites"
+                                onclick="event.stopPropagation(); removeFavorite(${product.id})">
+                            ✕
+                        </button>
+                    </div>
+                    <div class="fav-card-info">
+                        <h3 class="fav-card-name" onclick="viewProduct(${product.id})">${name}</h3>
+                        <div class="fav-card-price">
+                            <span class="price-new" data-base-price="${newPrice}">${formatPrice(newPrice)}</span>
+                            ${oldPrice && oldPrice !== newPrice
+                                ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
+                                : ''}
+                        </div>
+                        <button class="fav-add-to-cart"
+                                onclick="addToCart(${product.id})"
+                                data-en="Add to Cart"
+                                data-ar="أضف للسلة">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Update favorites count badge
+        updateFavoritesCount();
+        switchLanguage(currentLanguage);
+
+        console.log('✅ Loaded', favoriteProducts.length, 'favorites');
+
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        container.innerHTML = `
+            <div class="empty-favorites">
+                <p style="color:#e74c3c;" data-en="Failed to load favorites." data-ar="فشل تحميل المفضلة.">
+                    Failed to load favorites.
+                </p>
+            </div>`;
+    }
+}
+
+// Remove a single product from favorites and re-render
+function removeFavorite(productId) {
+    let favorites = getFavorites();
+    favorites = favorites.filter(id => id !== productId);
+    saveFavorites(favorites);
+
+    // Animate card out then reload
+    const card = document.querySelector(`.favorite-card[data-product-id="${productId}"]`);
+    if (card) {
+        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.9)';
+        setTimeout(() => loadFavorites(), 300);
+    } else {
+        loadFavorites();
+    }
+
+    // Also update heart buttons on other pages if present
+    document.querySelectorAll(`.btn-fav[data-id="${productId}"], .icon-btn[data-fav="${productId}"]`)
+        .forEach(btn => btn.classList.remove('active'));
+
+    updateFavoritesCount();
+}
+
+// Update the heart badge count in the header
+function updateFavoritesCount() {
+    const count = getFavorites().length;
+    const badge = document.getElementById('favCount');
+    if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+// Auto-load favorites page on DOM ready
+if (document.getElementById('favoritesGrid')) {
+    document.addEventListener('DOMContentLoaded', loadFavorites);
 }
 
 // ==================== NAVIGATION ====================
@@ -417,7 +456,6 @@ function viewProduct(productId) {
 // ==================== INITIALIZATION ====================
 
 window.addEventListener('DOMContentLoaded', async () => {
-    // Load preferences
     const savedLang = localStorage.getItem('preferredLanguage') || 'en';
     switchLanguage(savedLang);
 
@@ -431,11 +469,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Load categories
     await loadCategoriesMenu();
     await loadHeaderCategories();
 
-    // Update cart count
     if (typeof updateCartCount === 'function') {
         updateCartCount();
     }
@@ -443,7 +479,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.log('✅ App initialized');
 });
 
-console.log('✅ app.js loaded - Using database for products and categories');
+console.log('✅ app.js loaded');
 
 // Load ALL products on homepage (for filter system)
 if (document.getElementById('topbaicProductsGrid')) {
@@ -457,13 +493,9 @@ if (document.getElementById('topbaicProductsGrid')) {
                 return;
             }
 
-            // Render all products
             grid.innerHTML = products.map(createProductCard).join('');
-
-            // Update product count
             updateProductCount();
 
-            // Re-apply language
             if (typeof switchLanguage === 'function' && typeof currentLanguage !== 'undefined') {
                 switchLanguage(currentLanguage);
             }
