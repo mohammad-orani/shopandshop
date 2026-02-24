@@ -85,7 +85,7 @@ async function getDeliveryCountries() {
             name_en: c.name_en || c.country_name_en,
             name_ar: c.name_ar || c.country_name_ar,
             phone_prefix: c.phone_prefix,
-            delivery_fee: parseFloat(c.displayed_fee || c.default_fee || 0),
+            delivery_fee: parseFloat(c.default_fee || 0),
             is_active: c.is_active
         }));
         
