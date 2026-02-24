@@ -227,6 +227,13 @@ app.delete('/api/products/:id', authenticateToken, isAdmin, async (req, res) => 
 // ============ ORDERS ENDPOINTS ============
 
 // Create order (PUBLIC)
+// Exact DB schema (orders table):
+//   order_id, customer_name, customer_phone, customer_email,
+//   delivery_country, delivery_city, delivery_street, delivery_building,
+//   delivery_floor, delivery_address, order_notes,
+//   payment_method, payment_status, order_status,
+//   currency, subtotal, displayed_shipping_cost, actual_shipping_cost,
+//   total, language
 app.post('/api/orders', async (req, res) => {
     const connection = await pool.getConnection();
     try {
@@ -234,46 +241,65 @@ app.post('/api/orders', async (req, res) => {
 
         const {
             order_id: clientOrderId,
-            customer_name, customer_phone, customer_email,
-            delivery_country, delivery_city, delivery_address,
-            order_notes, payment_method,
+            customer_name,
+            customer_phone,
+            customer_email,
+            delivery_country,
+            delivery_city,
+            delivery_street,
+            delivery_building,
+            delivery_floor,
+            delivery_address,
+            order_notes,
+            payment_method,
             delivery_fee, actual_delivery_fee, shipping_fee,
-            items, subtotal, total,
-            currency, order_status
+            items,
+            subtotal,
+            total,
+            currency,
+            language,
+            order_status
         } = req.body;
 
         const order_id = clientOrderId || ('ORD-' + Date.now());
 
-        // Accept any fee naming convention from frontend
         const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
         const actualFee    = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
 
-        // ✅ EXACT column names from DB: displayed_shipping_cost, actual_shipping_cost
+        // ✅ All 20 columns match DB schema exactly
         const [orderResult] = await connection.query(
             `INSERT INTO orders (
                 order_id,
                 customer_name, customer_phone, customer_email,
-                delivery_country, delivery_city, delivery_address,
-                order_notes, payment_method,
-                subtotal, displayed_shipping_cost, actual_shipping_cost,
-                total, currency, order_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                delivery_country, delivery_city,
+                delivery_street, delivery_building, delivery_floor,
+                delivery_address, order_notes,
+                payment_method, payment_status, order_status,
+                currency, subtotal,
+                displayed_shipping_cost, actual_shipping_cost,
+                total, language
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 order_id,
-                customer_name,
-                customer_phone,
-                customer_email   || '',
-                delivery_country,
-                delivery_city,
-                delivery_address || '',
-                order_notes      || '',
-                payment_method   || 'cash',
-                subtotal         || 0,
+                customer_name        || '',
+                customer_phone       || '',
+                customer_email       || '',
+                delivery_country     || '',
+                delivery_city        || '',
+                delivery_street      || '',
+                delivery_building    || '',
+                delivery_floor       || '',
+                delivery_address     || '',
+                order_notes          || '',
+                payment_method       || 'cash',
+                'pending',
+                order_status         || 'pending',
+                currency             || 'JOD',
+                subtotal             || 0,
                 displayedFee,
                 actualFee,
-                total            || 0,
-                currency         || 'JOD',
-                order_status     || 'pending'
+                total                || 0,
+                language             || 'en'
             ]
         );
 
@@ -283,9 +309,9 @@ app.post('/api/orders', async (req, res) => {
         for (const item of (items || [])) {
             await connection.query(
                 `INSERT INTO order_items (
-                    order_id, product_id, product_name, quantity, price, total
+                    order_id, product_id, product_name_ar, quantity, cost_price, price, total
                 ) VALUES (?, ?, ?, ?, ?, ?)`,
-                [dbOrderId, item.productId, item.productName, item.quantity, item.price, item.total]
+                [dbOrderId, item.productId, item.productName, item.quantity, item.cost_price,item.price, item.total]
             );
         }
 
@@ -295,7 +321,7 @@ app.post('/api/orders', async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Order created successfully',
-            order_id: order_id
+            order_id
         });
 
     } catch (error) {
@@ -306,6 +332,7 @@ app.post('/api/orders', async (req, res) => {
         connection.release();
     }
 });
+
 
 // Get all orders (PROTECTED)
 app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {

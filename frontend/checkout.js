@@ -434,28 +434,29 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
         const fullPhoneNumber = phonePrefix + phoneNumber;
         const completeAddress = document.getElementById('deliveryAddress')?.value || '';
 
-        // ✅ FIX: Use shipping_fee instead of delivery_fee to match DB column
-        // Only include fields your orders table actually has.
-        // Remove delivery_fee / actual_delivery_fee if they don't exist in your DB.
+        // ✅ orderData matches exact orders table schema
         const orderData = {
-            order_id: orderId,
-            customer_name: document.getElementById('customerName')?.value,
-            customer_phone: fullPhoneNumber,
-            customer_email: document.getElementById('customerEmail')?.value || '',
-            delivery_country: countryName,
-            delivery_city: cityName,
-            delivery_address: completeAddress,
-            order_notes: document.getElementById('orderNotes')?.value || '',
-            payment_method: document.querySelector('input[name="payment"]:checked')?.value || 'cash',
-            items: orderItems,
-            subtotal: subtotal,
-            // DB columns: displayed_shipping_cost, actual_shipping_cost
-            delivery_fee: selectedDeliveryFee,
-            actual_delivery_fee: selectedActualFee,
-            total: subtotal + selectedDeliveryFee,
-            currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
-            language: (typeof currentLanguage !== 'undefined') ? currentLanguage : 'en',
-            order_status: 'pending'
+            order_id:              orderId,
+            customer_name:         document.getElementById('customerName')?.value         || '',
+            customer_phone:        fullPhoneNumber,
+            customer_email:        document.getElementById('customerEmail')?.value        || '',
+            delivery_country:      countryName                                            || '',
+            delivery_city:         cityName                                               || '',
+            delivery_street:       document.getElementById('deliveryStreet')?.value      || '',
+            delivery_building:     document.getElementById('deliveryBuilding')?.value    || '',
+            delivery_floor:        document.getElementById('deliveryFloor')?.value       || '',
+            delivery_address:      completeAddress,
+            order_notes:           document.getElementById('orderNotes')?.value          || '',
+            payment_method:        document.querySelector('input[name="payment"]:checked')?.value || 'cash',
+            items:                 orderItems,
+            subtotal:              subtotal,
+            // Maps to displayed_shipping_cost + actual_shipping_cost in DB
+            delivery_fee:          selectedDeliveryFee,
+            actual_delivery_fee:   selectedActualFee,
+            total:                 subtotal + selectedDeliveryFee,
+            currency:              (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
+            language:              (typeof currentLanguage !== 'undefined') ? currentLanguage  : 'en',
+            order_status:          'pending'
         };
 
         const result = await createOrder(orderData);
