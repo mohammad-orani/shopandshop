@@ -465,8 +465,45 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             clearCart();
             closeFreeDeliveryPopup();
 
+            const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
+
+            // Populate order ID
             const orderIdEl = document.getElementById('orderIdDisplay');
             if (orderIdEl) orderIdEl.textContent = orderId;
+
+            // Populate order items in modal
+            const modalItemsEl = document.getElementById('modalOrderItems');
+            if (modalItemsEl) {
+                const itemsHTML = orderItems.map(item => `
+                    <div class="modal-item-row">
+                        <span class="modal-item-name">${isAr && item.productNameAr ? item.productNameAr : item.productName}</span>
+                        <span class="modal-item-qty">×${item.quantity}</span>
+                        <span class="modal-item-price">${formatPrice(item.total)}</span>
+                    </div>
+                `).join('');
+                modalItemsEl.innerHTML = itemsHTML;
+            }
+
+            // Populate subtotal, delivery, total in modal
+            const modalSubtotalEl = document.getElementById('modalSubtotal');
+            if (modalSubtotalEl) modalSubtotalEl.textContent = formatPrice(subtotal);
+
+            const modalDeliveryEl = document.getElementById('modalDelivery');
+            if (modalDeliveryEl) {
+                modalDeliveryEl.textContent = selectedDeliveryFee === 0
+                    ? (isAr ? 'مجاناً ✓' : 'FREE ✓')
+                    : formatPrice(selectedDeliveryFee);
+                if (selectedDeliveryFee === 0) modalDeliveryEl.style.color = '#10b981';
+            }
+
+            const modalTotalEl = document.getElementById('modalTotal');
+            if (modalTotalEl) modalTotalEl.textContent = formatPrice(subtotal + selectedDeliveryFee);
+
+            // Populate customer name in modal
+            const modalCustomerEl = document.getElementById('modalCustomerName');
+            if (modalCustomerEl) {
+                modalCustomerEl.textContent = document.getElementById('customerName')?.value || '';
+            }
 
             const modal = document.getElementById('successModal');
             if (modal) modal.classList.add('show');
