@@ -309,9 +309,9 @@ app.post('/api/orders', async (req, res) => {
         for (const item of (items || [])) {
             await connection.query(
                 `INSERT INTO order_items (
-                    order_id, product_id, product_name_ar, quantity, cost_price, price, total
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [dbOrderId, item.productId, item.productName, item.quantity, item.cost_price, item.price, item.total]
+                    order_id, product_id, product_name_ar, product_name_en, quantity, cost_price, price, total
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [dbOrderId, item.productId, item.productName, item.productName, item.quantity, item.cost_price, item.price, item.total]
             );
         }
 
