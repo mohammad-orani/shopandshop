@@ -49,10 +49,10 @@ async function ensureOrdersColumns() {
         // These are the EXACT column names in your orders table
         const toAdd = [
             { name: 'displayed_shipping_cost', def: 'DECIMAL(10,2) DEFAULT 0' },
-            { name: 'actual_shipping_cost',    def: 'DECIMAL(10,2) DEFAULT 0' },
-            { name: 'currency',                def: "VARCHAR(10) DEFAULT 'JOD'" },
-            { name: 'order_status',            def: "VARCHAR(50) DEFAULT 'pending'" },
-            { name: 'language',                def: "VARCHAR(10) DEFAULT 'en'" },
+            { name: 'actual_shipping_cost', def: 'DECIMAL(10,2) DEFAULT 0' },
+            { name: 'currency', def: "VARCHAR(10) DEFAULT 'JOD'" },
+            { name: 'order_status', def: "VARCHAR(50) DEFAULT 'pending'" },
+            { name: 'language', def: "VARCHAR(10) DEFAULT 'en'" },
         ];
 
         for (const col of toAdd) {
@@ -264,7 +264,7 @@ app.post('/api/orders', async (req, res) => {
         const order_id = clientOrderId || ('ORD-' + Date.now());
 
         const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
-        const actualFee    = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
+        const actualFee = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
 
         // ✅ All 20 columns match DB schema exactly
         const [orderResult] = await connection.query(
@@ -281,25 +281,25 @@ app.post('/api/orders', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 order_id,
-                customer_name        || '',
-                customer_phone       || '',
-                customer_email       || '',
-                delivery_country     || '',
-                delivery_city        || '',
-                delivery_street      || '',
-                delivery_building    || '',
-                delivery_floor       || '',
-                delivery_address     || '',
-                order_notes          || '',
-                payment_method       || 'cash',
+                customer_name || '',
+                customer_phone || '',
+                customer_email || '',
+                delivery_country || '',
+                delivery_city || '',
+                delivery_street || '',
+                delivery_building || '',
+                delivery_floor || '',
+                delivery_address || '',
+                order_notes || '',
+                payment_method || 'cash',
                 'pending',
-                order_status         || 'pending',
-                currency             || 'JOD',
-                subtotal             || 0,
+                order_status || 'pending',
+                currency || 'JOD',
+                subtotal || 0,
                 displayedFee,
                 actualFee,
-                total                || 0,
-                language             || 'en'
+                total || 0,
+                language || 'en'
             ]
         );
 
@@ -310,8 +310,8 @@ app.post('/api/orders', async (req, res) => {
             await connection.query(
                 `INSERT INTO order_items (
                     order_id, product_id, product_name_ar, quantity, cost_price, price, total
-                ) VALUES (?, ?, ?, ?, ?, ?)`,
-                [dbOrderId, item.productId, item.productName, item.quantity, item.cost_price,item.price, item.total]
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [dbOrderId, item.productId, item.productName, item.quantity, item.cost_price, item.price, item.total]
             );
         }
 
@@ -421,13 +421,13 @@ app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
 app.get('/api/stats', authenticateToken, isAdmin, async (req, res) => {
     try {
         const [productCount] = await pool.query('SELECT COUNT(*) as count FROM products');
-        const [orderCount]   = await pool.query('SELECT COUNT(*) as count FROM orders');
-        const [revenue]      = await pool.query('SELECT SUM(total) as total FROM orders WHERE order_status = "completed"');
-        const [pending]      = await pool.query('SELECT COUNT(*) as count FROM orders WHERE order_status = "pending"');
+        const [orderCount] = await pool.query('SELECT COUNT(*) as count FROM orders');
+        const [revenue] = await pool.query('SELECT SUM(total) as total FROM orders WHERE order_status = "completed"');
+        const [pending] = await pool.query('SELECT COUNT(*) as count FROM orders WHERE order_status = "pending"');
         res.json({
             total_products: productCount[0].count,
-            total_orders:   orderCount[0].count,
-            total_revenue:  revenue[0].total || 0,
+            total_orders: orderCount[0].count,
+            total_revenue: revenue[0].total || 0,
             pending_orders: pending[0].count
         });
     } catch (error) { res.status(500).json({ error: error.message }); }
