@@ -9,7 +9,43 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// ==================== CORS FIX FOR server.js ====================
+// Replace your current:  app.use(cors());
+// With this block so Railway allows requests from your Netlify admin.
+//
+// HOW TO USE:
+//   1. In Railway dashboard → your service → Variables
+//   2. Add:  ADMIN_URL = https://your-admin.netlify.app
+//   3. Replace the cors line in server.js with the code below.
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowed = [
+            // Local development
+            'http://localhost:3000',
+            'http://localhost:5500',
+            'http://127.0.0.1:5500',
+            // Your Netlify frontend (update this)
+            process.env.FRONTEND_URL,
+            // Your Netlify admin (update this)
+            process.env.ADMIN_URL,
+        ].filter(Boolean);   // remove undefined entries
+
+        // Allow requests with no origin (Postman, server-to-server, etc.)
+        if (!origin || allowed.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.warn('CORS blocked:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));   // handle preflight for all routes
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
@@ -46,10 +82,10 @@ async function ensureOrdersColumns() {
         const existing = cols.map(c => c.COLUMN_NAME);
         const toAdd = [
             { name: 'displayed_shipping_cost', def: 'DECIMAL(10,2) DEFAULT 0' },
-            { name: 'actual_shipping_cost',    def: 'DECIMAL(10,2) DEFAULT 0' },
-            { name: 'currency',                def: "VARCHAR(10) DEFAULT 'JOD'" },
-            { name: 'order_status',            def: "VARCHAR(50) DEFAULT 'pending'" },
-            { name: 'language',                def: "VARCHAR(10) DEFAULT 'en'" },
+            { name: 'actual_shipping_cost', def: 'DECIMAL(10,2) DEFAULT 0' },
+            { name: 'currency', def: "VARCHAR(10) DEFAULT 'JOD'" },
+            { name: 'order_status', def: "VARCHAR(50) DEFAULT 'pending'" },
+            { name: 'language', def: "VARCHAR(10) DEFAULT 'en'" },
         ];
         for (const col of toAdd) {
             if (!existing.includes(col.name)) {
@@ -126,10 +162,10 @@ app.get('/api/products', async (req, res) => {
         const { category, offer, topSeller, visible, search } = req.query;
         let query = 'SELECT * FROM products WHERE 1=1';
         const params = [];
-        if (category)            { query += ' AND category_id = ?'; params.push(category); }
-        if (offer === 'true')      query += ' AND is_offer = TRUE';
-        if (topSeller === 'true')  query += ' AND is_top_seller = TRUE';
-        if (visible !== 'false')   query += ' AND is_visible = TRUE';
+        if (category) { query += ' AND category_id = ?'; params.push(category); }
+        if (offer === 'true') query += ' AND is_offer = TRUE';
+        if (topSeller === 'true') query += ' AND is_top_seller = TRUE';
+        if (visible !== 'false') query += ' AND is_visible = TRUE';
         if (search) {
             query += ' AND (name_en LIKE ? OR name_ar LIKE ? OR description_en LIKE ?)';
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
@@ -151,17 +187,17 @@ app.get('/api/products/:id', async (req, res) => {
 app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { name_en, name_ar, description_en, description_ar, category_id, cost_price,
-                old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
-                video_url, is_offer, is_top_seller, is_visible } = req.body;
+            old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
+            video_url, is_offer, is_top_seller, is_visible } = req.body;
         const [result] = await pool.query(
             `INSERT INTO products (name_en, name_ar, description_en, description_ar,
                 category_id, cost_price, old_price, new_price, stock, quantity_to_sell,
                 image_url, additional_images, video_url, is_offer, is_top_seller, is_visible)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [name_en, name_ar, description_en, description_ar,
-             category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
-             image_url, additional_images, video_url,
-             is_offer || false, is_top_seller || false, is_visible !== false]
+                category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
+                image_url, additional_images, video_url,
+                is_offer || false, is_top_seller || false, is_visible !== false]
         );
         res.status(201).json({ success: true, message: 'Product created', id: result.insertId });
     } catch (error) {
@@ -173,17 +209,17 @@ app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
 app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { name_en, name_ar, description_en, description_ar, category_id, cost_price,
-                old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
-                video_url, is_offer, is_top_seller, is_visible } = req.body;
+            old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
+            video_url, is_offer, is_top_seller, is_visible } = req.body;
         await pool.query(
             `UPDATE products SET name_en=?, name_ar=?, description_en=?, description_ar=?,
                 category_id=?, cost_price=?, old_price=?, new_price=?, stock=?, quantity_to_sell=?,
                 image_url=?, additional_images=?, video_url=?, is_offer=?, is_top_seller=?, is_visible=?
              WHERE id=?`,
             [name_en, name_ar, description_en, description_ar,
-             category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
-             image_url, additional_images, video_url,
-             is_offer, is_top_seller, is_visible, req.params.id]
+                category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
+                image_url, additional_images, video_url,
+                is_offer, is_top_seller, is_visible, req.params.id]
         );
         res.json({ success: true, message: 'Product updated' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
@@ -215,14 +251,14 @@ async function fetchOrderItems(dbId) {
         [dbId]
     );
     return rows.map(r => ({
-        product_id:    r.product_id,
-        productId:     r.product_id,
-        productName:   r.product_name,
+        product_id: r.product_id,
+        productId: r.product_id,
+        productName: r.product_name,
         productNameAr: r.product_name_ar,
-        image_url:     r.image_url || '',
-        quantity:      r.quantity,
-        price:         parseFloat(r.price || 0),
-        total:         parseFloat(r.total || 0)
+        image_url: r.image_url || '',
+        quantity: r.quantity,
+        price: parseFloat(r.price || 0),
+        total: parseFloat(r.total || 0)
     }));
 }
 
@@ -243,9 +279,9 @@ app.post('/api/orders', async (req, res) => {
             items, subtotal, total, currency, language, order_status
         } = req.body;
 
-        const order_id     = clientOrderId || ('ORD-' + Date.now());
-        const displayedFee = parseFloat(delivery_fee         ?? shipping_fee  ?? 0);
-        const actualFee    = parseFloat(actual_delivery_fee  ?? displayedFee  ?? 0);
+        const order_id = clientOrderId || ('ORD-' + Date.now());
+        const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
+        const actualFee = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
 
         const [orderResult] = await connection.query(
             `INSERT INTO orders (
@@ -260,11 +296,11 @@ app.post('/api/orders', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 order_id,
-                customer_name    || '', customer_phone    || '', customer_email    || '',
-                delivery_country || '', delivery_city     || '',
-                delivery_street  || '', delivery_building || '', delivery_floor    || '',
-                delivery_address || '', order_notes       || '',
-                payment_method   || 'cash', 'pending', order_status || 'pending',
+                customer_name || '', customer_phone || '', customer_email || '',
+                delivery_country || '', delivery_city || '',
+                delivery_street || '', delivery_building || '', delivery_floor || '',
+                delivery_address || '', order_notes || '',
+                payment_method || 'cash', 'pending', order_status || 'pending',
                 currency || 'JOD', subtotal || 0, displayedFee, actualFee,
                 total || 0, language || 'en'
             ]
@@ -281,7 +317,7 @@ app.post('/api/orders', async (req, res) => {
         }
 
         await connection.commit();
-        console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${(items||[]).length} items`);
+        console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${(items || []).length} items`);
         res.status(201).json({ success: true, message: 'Order created successfully', order_id });
 
     } catch (error) {
@@ -300,16 +336,16 @@ app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
 
         let query = 'SELECT * FROM orders WHERE 1=1';
         const params = [];
-        if (status)    { query += ' AND order_status = ?'; params.push(status); }
-        if (from_date) { query += ' AND created_at >= ?';  params.push(from_date); }
-        if (to_date)   { query += ' AND created_at <= ?';  params.push(to_date); }
+        if (status) { query += ' AND order_status = ?'; params.push(status); }
+        if (from_date) { query += ' AND created_at >= ?'; params.push(from_date); }
+        if (to_date) { query += ' AND created_at <= ?'; params.push(to_date); }
         query += ' ORDER BY created_at DESC';
 
         const [orders] = await pool.query(query, params);
         if (orders.length === 0) return res.json([]);
 
         // Build IN clause manually — avoids mysql2 array-wrapping issue with IN(?)
-        const orderIds    = orders.map(o => o.id);
+        const orderIds = orders.map(o => o.id);
         const placeholders = orderIds.map(() => '?').join(',');
 
         const [items] = await pool.query(
@@ -335,14 +371,14 @@ app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
         items.forEach(item => {
             if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
             itemsByOrder[item.order_id].push({
-                product_id:    item.product_id,
-                productId:     item.product_id,
-                productName:   item.product_name,
+                product_id: item.product_id,
+                productId: item.product_id,
+                productName: item.product_name,
                 productNameAr: item.product_name_ar,
-                image_url:     item.image_url || '',
-                quantity:      item.quantity,
-                price:         parseFloat(item.price || 0),
-                total:         parseFloat(item.total || 0)
+                image_url: item.image_url || '',
+                quantity: item.quantity,
+                price: parseFloat(item.price || 0),
+                total: parseFloat(item.total || 0)
             });
         });
 
@@ -430,9 +466,9 @@ app.get('/api/general-info', async (req, res) => {
         res.json({
             success: true,
             info: {
-                brand_name:           info[0].gi_brand_name,
-                phone_number:         info[0].gi_phone_number,
-                email_address:        info[0].gi_email_address,
+                brand_name: info[0].gi_brand_name,
+                phone_number: info[0].gi_phone_number,
+                email_address: info[0].gi_email_address,
                 minimum_order_amount: info[0].gi_minimum_order_amount
             }
         });
@@ -463,13 +499,13 @@ app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
 app.get('/api/stats', authenticateToken, isAdmin, async (req, res) => {
     try {
         const [productCount] = await pool.query('SELECT COUNT(*) as count FROM products');
-        const [orderCount]   = await pool.query('SELECT COUNT(*) as count FROM orders');
-        const [revenue]      = await pool.query('SELECT SUM(total) as total FROM orders WHERE order_status = "completed"');
-        const [pending]      = await pool.query('SELECT COUNT(*) as count FROM orders WHERE order_status = "pending"');
+        const [orderCount] = await pool.query('SELECT COUNT(*) as count FROM orders');
+        const [revenue] = await pool.query('SELECT SUM(total) as total FROM orders WHERE order_status = "completed"');
+        const [pending] = await pool.query('SELECT COUNT(*) as count FROM orders WHERE order_status = "pending"');
         res.json({
             total_products: productCount[0].count,
-            total_orders:   orderCount[0].count,
-            total_revenue:  revenue[0].total || 0,
+            total_orders: orderCount[0].count,
+            total_revenue: revenue[0].total || 0,
             pending_orders: pending[0].count
         });
     } catch (error) { res.status(500).json({ error: error.message }); }
