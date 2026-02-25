@@ -1,155 +1,292 @@
-// ==================== ADMIN-API.JS ====================
-// All API calls for the admin panel.
-// Reads API_BASE_URL from config.js (loaded before this file).
+// ==================== ADMIN API CONFIGURATION ====================
 
-function getApiUrl() {
-    return window.API_BASE_URL
-        || window.API_URL
-        || 'https://primejo-ecommerce-backend-demo.up.railway.app';
+const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+
+// ==================== AUTH ====================
+
+async function adminLogin(email, password) {
+    try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.token) {
+            localStorage.setItem('adminToken', data.token);
+            localStorage.setItem('adminUser', JSON.stringify(data.user));
+            return { success: true, data };
+        }
+        
+        return { success: false, error: data.error || 'Login failed' };
+    } catch (error) {
+        console.error('Login error:', error);
+        return { success: false, error: 'Connection failed' };
+    }
+}
+
+function getAdminToken() {
+    return localStorage.getItem('adminToken');
 }
 
 function getAuthHeaders() {
-    const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
     return {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        'Authorization': `Bearer ${getAdminToken()}`
     };
 }
 
-async function apiCall(method, path, body = null) {
-    const url = `${getApiUrl()}${path}`;
-    const options = {
-        method,
-        headers: getAuthHeaders()
-    };
-    if (body) options.body = JSON.stringify(body);
-
-    const res = await fetch(url, options);
-
-    // Handle 401 — token expired, redirect to login
-    if (res.status === 401) {
-        localStorage.removeItem('adminToken');
-        sessionStorage.removeItem('adminToken');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    const data = await res.json();
-    return data;
+function adminLogout() {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    window.location.href = 'login.html';
 }
 
-// ============ AUTH ============
-
-async function adminLogin(email, password) {
-    const res = await fetch(`${getApiUrl()}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    });
-    return res.json();
-}
-
-// ============ PRODUCTS ============
+// ==================== PRODUCTS ====================
 
 async function getProducts() {
-    const data = await apiCall('GET', '/api/products?visible=false');
-    return Array.isArray(data) ? data : [];
+    try {
+        const response = await fetch(`${API_URL}/products?visible=false`, {
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return [];
+    }
 }
 
 async function createProduct(productData) {
-    return apiCall('POST', '/api/products', productData);
+    try {
+        const response = await fetch(`${API_URL}/products`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(productData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating product:', error);
+        return { error: 'Failed to create product' };
+    }
 }
 
 async function updateProduct(id, productData) {
-    return apiCall('PUT', `/api/products/${id}`, productData);
+    try {
+        const response = await fetch(`${API_URL}/products/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(productData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating product:', error);
+        return { error: 'Failed to update product' };
+    }
 }
 
 async function deleteProduct(id) {
-    return apiCall('DELETE', `/api/products/${id}`);
+    try {
+        const response = await fetch(`${API_URL}/products/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        return { error: 'Failed to delete product' };
+    }
 }
 
-// ============ CATEGORIES ============
+// ==================== CATEGORIES ====================
 
 async function getCategories() {
-    const data = await apiCall('GET', '/api/categories');
-    return Array.isArray(data) ? data : [];
+    try {
+        const response = await fetch(`${API_URL}/categories`);
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return [];
+    }
 }
 
 async function createCategory(categoryData) {
-    return apiCall('POST', '/api/categories', categoryData);
+    try {
+        const response = await fetch(`${API_URL}/categories`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(categoryData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating category:', error);
+        return { error: 'Failed to create category' };
+    }
 }
 
 async function deleteCategory(id) {
-    return apiCall('DELETE', `/api/categories/${id}`);
+    try {
+        const response = await fetch(`${API_URL}/categories/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        return { error: 'Failed to delete category' };
+    }
 }
 
-// ============ ORDERS ============
+// ==================== ORDERS ====================
 
 async function getOrders(filters = {}) {
-    let query = '';
-    const params = [];
-    if (filters.status)    params.push(`status=${filters.status}`);
-    if (filters.from_date) params.push(`from_date=${filters.from_date}`);
-    if (filters.to_date)   params.push(`to_date=${filters.to_date}`);
-    if (params.length)     query = '?' + params.join('&');
-
-    const data = await apiCall('GET', `/api/orders${query}`);
-    return Array.isArray(data) ? data : [];
+    try {
+        const params = new URLSearchParams(filters);
+        const response = await fetch(`${API_URL}/orders?${params}`, {
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        return [];
+    }
 }
 
-async function getOrderById(orderId) {
-    return apiCall('GET', `/api/orders/${orderId}`);
+async function updateOrderStatus(id, status) {
+    try {
+        const response = await fetch(`${API_URL}/orders/${id}/status`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ order_status: status })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating order:', error);
+        return { error: 'Failed to update order' };
+    }
 }
 
-async function updateOrderStatus(orderId, newStatus) {
-    return apiCall('PATCH', `/api/orders/${orderId}/status`, { order_status: newStatus });
-}
-
-// ============ DELIVERY ============
+// ==================== DELIVERY ====================
 
 async function getDeliveryCountries() {
-    const data = await apiCall('GET', '/api/delivery/countries');
-    return data?.countries || [];
+    try {
+        const response = await fetch(`${API_URL}/delivery/countries`);
+        const data = await response.json();
+        return data.countries || [];
+    } catch (error) {
+        console.error('Error fetching countries:', error);
+        return [];
+    }
 }
 
 async function getDeliveryCities(countryId) {
-    const data = await apiCall('GET', `/api/delivery/cities/${countryId}`);
-    return data?.cities || [];
+    try {
+        const response = await fetch(`${API_URL}/delivery/cities/${countryId}`);
+        const data = await response.json();
+        return data.cities || [];
+    } catch (error) {
+        console.error('Error fetching cities:', error);
+        return [];
+    }
 }
 
-async function createDeliveryCountry(countryData) {
-    return apiCall('POST', '/api/delivery/countries', countryData);
+async function createCountry(countryData) {
+    try {
+        const response = await fetch(`${API_URL}/delivery/countries`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(countryData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating country:', error);
+        return { error: 'Failed to create country' };
+    }
 }
 
-async function createDeliveryCity(cityData) {
-    return apiCall('POST', '/api/delivery/cities', cityData);
+async function updateCountry(id, countryData) {
+    try {
+        const response = await fetch(`${API_URL}/delivery/countries/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(countryData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating country:', error);
+        return { error: 'Failed to update country' };
+    }
 }
 
-async function updateDeliveryCity(id, cityData) {
-    return apiCall('PUT', `/api/delivery/cities/${id}`, cityData);
+async function createCity(cityData) {
+    try {
+        const response = await fetch(`${API_URL}/delivery/cities`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(cityData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating city:', error);
+        return { error: 'Failed to create city' };
+    }
 }
 
-async function deleteDeliveryCity(id) {
-    return apiCall('DELETE', `/api/delivery/cities/${id}`);
+async function updateCity(id, cityData) {
+    try {
+        const response = await fetch(`${API_URL}/delivery/cities/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(cityData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating city:', error);
+        return { error: 'Failed to update city' };
+    }
 }
 
-async function deleteDeliveryCountry(id) {
-    return apiCall('DELETE', `/api/delivery/countries/${id}`);
-}
-
-// ============ GENERAL INFO ============
+// ==================== GENERAL INFO ====================
 
 async function getGeneralInfo() {
-    const data = await apiCall('GET', '/api/general-info');
-    return data?.info || data || {};
+    try {
+        const response = await fetch(`${API_URL}/general-info`);
+        const data = await response.json();
+        return data.info || null;
+    } catch (error) {
+        console.error('Error fetching general info:', error);
+        return null;
+    }
 }
 
 async function updateGeneralInfo(infoData) {
-    return apiCall('PUT', '/api/general-info', infoData);
+    try {
+        const response = await fetch(`${API_URL}/general-info`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(infoData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating general info:', error);
+        return { error: 'Failed to update general info' };
+    }
 }
 
-// ============ STATS ============
+// ==================== STATS ====================
 
 async function getStats() {
-    return apiCall('GET', '/api/stats');
+    try {
+        const response = await fetch(`${API_URL}/stats`, {
+            headers: getAuthHeaders()
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        return {};
+    }
 }
