@@ -8,299 +8,444 @@
     <link rel="stylesheet" href="topbaic-style.css">
     <link rel="stylesheet" href="mobile-nav-fix.css">
     <link rel="stylesheet" href="styles.css">
-    <!-- <link rel="stylesheet" href="modern-animations.css"> -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        /* ── Hero ───────────────────────────────────────── */
         .contact-hero {
-            background: linear-gradient(135deg, var(--primary-black) 0%, var(--grey-dark) 100%);
-            color: var(--primary-white);
-            padding: 4rem 0;
+            position: relative;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 6rem 2rem 5rem;
             text-align: center;
+            overflow: hidden;
         }
-
+        .contact-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 20% 50%, rgba(212,175,55,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 50%, rgba(212,175,55,0.07) 0%, transparent 70%);
+        }
+        .contact-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+        }
+        .hero-label {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #d4af37;
+            border: 1px solid rgba(212,175,55,0.4);
+            padding: 6px 18px;
+            margin-bottom: 1.5rem;
+        }
         .contact-hero h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
+            font-size: clamp(2.8rem, 6vw, 5rem);
             font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 1rem;
+            position: relative;
         }
-
-        .contact-content {
-            padding: 4rem 0;
-        }
-
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .contact-info {
-            background: var(--grey-light);
-            padding: 2rem;
-            border: 2px solid var(--primary-black);
-        }
-
-        .contact-info h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .info-item {
-            margin-bottom: 1.5rem;
-        }
-
-        .info-item h3 {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .contact-hero p {
             font-size: 1.1rem;
+            color: rgba(255,255,255,0.55);
+            font-weight: 300;
+            position: relative;
         }
 
-        .info-item p {
-            font-size: 1rem;
+        /* ── Layout ─────────────────────────────────────── */
+        .contact-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 2rem 6rem;
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 3rem;
+            align-items: start;
         }
 
-        .contact-form {
-            background: var(--primary-white);
-            padding: 2rem;
-            border: 2px solid var(--primary-black);
+        /* ── Info Panel ─────────────────────────────────── */
+        .contact-info-panel {
+            position: sticky;
+            top: 2rem;
         }
-
-        .contact-form h2 {
+        .info-heading {
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
+            font-weight: 900;
             margin-bottom: 0.5rem;
+            color: #0a0a0a;
+        }
+        .info-subheading {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
         }
 
-        .form-group input,
-        .form-group textarea {
+        .info-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.4rem 1.6rem;
+            margin-bottom: 1rem;
+            border: 1.5px solid #e8e8e8;
+            background: #fff;
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            cursor: default;
+        }
+        .info-card:hover {
+            border-color: #d4af37;
+            box-shadow: 4px 4px 0 #d4af37;
+            transform: translate(-2px, -2px);
+        }
+        .info-icon {
+            width: 44px;
+            height: 44px;
+            background: #0a0a0a;
+            color: #d4af37;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .info-card h3 {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .info-card p, .info-card a, .info-card span {
+            font-size: 0.95rem;
+            color: #0a0a0a;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .info-card a:hover { color: #d4af37; }
+
+        /* Social row */
+        .social-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+        .social-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: 1.5px solid #e8e8e8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #0a0a0a;
+            text-decoration: none;
+            transition: all 0.25s;
+            letter-spacing: 0.5px;
+        }
+        .social-pill:hover {
+            background: #0a0a0a;
+            color: #fff;
+            border-color: #0a0a0a;
+        }
+        .social-pill svg { flex-shrink: 0; }
+
+        /* ── Form Panel ──────────────────────────────────── */
+        .contact-form-panel {
+            background: #0a0a0a;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .contact-form-panel::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,175,55,0.15), transparent 70%);
+            pointer-events: none;
+        }
+        .form-heading {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 0.4rem;
+        }
+        .form-subheading {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .fgroup { margin-bottom: 1.4rem; }
+        .fgroup label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+        }
+        .fgroup input,
+        .fgroup textarea {
             width: 100%;
-            padding: 1rem;
-            border: 2px solid var(--grey-medium);
+            padding: 1rem 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
             font-family: 'Work Sans', sans-serif;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            transition: border-color 0.3s, background 0.3s;
+            box-sizing: border-box;
         }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .fgroup input::placeholder,
+        .fgroup textarea::placeholder { color: rgba(255,255,255,0.25); }
+        .fgroup input:focus,
+        .fgroup textarea:focus {
             outline: none;
-            border-color: var(--primary-black);
+            border-color: #d4af37;
+            background: rgba(212,175,55,0.05);
         }
+        .fgroup textarea { resize: vertical; min-height: 140px; }
 
         .submit-btn {
             width: 100%;
-            padding: 1rem;
-            background: var(--primary-black);
-            color: var(--primary-white);
+            padding: 1.1rem;
+            background: #d4af37;
+            color: #0a0a0a;
             border: none;
-            font-size: 1.1rem;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 0.85rem;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            letter-spacing: 3px;
             text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
         }
-
         .submit-btn:hover {
-            background: var(--grey-dark);
+            background: #e8c84a;
             transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212,175,55,0.3);
+        }
+        .submit-btn:active { transform: translateY(0); }
+
+        /* success msg */
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: #d4af37;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
         }
 
-        @media (max-width: 768px) {
-            .contact-grid {
-                grid-template-columns: 1fr;
-            }
+        /* ── Responsive ─────────────────────────────────── */
+        @media (max-width: 900px) {
+            .contact-wrapper { grid-template-columns: 1fr; }
+            .contact-info-panel { position: static; }
+            .contact-form-panel { padding: 2rem; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .social-row { flex-wrap: wrap; }
+            .contact-form-panel { padding: 1.5rem; }
         }
     </style>
 </head>
 
 <body>
-    <!-- TOP BAIC Style Header - Include on all pages -->
     <div id="site-header"></div>
 
-
+    <!-- Hero -->
     <div class="contact-hero">
+        <!-- <div class="hero-label" data-en="GET IN TOUCH" data-ar="تواصل معنا">GET IN TOUCH</div> -->
         <h1 data-en="Contact Us" data-ar="اتصل بنا">Contact Us</h1>
-        <p data-en="We'd love to hear from you" data-ar="نحب أن نسمع منك">We'd love to hear from you</p>
+        <p data-en="We'd love to hear from you — reach out anytime" data-ar="نحب أن نسمع منك — تواصل معنا في أي وقت">
+            We'd love to hear from you — reach out anytime
+        </p>
     </div>
 
-    <div class="container contact-content">
-        <div class="contact-grid">
-            <div class="contact-info">
-                <h2 data-en="Get In Touch" data-ar="تواصل معنا">Get In Touch</h2>
+    <!-- Main Content -->
+    <div class="contact-wrapper">
 
-                <div class="info-item">
-                    <h3 data-en="Email" data-ar="البريد الإلكتروني">Email</h3>
-                    <span class="contact-email" data-email>📧 Loading...</span>
+        <!-- Left: Info -->
+        <div class="contact-info-panel">
+            <h2 class="info-heading" data-en="Let's Talk" data-ar="لنتحدث">Let's Talk</h2>
+            <p class="info-subheading" data-en="Here's how you can reach us" data-ar="إليك كيف يمكنك التواصل معنا">
+                Here's how you can reach us
+            </p>
+
+            <div class="info-card">
+                <div class="info-icon">📧</div>
+                <div>
+                    <h3 data-en="EMAIL" data-ar="البريد الإلكتروني">EMAIL</h3>
+                    <span class="contact-email" data-email>Loading...</span>
                 </div>
-
-                <div class="info-item">
-                    <h3 data-en="Phone" data-ar="الهاتف">Phone</h3>
-                    <span class="contact-phone" data-phone>📞 Loading...</span>
-                </div>
-
-                <!-- <div class="info-item">
-                    <h3 data-en="Address" data-ar="العنوان">Address</h3>
-                    <p data-en="123 Shopping Street, Commerce District, City 12345"
-                        data-ar="123 شارع التسوق، منطقة التجارة، المدينة 12345">123 Shopping Street, Commerce District,
-                        City 12345</p>
-                </div> -->
-
-                <!-- <div class="info-item">
-                    <h3 data-en="Business Hours" data-ar="ساعات العمل">Business Hours</h3>
-                    <p data-en="Monday - Friday: 9:00 AM - 6:00 PM"
-                        data-ar="الاثنين - الجمعة: 9:00 صباحاً - 6:00 مساءً">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                    <p data-en="Saturday: 10:00 AM - 4:00 PM" data-ar="السبت: 10:00 صباحاً - 4:00 مساءً">Saturday: 10:00
-                        AM - 4:00 PM</p>
-                    <p data-en="Sunday: Closed" data-ar="الأحد: مغلق">Sunday: Closed</p>
-                </div> -->
             </div>
 
-            <div class="contact-form">
-                <h2 data-en="Send Us A Message" data-ar="أرسل لنا رسالة">Send Us A Message</h2>
-                <form id="contactForm">
-                    <div class="form-group">
-                        <label data-en="Your Name" data-ar="اسمك">Your Name</label>
-                        <input type="text" required data-en placeholder="Enter your name" data-ar
-                            placeholder="أدخل اسمك">
-                    </div>
+            <div class="info-card">
+                <div class="info-icon">📞</div>
+                <div>
+                    <h3 data-en="PHONE" data-ar="الهاتف">PHONE</h3>
+                    <span class="contact-phone" data-phone>Loading...</span>
+                </div>
+            </div>
 
-                    <div class="form-group">
-                        <label data-en="Your Email" data-ar="بريدك الإلكتروني">Your Email</label>
-                        <input type="email" required data-en placeholder="Enter your email" data-ar
-                            placeholder="أدخل بريدك الإلكتروني">
-                    </div>
+            <div class="info-card">
+                <div class="info-icon">🕐</div>
+                <div>
+                    <h3 data-en="RESPONSE TIME" data-ar="وقت الاستجابة">RESPONSE TIME</h3>
+                    <p data-en="Usually within 24 hours" data-ar="عادةً خلال 24 ساعة">Usually within 24 hours</p>
+                </div>
+            </div>
 
-                    <div class="form-group">
-                        <label data-en="Subject" data-ar="الموضوع">Subject</label>
-                        <input type="text" required data-en placeholder="What's this about?" data-ar
-                            placeholder="عن ماذا؟">
-                    </div>
+            <!-- Social -->
+            <div class="social-row">
+                <a href="https://instagram.com/primejo" target="_blank" class="social-pill" title="Instagram">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    Instagram
+                </a>
+                <a href="https://facebook.com/primejo" target="_blank" class="social-pill" title="Facebook">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    Facebook
+                </a>
+                <a href="https://snapchat.com/add/primejo" target="_blank" class="social-pill" title="Snapchat">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.943 11.526c-.111-.303-.323-.465-.564-.599a1 1 0 0 0-.123-.064l-.219-.111c-.752-.399-1.339-.902-1.746-1.498a3.4 3.4 0 0 1-.3-.531c-.034-.1-.032-.156-.008-.207a.3.3 0 0 1 .097-.1c.129-.086.262-.173.352-.231.162-.104.289-.187.371-.245.309-.216.525-.446.66-.702a1.4 1.4 0 0 0 .069-1.16c-.205-.538-.713-.872-1.329-.872a1.8 1.8 0 0 0-.487.065c.006-.368-.002-.757-.035-1.139-.116-1.344-.587-2.048-1.077-2.61a4.3 4.3 0 0 0-1.095-.881C9.764.216 8.92 0 7.999 0s-1.76.216-2.505.641c-.412.232-.782.53-1.097.883-.49.562-.96 1.267-1.077 2.61-.033.382-.04.772-.036 1.138a1.8 1.8 0 0 0-.487-.065c-.615 0-1.124.335-1.328.873a1.4 1.4 0 0 0 .067 1.161c.136.256.352.486.66.701.082.058.21.14.371.246l.339.221a.4.4 0 0 1 .109.11c.026.053.027.11-.012.217a3.4 3.4 0 0 1-.295.52c-.398.583-.968 1.077-1.696 1.472-.385.204-.786.34-.955.8-.128.348-.044.743.28 1.075q.18.189.409.31a4.4 4.4 0 0 0 .96.371q.114.03.228.053c.08.016.16.034.238.055.35.098.663.26.878.56.1.141.173.292.252.45.136.275.29.586.57.586.145 0 .299-.05.477-.155a4.4 4.4 0 0 1 .6-.27 3.3 3.3 0 0 1 1.103-.2c.387 0 .74.066 1.103.2.237.085.44.186.6.27.178.104.332.155.477.155.28 0 .434-.311.57-.585.079-.159.152-.31.251-.451.216-.3.529-.462.88-.56.077-.02.157-.039.237-.055q.114-.023.228-.053a4.4 4.4 0 0 0 .96-.371q.23-.12.408-.31c.324-.332.408-.727.28-1.075z"/>
+                    </svg>
+                    Snapchat
+                </a>
+            </div>
+        </div>
 
-                    <div class="form-group">
-                        <label data-en="Message" data-ar="الرسالة">Message</label>
-                        <textarea rows="6" required data-en placeholder="Your message here..." data-ar
-                            placeholder="رسالتك هنا..."></textarea>
-                    </div>
+        <!-- Right: Form -->
+        <div class="contact-form-panel">
+            <h2 class="form-heading" data-en="Send a Message" data-ar="أرسل رسالة">Send a Message</h2>
+            <p class="form-subheading" data-en="Fill out the form and we'll be in touch shortly" data-ar="املأ النموذج وسنتواصل معك قريباً">
+                Fill out the form and we'll be in touch shortly
+            </p>
 
-                    <button type="submit" class="submit-btn" data-en="Send Message" data-ar="إرسال الرسالة">Send
-                        Message</button>
-                </form>
+            <form id="contactForm">
+                <div class="form-row">
+                    <div class="fgroup">
+                        <label data-en="YOUR NAME" data-ar="اسمك">YOUR NAME</label>
+                        <input type="text" required placeholder="John Doe">
+                    </div>
+                    <div class="fgroup">
+                        <label data-en="YOUR EMAIL" data-ar="بريدك الإلكتروني">YOUR EMAIL</label>
+                        <input type="email" required placeholder="john@email.com">
+                    </div>
+                </div>
+
+                <div class="fgroup">
+                    <label data-en="SUBJECT" data-ar="الموضوع">SUBJECT</label>
+                    <input type="text" required placeholder="How can we help?">
+                </div>
+
+                <div class="fgroup">
+                    <label data-en="MESSAGE" data-ar="الرسالة">MESSAGE</label>
+                    <textarea required placeholder="Tell us more..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span data-en="SEND MESSAGE →" data-ar="إرسال الرسالة ←">SEND MESSAGE →</span>
+                </button>
+            </form>
+
+            <div class="success-msg" id="successMsg">
+                ✓ <span data-en="Message sent! We'll be in touch soon." data-ar="تم إرسال رسالتك! سنتواصل معك قريباً.">
+                    Message sent! We'll be in touch soon.
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
-    <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
-    <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
+    <!-- Footer -->
     <footer class="topbaic-footer">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>PRIMEJO</h3>
-                <p data-en="Our world of shopping, simplified. Premium products, unbeatable value."
-                    data-ar="عالم التسوق لدينا أصبح أبسط. منتجات مميزة، قيمة لا تُضاهى.">
-                    Our world of shopping, simplified. Premium products, unbeatable value.
+                <p data-en="Our world of shopping, simplified. Premium products, unbeatable value, and always free delivery."
+                   data-ar="عالم التسوق لدينا أصبح أبسط. منتجات مميزة، قيمة لا تُضاهى، وتوصيل مجاني دائماً.">
+                    Our world of shopping, simplified. Premium products, unbeatable value, and always free delivery.
                 </p>
+                <!-- <div style="margin-top: 20px;">
+                    <p style="font-size: 13px; color: #999; margin-bottom: 8px;">
+                        <strong data-en="Contact Us" data-ar="اتصل بنا">Contact Us</strong>
+                    </p>
+                    <div class="contact-info"><span class="contact-email" data-email>📧 Loading...</span></div>
+                    <div class="contact-info"><span class="contact-phone" data-phone>📞 Loading...</span></div>
+                </div> -->
             </div>
-
             <div class="footer-section">
                 <h3 data-en="Quick Links" data-ar="روابط سريعة">Quick Links</h3>
                 <ul>
                     <li><a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a></li>
-                    <!-- <li><a href="category.html" data-en="Shop" data-ar="المتجر">Shop</a></li> -->
                     <li><a href="about.html" data-en="About Us" data-ar="من نحن">About Us</a></li>
                     <li><a href="contact.html" data-en="Contact" data-ar="اتصل بنا">Contact</a></li>
                 </ul>
             </div>
-
             <!-- <div class="footer-section">
-                <h3 data-en="Customer Service" data-ar="خدمة العملاء">Customer Service</h3>
-                <ul>
-                    <li><a href="#" data-en="Track Order" data-ar="تتبع الطلب">Track Order</a></li>
-                    <li><a href="#" data-en="Shipping Info" data-ar="معلومات الشحن">Shipping Info</a></li>
-                    <li><a href="#" data-en="Returns" data-ar="الإرجاع">Returns</a></li>
-                    <li><a href="#" data-en="FAQ" data-ar="الأسئلة الشائعة">FAQ</a></li>
-                </ul>
-            </div> -->
-
-            <div class="footer-section">
                 <h3 data-en="Follow Us" data-ar="تابعنا">Follow Us</h3>
                 <p data-en="Stay connected on social media" data-ar="ابق على تواصل عبر وسائل التواصل الاجتماعي"
-                    style="font-size: 13px; margin-bottom: 20px;">Stay connected on social media</p>
-
+                   style="font-size: 13px; margin-bottom: 20px;">Stay connected on social media</p>
                 <div class="social-media-links">
-                    <a href="https://instagram.com/primejo" target="_blank" rel="noopener" class="social-link"
-                        title="Instagram">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path
-                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                        </svg>
+                    <a href="https://instagram.com/primejo" target="_blank" rel="noopener" class="social-link" title="Instagram">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                         <span>Instagram</span>
                     </a>
-
-                    <a href="https://facebook.com/primejo" target="_blank" rel="noopener" class="social-link"
-                        title="Facebook">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path
-                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                        </svg>
+                    <a href="https://facebook.com/primejo" target="_blank" rel="noopener" class="social-link" title="Facebook">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                         <span>Facebook</span>
                     </a>
-
-                    <a href="https://snapchat.com/add/primejo" target="_blank" rel="noopener" class="social-link"
-                        title="Snapchat">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                            viewBox="0 0 16 16">
-                            <path
-                                d="M15.943 11.526c-.111-.303-.323-.465-.564-.599a1 1 0 0 0-.123-.064l-.219-.111c-.752-.399-1.339-.902-1.746-1.498a3.4 3.4 0 0 1-.3-.531c-.034-.1-.032-.156-.008-.207a.3.3 0 0 1 .097-.1c.129-.086.262-.173.352-.231.162-.104.289-.187.371-.245.309-.216.525-.446.66-.702a1.4 1.4 0 0 0 .069-1.16c-.205-.538-.713-.872-1.329-.872a1.8 1.8 0 0 0-.487.065c.006-.368-.002-.757-.035-1.139-.116-1.344-.587-2.048-1.077-2.61a4.3 4.3 0 0 0-1.095-.881C9.764.216 8.92 0 7.999 0s-1.76.216-2.505.641c-.412.232-.782.53-1.097.883-.49.562-.96 1.267-1.077 2.61-.033.382-.04.772-.036 1.138a1.8 1.8 0 0 0-.487-.065c-.615 0-1.124.335-1.328.873a1.4 1.4 0 0 0 .067 1.161c.136.256.352.486.66.701.082.058.21.14.371.246l.339.221a.4.4 0 0 1 .109.11c.026.053.027.11-.012.217a3.4 3.4 0 0 1-.295.52c-.398.583-.968 1.077-1.696 1.472-.385.204-.786.34-.955.8-.128.348-.044.743.28 1.075q.18.189.409.31a4.4 4.4 0 0 0 .96.371q.114.03.228.053c.08.016.16.034.238.055.35.098.663.26.878.56.1.141.173.292.252.45.136.275.29.586.57.586.145 0 .299-.05.477-.155a4.4 4.4 0 0 1 .6-.27 3.3 3.3 0 0 1 1.103-.2c.387 0 .74.066 1.103.2.237.085.44.186.6.27.178.104.332.155.477.155.28 0 .434-.311.57-.585.079-.159.152-.31.251-.451.216-.3.529-.462.88-.56.077-.02.157-.039.237-.055q.114-.023.228-.053a4.4 4.4 0 0 0 .96-.371q.23-.12.408-.31c.324-.332.408-.727.28-1.075z" />
+                    <a href="https://snapchat.com/add/primejo" target="_blank" rel="noopener" class="social-link" title="Snapchat">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M15.943 11.526c-.111-.303-.323-.465-.564-.599a1 1 0 0 0-.123-.064l-.219-.111c-.752-.399-1.339-.902-1.746-1.498a3.4 3.4 0 0 1-.3-.531c-.034-.1-.032-.156-.008-.207a.3.3 0 0 1 .097-.1c.129-.086.262-.173.352-.231.162-.104.289-.187.371-.245.309-.216.525-.446.66-.702a1.4 1.4 0 0 0 .069-1.16c-.205-.538-.713-.872-1.329-.872a1.8 1.8 0 0 0-.487.065c.006-.368-.002-.757-.035-1.139-.116-1.344-.587-2.048-1.077-2.61a4.3 4.3 0 0 0-1.095-.881C9.764.216 8.92 0 7.999 0s-1.76.216-2.505.641c-.412.232-.782.53-1.097.883-.49.562-.96 1.267-1.077 2.61-.033.382-.04.772-.036 1.138a1.8 1.8 0 0 0-.487-.065c-.615 0-1.124.335-1.328.873a1.4 1.4 0 0 0 .067 1.161c.136.256.352.486.66.701.082.058.21.14.371.246l.339.221a.4.4 0 0 1 .109.11c.026.053.027.11-.012.217a3.4 3.4 0 0 1-.295.52c-.398.583-.968 1.077-1.696 1.472-.385.204-.786.34-.955.8-.128.348-.044.743.28 1.075q.18.189.409.31a4.4 4.4 0 0 0 .96.371q.114.03.228.053c.08.016.16.034.238.055.35.098.663.26.878.56.1.141.173.292.252.45.136.275.29.586.57.586.145 0 .299-.05.477-.155a4.4 4.4 0 0 1 .6-.27 3.3 3.3 0 0 1 1.103-.2c.387 0 .74.066 1.103.2.237.085.44.186.6.27.178.104.332.155.477.155.28 0 .434-.311.57-.585.079-.159.152-.31.251-.451.216-.3.529-.462.88-.56.077-.02.157-.039.237-.055q.114-.023.228-.053a4.4 4.4 0 0 0 .96-.371q.23-.12.408-.31c.324-.332.408-.727.28-1.075z"/>
                         </svg>
                         <span>Snapchat</span>
                     </a>
-
                 </div>
-
-
-            </div>
+            </div> -->
         </div>
-
         <div class="footer-bottom">
             <p>&copy; 2026 Primejo. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="header.js"></script>
-    <!-- <script src="mobile-menu.js"></script> -->
     <script src="api.js"></script>
     <script src="app.js"></script>
     <script src="countries-data.js"></script>
     <script src="settings.js"></script>
-    <!-- <script src="modern-animations.js"></script> -->
-    <!-- Add this script at the end of body -->
     <script src="general-info.js"></script>
-    <!-- Contact form handler -->
     <script>
-        document.getElementById('contactForm').addEventListener('submit', function (e) {
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert(currentLanguage === 'en'
-                ? 'Thank you for your message! We will get back to you soon.'
-                : 'شكراً على رسالتك! سنعود إليك قريباً.');
-            this.reset();
+            this.style.display = 'none';
+            const msg = document.getElementById('successMsg');
+            msg.style.display = 'block';
+            if (typeof switchLanguage === 'function') switchLanguage(currentLanguage);
         });
     </script>
 </body>
-
 </html>
