@@ -81,6 +81,12 @@
             <section id="products" class="content-section">
                 <div class="section-header">
                     <h3>Product Management</h3>
+                    <div style="margin-bottom: 1.5rem;">
+                        <input type="text" id="productSearch" oninput="searchProducts()"
+                            placeholder="🔍 Search by name or ID..."
+                            style="width:100%; max-width:400px; padding:0.75rem 1rem; border:1.5px solid #e0e0e0; font-size:0.95rem; outline:none;"
+                            onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e0e0e0'">
+                    </div>
                     <button class="btn-primary" onclick="showAddProductForm()">+ Add New Product</button>
                 </div>
 
@@ -471,6 +477,11 @@
         <div class="modal-content large">
             <div class="modal-header">
                 <h3>Order Details</h3>
+                <button onclick="printOrderModal()"
+                    style="padding:10px 24px; background:#d4af37; color:#1a1a1a; border:none; font-weight:700; cursor:pointer; margin-right:10px;">
+                    🖨️ Print
+                </button>
+
                 <button class="modal-close" onclick="closeOrderModal()">×</button>
             </div>
             <div id="orderDetailsContent"></div>

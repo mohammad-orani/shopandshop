@@ -89,7 +89,27 @@ async function loadProducts() {
             return;
         }
 
-        tbody.innerHTML = products.map(p => `
+        // Store all products for search
+        window._allProducts = products;
+        renderProductsTable(products);
+        await loadCategoryOptions();
+
+    } catch (error) {
+        console.error('Load products error:', error);
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
+    }
+}
+
+function renderProductsTable(products) {
+    const tbody = document.getElementById('productsTableBody');
+    if (!tbody) return;
+
+    if (products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No products found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = products.map(p => `
             <tr>
                 <td>${p.id}</td>
                 <td><img src="${p.image || p.image_url || ''}" class="product-img" alt="${p.name_en}"
@@ -107,11 +127,6 @@ async function loadProducts() {
                 </td>
             </tr>`).join('');
 
-        await loadCategoryOptions();
-    } catch (error) {
-        console.error('Load products error:', error);
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
-    }
 }
 
 async function loadCategoryOptions() {
@@ -122,6 +137,17 @@ async function loadCategoryOptions() {
         select.innerHTML = '<option value="">-- Select Category --</option>' +
             categories.map(cat => `<option value="${cat.id}">${cat.name_en}</option>`).join('');
     } catch (e) { console.error('Load category options error:', e); }
+}
+
+function searchProducts() {
+    const query = document.getElementById('productSearch')?.value?.toLowerCase() || '';
+    const all = window._allProducts || [];
+    const filtered = all.filter(p =>
+        (p.name_en || '').toLowerCase().includes(query) ||
+        (p.name_ar || '').toLowerCase().includes(query) ||
+        String(p.id).includes(query)
+    );
+    renderProductsTable(filtered);
 }
 
 function showAddProductForm() {
@@ -409,12 +435,12 @@ async function loadOrders() {
         }
 
         tbody.innerHTML = orders.map(order => {
-            const id = order.order_id || order.orderId;
-            const name = order.customer_name || order.customerName;
-            const phone = order.customer_phone || order.customerPhone;
+            const id     = order.order_id || order.orderId;
+            const name   = order.customer_name || order.customerName;
+            const phone  = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total = parseFloat(order.total || 0);
-            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total  = parseFloat(order.total || 0);
+            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -429,11 +455,11 @@ async function loadOrders() {
                     <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
                     <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
-                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
-                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
-                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
-                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
+                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
+                        <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
+                        <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
+                        <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
                     </select>
                 </td>
             </tr>`;
@@ -469,7 +495,7 @@ async function viewOrderDetails(orderId) {
                 const data = await res.json();
                 if (data && data.order_id) order = data;
             }
-        } catch (e) { /* fallback below */ }
+        } catch(e) { /* fallback below */ }
 
         // Fallback: search in already-loaded orders list
         if (!order) {
@@ -479,28 +505,28 @@ async function viewOrderDetails(orderId) {
 
         if (!order) { alert('Order not found'); return; }
 
-        const status = order.order_status || order.status;
-        const name = order.customer_name || order.customerName;
-        const phone = order.customer_phone || order.customerPhone;
-        const city = order.delivery_city || '';
+        const status  = order.order_status || order.status;
+        const name    = order.customer_name || order.customerName;
+        const phone   = order.customer_phone || order.customerPhone;
+        const city    = order.delivery_city || '';
         const country = order.delivery_country || '';
         const address = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-        const notes = order.order_notes || order.orderNotes || '';
+        const notes   = order.order_notes || order.orderNotes || '';
         const payment = order.payment_method || order.paymentMethod || 'N/A';
-        const total = parseFloat(order.total || 0);
+        const total   = parseFloat(order.total || 0);
         const displayedShipping = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0);
         const subtotal = parseFloat(order.subtotal || 0);
-        const date = new Date(order.created_at || order.orderDate).toLocaleString();
+        const date    = new Date(order.created_at || order.orderDate).toLocaleString();
 
         // Build items HTML
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
-                const name = item.productName || item.product_name || item.productNameAr || '—';
-                const qty = item.quantity || 0;
+                const name  = item.productName || item.product_name || item.productNameAr || '—';
+                const qty   = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
-                const img = item.image_url || '';
+                const img   = item.image_url || '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
@@ -562,7 +588,7 @@ async function viewOrderDetails(orderId) {
                     <div><strong>Phone:</strong> ${phone}</div>
                     <div><strong>Location:</strong> ${city}${city && country ? ', ' : ''}${country}</div>
                     ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${notes ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
+                    ${notes   ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
                 </div>
 
                 <!-- Order items table -->
@@ -593,6 +619,38 @@ function closeOrderModal() {
     document.getElementById('orderModal')?.classList.remove('show');
 }
 
+function printOrderModal() {
+    const content = document.getElementById('orderDetailsContent')?.innerHTML;
+    if (!content) return;
+
+    const win = window.open('', '_blank', 'width=800,height=700');
+    const printDate = new Date().toLocaleString();
+    win.document.write(
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order - Primejo</title><style>' +
+        '* { margin:0; padding:0; box-sizing:border-box; }' +
+        'body { font-family: Segoe UI, Arial, sans-serif; font-size:13px; color:#1a1a1a; padding:30px; }' +
+        'h1 { font-size:22px; font-weight:900; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #1a1a1a; }' +
+        '.status-badge { display:inline-block; padding:3px 10px; border-radius:3px; font-size:11px; font-weight:700; text-transform:uppercase; }' +
+        '.status-pending    { background:#fff3cd; color:#856404; }' +
+        '.status-processing { background:#cce5ff; color:#004085; }' +
+        '.status-shipped    { background:#d4edda; color:#155724; }' +
+        '.status-delivered  { background:#d4edda; color:#155724; }' +
+        '.status-cancelled  { background:#f8d7da; color:#721c24; }' +
+        'table { width:100%; border-collapse:collapse; margin:10px 0; }' +
+        'th { background:#1a1a1a; color:#fff; padding:8px 12px; text-align:left; font-size:11px; text-transform:uppercase; }' +
+        'td { padding:10px 12px; border-bottom:1px solid #f0f0f0; }' +
+        'img { width:44px; height:44px; object-fit:cover; border-radius:3px; }' +
+        '.footer { margin-top:30px; text-align:center; font-size:11px; color:#aaa; border-top:1px solid #e0e0e0; padding-top:15px; }' +
+        '</style></head><body>' +
+        '<h1>Order Details — Primejo</h1>' +
+        content +
+        '<div class="footer">Printed on ' + printDate + ' — Primejo Admin</div>' +
+        '<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}};<\/script>' +
+        '</body></html>'
+    );
+    win.document.close();
+}
+
 // ==================== REPORTS ====================
 
 async function loadReports() {
@@ -615,27 +673,27 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate = document.getElementById('reportToDate')?.value;
+        const toDate   = document.getElementById('reportToDate')?.value;
         let orders = await getOrders();
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
-        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at||o.orderDate) >= new Date(fromDate));
+        if (toDate)   orders = orders.filter(o => new Date(o.created_at||o.orderDate) <= new Date(toDate));
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
-            const id = o.order_id || o.orderId;
-            const name = o.customer_name || o.customerName;
-            const phone = o.customer_phone || o.customerPhone;
+            const id     = o.order_id || o.orderId;
+            const name   = o.customer_name || o.customerName;
+            const phone  = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
-            const date = new Date(o.created_at || o.orderDate).toLocaleString();
-            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
-            csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
+            const date   = new Date(o.created_at||o.orderDate).toLocaleString();
+            const items  = (o.items||[]).map(i => `${i.productName||''}x${i.quantity}`).join('; ');
+            csv += `"${id}","${name}","${phone}","${o.delivery_city||''}","${o.delivery_country||''}","${o.delivery_address||''}","${items}",${o.subtotal||0},${o.displayed_shipping_cost||0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
         a.download = `primejo_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
