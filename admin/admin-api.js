@@ -14,7 +14,9 @@ async function adminLogin(email, password) {
         const data = await response.json();
         if (data.token) {
             localStorage.setItem('adminToken', data.token);
+            sessionStorage.setItem('adminToken', data.token);
             localStorage.setItem('adminUser', JSON.stringify(data.user));
+            sessionStorage.setItem('adminUser', JSON.stringify(data.user));
             return { success: true, data };
         }
         return { success: false, error: data.error || 'Login failed' };
@@ -25,7 +27,7 @@ async function adminLogin(email, password) {
 }
 
 function getAdminToken() {
-    return localStorage.getItem('adminToken');
+    return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
 }
 
 function getAuthHeaders() {
@@ -38,6 +40,8 @@ function getAuthHeaders() {
 function adminLogout() {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
+    sessionStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminUser');
     window.location.href = 'login.html';
 }
 

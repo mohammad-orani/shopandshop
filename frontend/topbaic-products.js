@@ -85,7 +85,7 @@ function createTopBaicProductCard(rawProduct) {
             </div>
 
             <!-- Product Info -->
-            <div class="product-info">
+            <div class="product-info" style="display:flex;flex-direction:column;flex:1;">
                <!--   <div class="product-vendor">PRIMEJO PREMIUM</div>-->
 
                 <h3 class="product-title">
@@ -113,15 +113,16 @@ function createTopBaicProductCard(rawProduct) {
                 </div>
 
                 <!-- Stock Status -->
-                <div class="stock-status">
+                <div class="stock-status" style="min-height:22px;">
                     <span class="${stockClass}"></span>
                     <span data-en="${stockText}" data-ar="${stockTextAr}">${stockText}</span>
                 </div>
 
                 <!-- Add to Cart Button -->
                 <button class="add-to-cart-btn"
+                        style="margin-top:auto;${availableQty === 0 ? 'opacity:0.5;cursor:not-allowed;' : ''}"
                         onclick="addToCartTopBaic(${product.id})"
-                        ${availableQty === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                        ${availableQty === 0 ? 'disabled' : ''}>
                     <span data-en="ADD TO CART" data-ar="أضف للسلة">ADD TO CART</span>
                 </button>
             </div>

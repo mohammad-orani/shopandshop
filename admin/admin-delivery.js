@@ -1,272 +1,299 @@
 /**
- * Admin Delivery Management
- * Manages countries and cities from the new database system
+ * Admin Delivery Management — Database Connected
+ * Uses getDeliveryCountries / getDeliveryCities from admin-api.js
  */
 
-// Load all countries into the admin table
-function loadDeliveryCountries() {
-    const countries = getCountriesWithCities();
+// ==================== LOAD COUNTRIES ====================
+
+async function loadDeliverySection() {
+    await loadDeliveryCountries();
+}
+
+async function loadDeliveryCountries() {
     const tbody = document.getElementById('countriesTableBody');
     const countrySelect = document.getElementById('deliveryCountrySelect');
-    
-    if (!tbody) {
-        console.error('countriesTableBody not found');
-        return;
-    }
-    
-    console.log('Loading', countries.length, 'countries');
-    
-    // Update table
-    tbody.innerHTML = countries.map(country => `
-        <tr>
-            <td>${country.name_en}</td>
-            <td>${country.name_ar}</td>
-            <td>$${country.defaultFee}</td>
-            <td><span class="status-badge status-active">Active</span></td>
-            <td>
-                <button class="btn-sm btn-primary" onclick="editCountry(${country.id})" style="margin-right: 0.5rem;">Edit</button>
-                <button class="btn-sm btn-danger" onclick="deleteCountry(${country.id})">Delete</button>
-            </td>
-        </tr>
-    `).join('');
-    
-    // Update dropdown
-    if (countrySelect) {
-        countrySelect.innerHTML = '<option value="">-- Select Country --</option>' +
-            countries.map(c => `<option value="${c.id}">${c.name_en} / ${c.name_ar}</option>`).join('');
-    }
-}
+    if (!tbody) return;
 
-// Load cities for selected country
-function loadCitiesForCountry() {
-    const countryId = parseInt(document.getElementById('deliveryCountrySelect').value);
-    const tbody = document.getElementById('citiesTableBody');
-    const addBtn = document.getElementById('addCityBtn');
-    const citiesContainer = document.getElementById('citiesTableContainer');
-    
-    if (!countryId || !tbody) {
-        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">Select a country first</td></tr>';
-        if (addBtn) addBtn.disabled = true;
-        if (citiesContainer) citiesContainer.style.display = 'none';
-        return;
-    }
-    
-    if (addBtn) addBtn.disabled = false;
-    if (citiesContainer) citiesContainer.style.display = 'block';
-    
-    const cities = getCitiesByCountry(countryId);
-    
-    if (cities.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #666;">No cities added yet. Click "+ ADD CITY" to add one.</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = cities.map(city => `
-        <tr>
-            <td>${city.name_en}</td>
-            <td>${city.name_ar}</td>
-            <td>$${city.fee || 0}</td>
-            <td>$${city.fee || 0}</td>
-            <td><span class="status-badge status-active">Active</span></td>
-            <td>
-                <button class="btn-sm btn-primary" onclick="editCity(${countryId}, ${city.id})" style="margin-right: 0.5rem;">Edit</button>
-                <button class="btn-sm btn-danger" onclick="deleteCity(${countryId}, ${city.id})">Delete</button>
-            </td>
-        </tr>
-    `).join('');
-}
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">Loading...</td></tr>';
 
-// Show add country form
-function showAddCountryForm() {
-    document.getElementById('countryForm').style.display = 'block';
-    document.getElementById('countryFormElement').reset();
-}
+    try {
+        const countries = await getDeliveryCountries();
 
-// Hide add country form
-function hideCountryForm() {
-    document.getElementById('countryForm').style.display = 'none';
-}
-
-// Show add city form
-function showAddCityForm() {
-    const countryId = document.getElementById('deliveryCountrySelect').value;
-    if (!countryId) {
-        alert('Please select a country first');
-        return;
-    }
-    
-    document.getElementById('cityCountryId').value = countryId;
-    document.getElementById('cityForm').style.display = 'block';
-    document.getElementById('cityFormElement').reset();
-}
-
-// Hide add city form
-function hideCityForm() {
-    document.getElementById('cityForm').style.display = 'none';
-}
-
-// Add new country
-if (document.getElementById('countryFormElement')) {
-    document.getElementById('countryFormElement').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const countries = getCountriesWithCities();
-        const newId = Math.max(...countries.map(c => c.id), 0) + 1;
-        
-        const newCountry = {
-            id: newId,
-            name_en: document.getElementById('countryNameEn').value,
-            name_ar: document.getElementById('countryNameAr').value,
-            phonePrefix: document.getElementById('countryPhonePrefix') ? document.getElementById('countryPhonePrefix').value : '+962',
-            defaultFee: parseFloat(document.getElementById('countryDefaultFee').value) || 0,
-            cities: []
-        };
-        
-        countries.push(newCountry);
-        saveCountriesWithCities(countries);
-        
-        hideCountryForm();
-        loadDeliveryCountries();
-        alert('Country added successfully!');
-    });
-}
-
-// Add new city
-if (document.getElementById('cityFormElement')) {
-    document.getElementById('cityFormElement').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const countryId = parseInt(document.getElementById('cityCountryId').value);
-        const countries = getCountriesWithCities();
-        const country = countries.find(c => c.id === countryId);
-        
-        if (!country) {
-            alert('Country not found');
+        if (countries.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">No countries yet.</td></tr>';
             return;
         }
-        
-        const newCityId = country.cities.length > 0 
-            ? Math.max(...country.cities.map(c => c.id)) + 1 
-            : 1;
-        
-        const newCity = {
-            id: newCityId,
-            name_en: document.getElementById('cityNameEn').value,
-            name_ar: document.getElementById('cityNameAr').value,
-            fee: parseFloat(document.getElementById('cityDisplayedFee').value) || 0
-        };
-        
-        country.cities.push(newCity);
-        saveCountriesWithCities(countries);
-        
-        hideCityForm();
-        loadCitiesForCountry();
-        alert('City added successfully!');
-    });
-}
 
-// Delete country
-function deleteCountry(countryId) {
-    if (!confirm('Are you sure you want to delete this country and all its cities?')) return;
-    
-    let countries = getCountriesWithCities();
-    countries = countries.filter(c => c.id !== countryId);
-    saveCountriesWithCities(countries);
-    
-    loadDeliveryCountries();
-    alert('Country deleted successfully!');
-}
+        tbody.innerHTML = countries.map(c => `
+            <tr>
+                <td>${c.name_en}</td>
+                <td>${c.name_ar}</td>
+                <td>${c.phone_prefix || c.phonePrefix || '-'}</td>
+                <td>${c.delivery_fee || c.defaultFee || 0} JOD</td>
+                <td>
+                    <button class="btn-info" onclick="editCountryPrompt('${c.id}', '${c.name_en}', '${c.name_ar}', '${c.phone_prefix || c.phonePrefix || ''}', ${c.delivery_fee || c.defaultFee || 0})" style="margin-right:0.5rem;">Edit</button>
+                    <button class="btn-danger" onclick="confirmDeleteCountry('${c.id}')">Delete</button>
+                </td>
+            </tr>`).join('');
 
-// Delete city
-function deleteCity(countryId, cityId) {
-    if (!confirm('Are you sure you want to delete this city?')) return;
-    
-    const countries = getCountriesWithCities();
-    const country = countries.find(c => c.id === countryId);
-    
-    if (country) {
-        country.cities = country.cities.filter(c => c.id !== cityId);
-        saveCountriesWithCities(countries);
-        loadCitiesForCountry();
-        alert('City deleted successfully!');
+        if (countrySelect) {
+            countrySelect.innerHTML = '<option value="">-- Select Country --</option>' +
+                countries.map(c => `<option value="${c.id}">${c.name_en} / ${c.name_ar}</option>`).join('');
+        }
+
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
     }
 }
 
-// Edit country (simple version)
-function editCountry(countryId) {
-    const countries = getCountriesWithCities();
-    const country = countries.find(c => c.id === countryId);
-    
-    if (!country) return;
-    
-    const newNameEn = prompt('Country Name (English):', country.name_en);
-    if (!newNameEn) return;
-    
-    const newNameAr = prompt('Country Name (Arabic):', country.name_ar);
-    if (!newNameAr) return;
-    
-    const newFee = prompt('Default Delivery Fee ($):', country.defaultFee);
-    if (newFee === null) return;
-    
-    country.name_en = newNameEn;
-    country.name_ar = newNameAr;
-    country.defaultFee = parseFloat(newFee) || 0;
-    
-    saveCountriesWithCities(countries);
-    loadDeliveryCountries();
-    alert('Country updated successfully!');
+// ==================== LOAD CITIES ====================
+
+async function loadCitiesForCountry() {
+    const countryId = document.getElementById('deliveryCountrySelect')?.value;
+    const tbody = document.getElementById('citiesTableBody');
+    const addBtn = document.getElementById('addCityBtn');
+    const container = document.getElementById('citiesTableContainer');
+
+    if (!countryId) {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">Select a country first</td></tr>';
+        if (addBtn) addBtn.disabled = true;
+        if (container) container.style.display = 'none';
+        return;
+    }
+
+    if (addBtn) addBtn.disabled = false;
+    if (container) container.style.display = 'block';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">Loading...</td></tr>';
+
+    try {
+        const cities = await getDeliveryCities(countryId);
+
+        if (!cities || cities.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:#666;">No cities yet. Click "+ ADD CITY" to add one.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = cities.map(city => `
+            <tr>
+                <td>${city.name_en}</td>
+                <td>${city.name_ar}</td>
+                <td>${city.displayed_fee ?? city.delivery_fee ?? 0} JOD</td>
+                <td>${city.actual_fee ?? city.delivery_fee ?? 0} JOD</td>
+                <td>
+                    <button class="btn-info" onclick="editCityPrompt('${city.id}', '${city.name_en}', '${city.name_ar}', ${city.displayed_fee ?? city.delivery_fee ?? 0}, ${city.actual_fee ?? city.delivery_fee ?? 0})" style="margin-right:0.5rem;">Edit</button>
+                    <button class="btn-danger" onclick="confirmDeleteCity('${city.id}')">Delete</button>
+                </td>
+            </tr>`).join('');
+
+    } catch (error) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
+    }
 }
 
-// Edit city (simple version)
-function editCity(countryId, cityId) {
-    const countries = getCountriesWithCities();
-    const country = countries.find(c => c.id === countryId);
-    if (!country) return;
-    
-    const city = country.cities.find(c => c.id === cityId);
-    if (!city) return;
-    
-    const newNameEn = prompt('City Name (English):', city.name_en);
-    if (!newNameEn) return;
-    
-    const newNameAr = prompt('City Name (Arabic):', city.name_ar);
-    if (!newNameAr) return;
-    
-    const newFee = prompt('Delivery Fee ($):', city.fee);
-    if (newFee === null) return;
-    
-    city.name_en = newNameEn;
-    city.name_ar = newNameAr;
-    city.fee = parseFloat(newFee) || 0;
-    
-    saveCountriesWithCities(countries);
-    loadCitiesForCountry();
-    alert('City updated successfully!');
+// ==================== COUNTRY FORMS ====================
+
+function showAddCountryForm() {
+    const form = document.getElementById('countryForm');
+    if (form) {
+        form.style.display = 'block';
+        document.getElementById('countryFormElement')?.reset();
+        const title = document.getElementById('countryFormTitle');
+        if (title) title.textContent = 'Add New Country';
+        const btn = document.querySelector('#countryFormElement button[type="submit"]');
+        if (btn) btn.textContent = 'Add Country';
+        // Clear edit id
+        const editId = document.getElementById('editCountryId');
+        if (editId) editId.value = '';
+    }
 }
 
-// Initialize on page load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('delivery')) {
+function hideCountryForm() {
+    const form = document.getElementById('countryForm');
+    if (form) form.style.display = 'none';
+}
+
+async function editCountryPrompt(id, nameEn, nameAr, prefix, fee) {
+    const form = document.getElementById('countryForm');
+    if (!form) return;
+
+    // Populate form
+    const editId = document.getElementById('editCountryId');
+    if (editId) editId.value = id;
+    setVal('countryNameEn', nameEn);
+    setVal('countryNameAr', nameAr);
+    setVal('countryPhonePrefix', prefix);
+    setVal('countryDefaultFee', fee);
+
+    const title = document.getElementById('countryFormTitle');
+    if (title) title.textContent = 'Edit Country';
+    const btn = document.querySelector('#countryFormElement button[type="submit"]');
+    if (btn) btn.textContent = 'Save Changes';
+
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+}
+
+if (document.getElementById('countryFormElement')) {
+    document.getElementById('countryFormElement').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const editId = document.getElementById('editCountryId')?.value;
+
+        const data = {
+            name_en:      document.getElementById('countryNameEn')?.value,
+            name_ar:      document.getElementById('countryNameAr')?.value,
+            phone_prefix: document.getElementById('countryPhonePrefix')?.value || '',
+            delivery_fee: parseFloat(document.getElementById('countryDefaultFee')?.value) || 0
+        };
+
+        try {
+            const result = editId
+                ? await updateCountry(editId, data)
+                : await createCountry(data);
+
+            if (result.error) { alert('❌ Error: ' + result.error); return; }
+            showToast(editId ? '✅ Country updated!' : '✅ Country added!');
+            hideCountryForm();
             loadDeliveryCountries();
+        } catch (err) {
+            alert('❌ Error: ' + err.message);
         }
     });
-} else {
-    if (document.getElementById('delivery')) {
-        loadDeliveryCountries();
-    }
 }
 
-// Export functions
+async function confirmDeleteCountry(id) {
+    if (!confirm('Delete this country and all its cities?')) return;
+    try {
+        // Delete all cities first
+        const cities = await getDeliveryCities(id);
+        for (const city of cities) {
+            await fetch(`${API_URL}/delivery/cities/${city.id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+        }
+        const result = await fetch(`${API_URL}/delivery/countries/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        }).then(r => r.json());
+
+        if (result.error) { alert('Error: ' + result.error); return; }
+        showToast('✅ Country deleted!');
+        loadDeliveryCountries();
+    } catch (err) { alert('Error: ' + err.message); }
+}
+
+// ==================== CITY FORMS ====================
+
+function showAddCityForm() {
+    const countryId = document.getElementById('deliveryCountrySelect')?.value;
+    if (!countryId) { alert('Please select a country first'); return; }
+
+    const form = document.getElementById('cityForm');
+    if (!form) return;
+
+    document.getElementById('cityFormElement')?.reset();
+    const editId = document.getElementById('editCityId');
+    if (editId) editId.value = '';
+    setVal('cityCountryId', countryId);
+
+    const title = document.getElementById('cityFormTitle');
+    if (title) title.textContent = 'Add New City';
+    const btn = document.querySelector('#cityFormElement button[type="submit"]');
+    if (btn) btn.textContent = 'Add City';
+
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideCityForm() {
+    const form = document.getElementById('cityForm');
+    if (form) form.style.display = 'none';
+}
+
+async function editCityPrompt(id, nameEn, nameAr, displayedFee, actualFee) {
+    const form = document.getElementById('cityForm');
+    if (!form) return;
+
+    const editId = document.getElementById('editCityId');
+    if (editId) editId.value = id;
+    setVal('cityNameEn', nameEn);
+    setVal('cityNameAr', nameAr);
+    setVal('cityDisplayedFee', displayedFee);
+    setVal('cityActualFee', actualFee);
+    setVal('cityCountryId', document.getElementById('deliveryCountrySelect')?.value || '');
+
+    const title = document.getElementById('cityFormTitle');
+    if (title) title.textContent = 'Edit City';
+    const btn = document.querySelector('#cityFormElement button[type="submit"]');
+    if (btn) btn.textContent = 'Save Changes';
+
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+}
+
+if (document.getElementById('cityFormElement')) {
+    document.getElementById('cityFormElement').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const editId = document.getElementById('editCityId')?.value;
+        const countryId = document.getElementById('cityCountryId')?.value;
+
+        const data = {
+            country_id:     countryId,
+            name_en:        document.getElementById('cityNameEn')?.value,
+            name_ar:        document.getElementById('cityNameAr')?.value,
+            displayed_fee:  parseFloat(document.getElementById('cityDisplayedFee')?.value) || 0,
+            actual_fee:     parseFloat(document.getElementById('cityActualFee')?.value) || 0,
+            delivery_fee:   parseFloat(document.getElementById('cityDisplayedFee')?.value) || 0
+        };
+
+        try {
+            const result = editId
+                ? await updateCity(editId, data)
+                : await createCity(data);
+
+            if (result.error) { alert('❌ Error: ' + result.error); return; }
+            showToast(editId ? '✅ City updated!' : '✅ City added!');
+            hideCityForm();
+            loadCitiesForCountry();
+        } catch (err) {
+            alert('❌ Error: ' + err.message);
+        }
+    });
+}
+
+async function confirmDeleteCity(id) {
+    if (!confirm('Delete this city?')) return;
+    try {
+        const result = await fetch(`${API_URL}/delivery/cities/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        }).then(r => r.json());
+
+        if (result.error) { alert('Error: ' + result.error); return; }
+        showToast('✅ City deleted!');
+        loadCitiesForCountry();
+    } catch (err) { alert('Error: ' + err.message); }
+}
+
+// ==================== HELPERS ====================
+
+function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+}
+
+// ==================== INIT ====================
+
 if (typeof window !== 'undefined') {
-    window.loadDeliveryCountries = loadDeliveryCountries;
-    window.loadCitiesForCountry = loadCitiesForCountry;
-    window.showAddCountryForm = showAddCountryForm;
-    window.hideCountryForm = hideCountryForm;
-    window.showAddCityForm = showAddCityForm;
-    window.hideCityForm = hideCityForm;
-    window.deleteCountry = deleteCountry;
-    window.deleteCity = deleteCity;
-    window.editCountry = editCountry;
-    window.editCity = editCity;
+    window.loadDeliverySection    = loadDeliverySection;
+    window.loadDeliveryCountries  = loadDeliveryCountries;
+    window.loadCitiesForCountry   = loadCitiesForCountry;
+    window.showAddCountryForm     = showAddCountryForm;
+    window.hideCountryForm        = hideCountryForm;
+    window.showAddCityForm        = showAddCityForm;
+    window.hideCityForm           = hideCityForm;
+    window.confirmDeleteCountry   = confirmDeleteCountry;
+    window.confirmDeleteCity      = confirmDeleteCity;
+    window.editCountryPrompt      = editCountryPrompt;
+    window.editCityPrompt         = editCityPrompt;
 }

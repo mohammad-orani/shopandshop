@@ -1033,3 +1033,21 @@ body[dir="rtl"] .social-link:hover { transform: translateX(-5px); }
 /* ============================================
    END OF PRIMEJO PREMIUM STYLES
    ============================================ */
+
+
+
+   /* Cards equal height with button always at bottom */
+.topbaic-product-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.topbaic-product-card .product-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.topbaic-product-card .add-to-cart-btn {
+    margin-top: auto;
+}

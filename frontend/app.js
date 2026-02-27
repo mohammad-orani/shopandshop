@@ -149,39 +149,81 @@ function createProductCard(product) {
     const oldPrice = parseFloat(product.oldPrice || product.old_price || 0);
 
     return `
-        <div class="product-card"
-             data-product-id="${product.id}"
-             data-new="${product.isNew || false}"
-             data-topseller="${product.topSeller || false}"
-             onclick="viewProduct(${product.id})">
-            ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
-            <div class="product-image">
-                <img src="${imageUrl}"
-                     alt="${(product[nameKey] || product.name_en || 'Product').replace(/"/g, '&quot;')}"
+       <div class="topbaic-product-card product-card scroll-reveal">
+            <!-- Image Wrapper -->
+            <div class="product-image-wrapper">
+                <img src="${product.image}"
+                     alt="${productName.replace(/"/g, '&quot;')}"
+                     class="product-image"
                      loading="lazy"
-                     onerror="this.onerror=null;this.src='https://placehold.co/300x260?text=No+Image'">
+                     onerror="this.onerror=null;this.src='https://placehold.co/300x300?text=No+Image'">
+
+                <!-- Badges -->
+                <div class="product-badges">
+                    ${product.isOffer || discount > 0 ? '<span class="badge badge-sale">SALE</span>' : ''}
+                    ${product.isTopSeller ? '<span class="badge badge-topseller">TOP SELLER</span>' : ''}
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="quick-action-btn"
+                            onclick="event.stopPropagation(); toggleFavorite(${product.id})"
+                            title="Add to Favorites">❤️</button>
+                    <button class="quick-action-btn"
+                            onclick="window.location.href='product.html?id=${product.id}'"
+                            title="Quick View">👁️</button>
+                </div>
+
+                <!-- Free Delivery Badge 
+                <div class="topbaic-delivery-banner"
+                     style="position:absolute;bottom:12px;left:12px;right:12px;font-size:11px;padding:8px 12px;">
+                    <span class="delivery-icon">🚚</span>
+                    <span data-en="FREE DELIVERY" data-ar="توصيل مجاني">FREE DELIVERY</span>
+                </div>-->
             </div>
+
+            <!-- Product Info -->
             <div class="product-info">
-                <h3 class="product-name">${product[nameKey] || product.name_en}</h3>
+               <!--   <div class="product-vendor">PRIMEJO PREMIUM</div>-->
+
+                <h3 class="product-title">
+                    <a href="product.html?id=${product.id}">${productName}</a>
+                </h3>
+
+                <!-- Rating 
+                <div class="product-rating">
+                    <div class="stars">★★★★★</div>
+                </div>-->
+
+                <!-- Price -->
                 <div class="product-price">
-                    <span class="price-new" data-base-price="${newPrice}">
-                        ${formatPrice(newPrice)}
+                    <span class="price-current" data-base-price="${product.newPrice}">
+                        ${formatPrice(product.newPrice)}
                     </span>
-                    ${oldPrice && oldPrice !== newPrice
-                        ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
-                        : ''}
+                    ${discount > 0 ? `
+                        <span class="price-original" data-base-price="${product.oldPrice}">
+                            ${formatPrice(product.oldPrice)}
+                        </span>
+                        <span class="price-save"
+                              data-en="Save ${discount}%"
+                              data-ar="وفر ${discount}%">Save ${discount}%</span>
+                    ` : ''}
                 </div>
-                <div class="product-actions">
-                    <button class="btn"
-                            onclick="event.stopPropagation(); addToCart(${product.id})"
-                            data-en="Add to Cart"
-                            data-ar="أضف للسلة">Add to Cart</button>
-                    <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}"
-                            onclick="event.stopPropagation(); toggleFavorite(${product.id})">♥</button>
+
+                <!-- Stock Status -->
+                <div class="stock-status">
+                    <span class="${stockClass}"></span>
+                    <span data-en="${stockText}" data-ar="${stockTextAr}">${stockText}</span>
                 </div>
+
+                <!-- Add to Cart Button -->
+                <button class="add-to-cart-btn"
+                        onclick="addToCartTopBaic(${product.id})"
+                        ${availableQty === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    <span data-en="ADD TO CART" data-ar="أضف للسلة">ADD TO CART</span>
+                </button>
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
 // ==================== LOAD HOMEPAGE PRODUCTS ====================

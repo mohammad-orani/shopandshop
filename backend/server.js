@@ -226,8 +226,8 @@ async function fetchOrderItems(dbId) {
             oi.quantity,
             oi.price,
             oi.total,
-            COALESCE(p.name_en, oi.product_name, 'Unknown Product') AS product_name,
-            COALESCE(p.name_ar, oi.product_name, 'منتج غير معروف')  AS product_name_ar,
+            COALESCE(p.name_en, oi.product_name_en, 'Unknown Product') AS product_name_en,
+            COALESCE(p.name_ar, oi.product_name_ar, 'منتج غير معروف')  AS product_name_ar,
             p.image_url
          FROM order_items oi
          LEFT JOIN products p ON p.id = oi.product_id

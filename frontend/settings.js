@@ -72,7 +72,7 @@ async function applyGeneralSettings() {
 
         // Update copyright year
         document.querySelectorAll('.footer-bottom p, .copyright').forEach(el => {
-            if (el.textContent.includes('©') || el.textContent.includes('2024') || el.textContent.includes('2025') || el.textContent.includes('2026')) {
+            if (el.textContent.includes('©') || el.textContent.includes('2026') ) {
                 el.textContent = `© ${settings.copyrightYear} ${settings.brandName}. All rights reserved.`;
             }
         });
