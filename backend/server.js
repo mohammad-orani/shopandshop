@@ -102,7 +102,7 @@ app.get('/api/categories', async (req, res) => {
     try {
         const showAll = req.query.visible === 'false';
         const query = showAll
-            ? 'SELECT * FROM categories ORDER BY name_en'
+            ? 'SELECT * FROM categories ORDER BY id'
             : 'SELECT * FROM categories WHERE is_visible = 1 ORDER BY name_en';
         const [categories] = await pool.query(query);
         res.json(categories);
