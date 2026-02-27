@@ -1,6 +1,19 @@
 // ==================== APP.JS - MAIN APPLICATION LOGIC ====================
 // Uses api.js for all data fetching from database
 
+// ==================== META PIXEL ====================
+(function initMetaPixel() {
+    const PIXEL_ID = 'YOUR_PIXEL_ID'; // ← Replace with your Pixel ID
+    if (window.fbq || !PIXEL_ID || PIXEL_ID === 'YOUR_PIXEL_ID') return;
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+    (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
+})();
+
 // Language Management
 let currentLanguage = 'ar';
 let currentCurrency = 'JOD';
@@ -144,86 +157,44 @@ async function loadHeaderCategories() {
 function createProductCard(product) {
     const nameKey = `name_${currentLanguage}`;
 
-    const imageUrl = product.image || 'https://placehold.co/300x260?text=No+Image';
-    const newPrice = parseFloat(product.newPrice || product.new_price || 0);
-    const oldPrice = parseFloat(product.oldPrice || product.old_price || 0);
+    const imageUrl = product.image_url || product.image || 'https://placehold.co/300x260?text=No+Image';
+    const newPrice = parseFloat(product.new_price  || product.newPrice  || 0);
+    const oldPrice = parseFloat(product.old_price  || product.oldPrice  || 0);
 
     return `
-       <div class="topbaic-product-card product-card scroll-reveal">
-            <!-- Image Wrapper -->
-            <div class="product-image-wrapper">
-                <img src="${product.image}"
-                     alt="${productName.replace(/"/g, '&quot;')}"
-                     class="product-image"
+        <div class="product-card"
+             data-product-id="${product.id}"
+             data-new="${product.isNew || false}"
+             data-topseller="${product.topSeller || false}"
+             onclick="viewProduct(${product.id})">
+            ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
+            <div class="product-image">
+                <img src="${imageUrl}"
+                     alt="${(product[nameKey] || product.name_en || 'Product').replace(/"/g, '&quot;')}"
                      loading="lazy"
-                     onerror="this.onerror=null;this.src='https://placehold.co/300x300?text=No+Image'">
-
-                <!-- Badges -->
-                <div class="product-badges">
-                    ${product.isOffer || discount > 0 ? '<span class="badge badge-sale">SALE</span>' : ''}
-                    ${product.isTopSeller ? '<span class="badge badge-topseller">TOP SELLER</span>' : ''}
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="quick-actions">
-                    <button class="quick-action-btn"
-                            onclick="event.stopPropagation(); toggleFavorite(${product.id})"
-                            title="Add to Favorites">❤️</button>
-                    <button class="quick-action-btn"
-                            onclick="window.location.href='product.html?id=${product.id}'"
-                            title="Quick View">👁️</button>
-                </div>
-
-                <!-- Free Delivery Badge 
-                <div class="topbaic-delivery-banner"
-                     style="position:absolute;bottom:12px;left:12px;right:12px;font-size:11px;padding:8px 12px;">
-                    <span class="delivery-icon">🚚</span>
-                    <span data-en="FREE DELIVERY" data-ar="توصيل مجاني">FREE DELIVERY</span>
-                </div>-->
+                     onerror="this.onerror=null;this.src='https://placehold.co/300x260?text=No+Image'">
             </div>
-
-            <!-- Product Info -->
             <div class="product-info">
-               <!--   <div class="product-vendor">PRIMEJO PREMIUM</div>-->
-
-                <h3 class="product-title">
-                    <a href="product.html?id=${product.id}">${productName}</a>
-                </h3>
-
-                <!-- Rating 
-                <div class="product-rating">
-                    <div class="stars">★★★★★</div>
-                </div>-->
-
-                <!-- Price -->
+                <h3 class="product-name">${product[nameKey] || product.name_en}</h3>
                 <div class="product-price">
-                    <span class="price-current" data-base-price="${product.newPrice}">
-                        ${formatPrice(product.newPrice)}
+                    <span class="price-new" data-base-price="${newPrice}">
+                        ${formatPrice(newPrice)}
                     </span>
-                    ${discount > 0 ? `
-                        <span class="price-original" data-base-price="${product.oldPrice}">
-                            ${formatPrice(product.oldPrice)}
-                        </span>
-                        <span class="price-save"
-                              data-en="Save ${discount}%"
-                              data-ar="وفر ${discount}%">Save ${discount}%</span>
-                    ` : ''}
+                    ${oldPrice && oldPrice !== newPrice
+                        ? `<span class="price-old" data-base-price="${oldPrice}">${formatPrice(oldPrice)}</span>`
+                        : ''}
                 </div>
-
-                <!-- Stock Status -->
-                <div class="stock-status">
-                    <span class="${stockClass}"></span>
-                    <span data-en="${stockText}" data-ar="${stockTextAr}">${stockText}</span>
+                <div class="product-actions">
+                    <button class="btn"
+                            onclick="event.stopPropagation(); addToCart(${product.id})"
+                            data-en="Add to Cart"
+                            data-ar="أضف للسلة">Add to Cart</button>
+                    <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}"
+                            onclick="event.stopPropagation(); toggleFavorite(${product.id})">♥</button>
                 </div>
-
-                <!-- Add to Cart Button -->
-                <button class="add-to-cart-btn"
-                        onclick="addToCartTopBaic(${product.id})"
-                        ${availableQty === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
-                    <span data-en="ADD TO CART" data-ar="أضف للسلة">ADD TO CART</span>
-                </button>
             </div>
-        </div>`;
+        </div>
+    `;
 }
 
 // ==================== LOAD HOMEPAGE PRODUCTS ====================
@@ -232,24 +203,38 @@ async function reloadHomeProducts() {
     try {
         const products = await getProducts();
 
+        // Use rich card if available, fall back to simple card
+        const cardFn = typeof createTopBaicProductCard === 'function'
+            ? createTopBaicProductCard
+            : createProductCard;
+
         const topSellersEl = document.getElementById('topSellers');
         if (topSellersEl) {
-            const topSellers = products.filter(p => p.topSeller && p.visible).slice(0, 4);
-            topSellersEl.innerHTML = topSellers.map(createProductCard).join('') ||
+            // API returns is_top_seller, old code used topSeller
+            const topSellers = products.filter(p =>
+                p.is_top_seller || p.topSeller || p.isTopSeller
+            ).slice(0, 4);
+            topSellersEl.innerHTML = topSellers.map(cardFn).join('') ||
                 '<p style="text-align:center;padding:2rem;">No top sellers yet</p>';
         }
 
         const randomEl = document.getElementById('randomProducts');
         if (randomEl) {
-            const random = products.filter(p => p.visible).sort(() => 0.5 - Math.random()).slice(0, 4);
-            randomEl.innerHTML = random.map(createProductCard).join('') ||
+            const random = products
+                .filter(p => p.is_visible !== false && p.visible !== false)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 4);
+            randomEl.innerHTML = random.map(cardFn).join('') ||
                 '<p style="text-align:center;padding:2rem;">No products available</p>';
         }
 
         const offersEl = document.getElementById('offerProducts');
         if (offersEl) {
-            const offers = products.filter(p => p.isOffer && p.visible).slice(0, 4);
-            offersEl.innerHTML = offers.map(createProductCard).join('') ||
+            // API returns is_offer, old code used isOffer
+            const offers = products.filter(p =>
+                p.is_offer || p.isOffer
+            ).slice(0, 4);
+            offersEl.innerHTML = offers.map(cardFn).join('') ||
                 '<p style="text-align:center;padding:2rem;">No offers available</p>';
         }
 
@@ -524,30 +509,4 @@ window.addEventListener('DOMContentLoaded', async () => {
 console.log('✅ app.js loaded');
 
 // Load ALL products on homepage (for filter system)
-if (document.getElementById('topbaicProductsGrid')) {
-    (async function loadAllProducts() {
-        try {
-            const products = await getProducts();
-            const grid = document.getElementById('topbaicProductsGrid');
-
-            if (products.length === 0) {
-                grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#999;" data-en="No products available" data-ar="لا توجد منتجات متاحة">No products available</p>';
-                return;
-            }
-
-            grid.innerHTML = products.map(createProductCard).join('');
-            updateProductCount();
-
-            if (typeof switchLanguage === 'function' && typeof currentLanguage !== 'undefined') {
-                switchLanguage(currentLanguage);
-            }
-
-            console.log('✅ Loaded', products.length, 'products to homepage');
-
-        } catch (error) {
-            console.error('Error loading products:', error);
-            document.getElementById('topbaicProductsGrid').innerHTML =
-                '<p style="text-align:center;padding:3rem;color:#e74c3c;">Failed to load products</p>';
-        }
-    })();
-}
+// topbaicProductsGrid is handled by topbaic-products.js → loadTopBaicProducts()

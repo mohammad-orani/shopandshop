@@ -237,7 +237,7 @@ async function fetchOrderItems(dbId) {
     return rows.map(r => ({
         product_id: r.product_id,
         productId: r.product_id,
-        productName: r.product_name,
+        productName: r.product_name_en,
         productNameAr: r.product_name_ar,
         image_url: r.image_url || '',
         quantity: r.quantity,
@@ -294,9 +294,9 @@ app.post('/api/orders', async (req, res) => {
 
         for (const item of (items || [])) {
             await connection.query(
-                `INSERT INTO order_items (order_id, product_id, product_name, quantity, price, total)
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [dbOrderId, item.productId, item.productName, item.quantity, item.price, item.total]
+                `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, total)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [dbOrderId, item.productId || null, item.productName || '', item.productNameAr || '', item.quantity, item.price, item.total]
             );
         }
 

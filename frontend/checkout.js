@@ -465,6 +465,17 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             clearCart();
             closeFreeDeliveryPopup();
 
+            // Meta Pixel - Purchase event
+            if (window.fbq) {
+                fbq('track', 'Purchase', {
+                    value: subtotal + selectedDeliveryFee,
+                    currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
+                    content_ids: orderItems.map(i => String(i.productId)),
+                    content_type: 'product',
+                    num_items: orderItems.reduce((s, i) => s + i.quantity, 0)
+                });
+            }
+
             const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
 
             // Populate order ID

@@ -86,7 +86,7 @@ function createTopBaicProductCard(rawProduct) {
 
             <!-- Product Info -->
             <div class="product-info" style="display:flex;flex-direction:column;flex:1;">
-               <!--   <div class="product-vendor">PRIMEJO PREMIUM</div>-->
+                <div class="product-vendor">PRIMEJO</div>
 
                 <h3 class="product-title">
                     <a href="product.html?id=${product.id}">${productName}</a>
@@ -148,6 +148,16 @@ async function addToCartTopBaic(productId) {
 
         saveCart(cart);
         updateCartCount();
+
+        // Meta Pixel - AddToCart event
+        if (window.fbq) {
+            fbq('track', 'AddToCart', {
+                content_ids: [String(productId)],
+                content_type: 'product',
+                value: parseFloat(product.new_price || product.newPrice || 0),
+                currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD'
+            });
+        }
 
         const nameKey = `name_${currentLanguage || 'en'}`;
         const name = product[nameKey] || product.name_en;
