@@ -127,7 +127,8 @@
                             <div class="form-group">
                                 <label>Cost Price ($) - For Reports Only</label>
                                 <input type="number" id="productCostPrice" min="0" step="0.01" value="0" required>
-                                <small style="color: #666;">Internal cost - used for profit calculations in reports</small>
+                                <small style="color: #666;">Internal cost - used for profit calculations in
+                                    reports</small>
                             </div>
                             <div class="form-group">
                                 <label>Quantity to Sell</label>
@@ -150,7 +151,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Main Image URL</label>
-                                <input type="text" id="productImage" placeholder="https://example.com/image.jpg" required>
+                                <input type="text" id="productImage" placeholder="https://example.com/image.jpg"
+                                    required>
                                 <button type="button" class="btn-secondary" onclick="previewMainImage()"
                                     style="margin-top: 0.5rem;">Preview Image</button>
                             </div>
@@ -189,14 +191,16 @@
                                     <input type="checkbox" id="productNew">
                                     <span style="color: #2d5c8f; font-weight: 600;">🆕 New Arrival</span>
                                 </label>
-                                <small style="display: block; color: #666; margin-top: 0.5rem;">Mark this product as newly arrived</small>
+                                <small style="display: block; color: #666; margin-top: 0.5rem;">Mark this product as
+                                    newly arrived</small>
                             </div>
                             <div class="form-group checkbox-group">
                                 <label>
                                     <input type="checkbox" id="productTopSeller">
                                     <span style="color: #f39c12; font-weight: 600;">⭐ Top Seller</span>
                                 </label>
-                                <small style="display: block; color: #666; margin-top: 0.5rem;">Mark this as a best-selling product</small>
+                                <small style="display: block; color: #666; margin-top: 0.5rem;">Mark this as a
+                                    best-selling product</small>
                             </div>
                         </div>
 
@@ -206,14 +210,16 @@
                                     <input type="checkbox" id="productOffer">
                                     <span style="color: #e74c3c; font-weight: 600;">🔥 Special Offer</span>
                                 </label>
-                                <small style="display: block; color: #666; margin-top: 0.5rem;">Mark this product as a special deal</small>
+                                <small style="display: block; color: #666; margin-top: 0.5rem;">Mark this product as a
+                                    special deal</small>
                             </div>
                             <div class="form-group checkbox-group">
                                 <label>
                                     <input type="checkbox" id="productVisible" checked>
                                     <span style="font-weight: 600;">👁️ Visible</span>
                                 </label>
-                                <small style="display: block; color: #666; margin-top: 0.5rem;">Show this product in the store</small>
+                                <small style="display: block; color: #666; margin-top: 0.5rem;">Show this product in the
+                                    store</small>
                             </div>
                         </div>
 
@@ -251,7 +257,8 @@
                 </div>
 
                 <div id="categoryForm" class="form-container" style="display: none;">
-                    <h4>Add New Category</h4>
+                    <input type="hidden" id="editCategoryId" value="">
+                    <h3 id="categoryFormTitle">Add New Category</h3>
                     <form id="categoryFormElement">
                         <div class="form-group">
                             <label>Category ID (slug)</label>
@@ -352,7 +359,8 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Displayed Fee (JD) - Shown to Customer</label>
-                                    <input type="number" id="cityDisplayedFee" min="0" step="0.01" value="2.00" required>
+                                    <input type="number" id="cityDisplayedFee" min="0" step="0.01" value="2.00"
+                                        required>
                                     <small style="color: #666;">This is what customers see during checkout</small>
                                 </div>
                                 <div class="form-group">

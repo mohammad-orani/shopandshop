@@ -306,7 +306,10 @@ async function loadCategories() {
                 <td>${cat.id}</td>
                 <td>${cat.name_en}</td>
                 <td>${cat.name_ar}</td>
-                <td><button class="btn-danger" onclick="confirmDeleteCategory('${cat.id}')">Delete</button></td>
+                <td>
+                    <button class="btn-info" onclick="editCategory(${cat.id}, '${cat.name_en}', '${cat.name_ar}')">Edit</button>
+                    <button class="btn-danger" onclick="confirmDeleteCategory('${cat.id}')">Delete</button>
+                </td>
             </tr>`).join('');
     } catch (error) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
@@ -315,7 +318,33 @@ async function loadCategories() {
 
 function showAddCategoryForm() {
     const form = document.getElementById('categoryForm');
-    if (form) form.style.display = 'block';
+    if (!form) return;
+    // Reset to "add" mode
+    document.getElementById('categoryFormElement')?.reset();
+    setVal('categoryId', '');
+    setVal('editCategoryId', '');
+    const title = document.getElementById('categoryFormTitle');
+    if (title) title.textContent = 'Add New Category';
+    const btn = document.querySelector('#categoryFormElement button[type="submit"]');
+    if (btn) btn.textContent = 'Add Category';
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+}
+
+function editCategory(id, nameEn, nameAr) {
+    const form = document.getElementById('categoryForm');
+    if (!form) return;
+    // Switch to "edit" mode
+    setVal('categoryId', id);          // keep the custom ID field
+    setVal('editCategoryId', id);      // hidden field for edit mode
+    setVal('categoryNameEn', nameEn);
+    setVal('categoryNameAr', nameAr);
+    const title = document.getElementById('categoryFormTitle');
+    if (title) title.textContent = 'Edit Category';
+    const btn = document.querySelector('#categoryFormElement button[type="submit"]');
+    if (btn) btn.textContent = 'Save Changes';
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideCategoryForm() {
@@ -336,15 +365,26 @@ async function confirmDeleteCategory(id) {
 
 document.getElementById('categoryFormElement')?.addEventListener('submit', async function (e) {
     e.preventDefault();
+    const editId = document.getElementById('editCategoryId')?.value;
     try {
         const categoryData = {
-            id: document.getElementById('categoryId')?.value,
             name_en: document.getElementById('categoryNameEn')?.value,
             name_ar: document.getElementById('categoryNameAr')?.value
         };
-        const result = await createCategory(categoryData);
-        if (result.error) { alert('❌ Error: ' + result.error); return; }
-        showToast('✅ Category added!');
+
+        let result;
+        if (editId) {
+            // Edit existing category
+            result = await updateCategory(editId, categoryData);
+            if (result.error) { alert('❌ Error: ' + result.error); return; }
+            showToast('✅ Category updated!');
+        } else {
+            // Add new category
+            categoryData.id = document.getElementById('categoryId')?.value;
+            result = await createCategory(categoryData);
+            if (result.error) { alert('❌ Error: ' + result.error); return; }
+            showToast('✅ Category added!');
+        }
         hideCategoryForm();
         loadCategories();
     } catch (error) { alert('❌ Error: ' + error.message); }

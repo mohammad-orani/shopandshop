@@ -11,15 +11,15 @@ async function adminLogin(email, password) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.token) {
             localStorage.setItem('adminToken', data.token);
             localStorage.setItem('adminUser', JSON.stringify(data.user));
             return { success: true, data };
         }
-        
+
         return { success: false, error: data.error || 'Login failed' };
     } catch (error) {
         console.error('Login error:', error);
@@ -126,7 +126,18 @@ async function createCategory(categoryData) {
         return { error: 'Failed to create category' };
     }
 }
-
+async function updateCategory(id, categoryData) {
+    try {
+        const response = await fetch(`${API_URL}/categories/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(categoryData)
+        });
+        return await response.json();
+    } catch (error) {
+        return { error: 'Failed to update category' };
+    }
+}
 async function deleteCategory(id) {
     try {
         const response = await fetch(`${API_URL}/categories/${id}`, {
