@@ -298,7 +298,7 @@ async function loadCategories() {
         showLoading('categoriesTableBody', 'Loading categories...', 4);
         const categories = await getCategories();
         if (categories.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;">No categories yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">No categories yet.</td></tr>';
             return;
         }
         tbody.innerHTML = categories.map(cat => `
@@ -306,13 +306,15 @@ async function loadCategories() {
                 <td>${cat.id}</td>
                 <td>${cat.name_en}</td>
                 <td>${cat.name_ar}</td>
+                <td><span class="status-badge status-${cat.is_visible != 0 ? 'visible' : 'hidden'}">
+                    ${cat.is_visible != 0 ? 'Visible' : 'Hidden'}</span></td>
                 <td>
-                    <button class="btn-info" onclick="editCategory(${cat.id}, '${cat.name_en}', '${cat.name_ar}')">Edit</button>
+                    <button class="btn-info" onclick="editCategory(${cat.id}, '${cat.name_en}', '${cat.name_ar}', ${cat.is_visible != 0})">Edit</button>
                     <button class="btn-danger" onclick="confirmDeleteCategory('${cat.id}')">Delete</button>
                 </td>
             </tr>`).join('');
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:red;">Error: ${error.message}</td></tr>`;
     }
 }
 
@@ -331,14 +333,14 @@ function showAddCategoryForm() {
     form.scrollIntoView({ behavior: 'smooth' });
 }
 
-function editCategory(id, nameEn, nameAr) {
+function editCategory(id, nameEn, nameAr, isVisible) {
     const form = document.getElementById('categoryForm');
     if (!form) return;
-    // Switch to "edit" mode
-    setVal('categoryId', id);          // keep the custom ID field
-    setVal('editCategoryId', id);      // hidden field for edit mode
+    setVal('categoryId', id);
+    setVal('editCategoryId', id);
     setVal('categoryNameEn', nameEn);
     setVal('categoryNameAr', nameAr);
+    setChecked('categoryVisible', isVisible !== false);
     const title = document.getElementById('categoryFormTitle');
     if (title) title.textContent = 'Edit Category';
     const btn = document.querySelector('#categoryFormElement button[type="submit"]');
@@ -369,7 +371,8 @@ document.getElementById('categoryFormElement')?.addEventListener('submit', async
     try {
         const categoryData = {
             name_en: document.getElementById('categoryNameEn')?.value,
-            name_ar: document.getElementById('categoryNameAr')?.value
+            name_ar: document.getElementById('categoryNameAr')?.value,
+            is_visible: document.getElementById('categoryVisible')?.checked ? 1 : 0
         };
 
         let result;
@@ -406,12 +409,12 @@ async function loadOrders() {
         }
 
         tbody.innerHTML = orders.map(order => {
-            const id     = order.order_id || order.orderId;
-            const name   = order.customer_name || order.customerName;
-            const phone  = order.customer_phone || order.customerPhone;
+            const id = order.order_id || order.orderId;
+            const name = order.customer_name || order.customerName;
+            const phone = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total  = parseFloat(order.total || 0);
-            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total = parseFloat(order.total || 0);
+            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -426,11 +429,11 @@ async function loadOrders() {
                     <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
                     <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
-                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
-                        <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
-                        <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
-                        <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
             </tr>`;
@@ -466,7 +469,7 @@ async function viewOrderDetails(orderId) {
                 const data = await res.json();
                 if (data && data.order_id) order = data;
             }
-        } catch(e) { /* fallback below */ }
+        } catch (e) { /* fallback below */ }
 
         // Fallback: search in already-loaded orders list
         if (!order) {
@@ -476,28 +479,28 @@ async function viewOrderDetails(orderId) {
 
         if (!order) { alert('Order not found'); return; }
 
-        const status  = order.order_status || order.status;
-        const name    = order.customer_name || order.customerName;
-        const phone   = order.customer_phone || order.customerPhone;
-        const city    = order.delivery_city || '';
+        const status = order.order_status || order.status;
+        const name = order.customer_name || order.customerName;
+        const phone = order.customer_phone || order.customerPhone;
+        const city = order.delivery_city || '';
         const country = order.delivery_country || '';
         const address = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-        const notes   = order.order_notes || order.orderNotes || '';
+        const notes = order.order_notes || order.orderNotes || '';
         const payment = order.payment_method || order.paymentMethod || 'N/A';
-        const total   = parseFloat(order.total || 0);
+        const total = parseFloat(order.total || 0);
         const displayedShipping = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0);
         const subtotal = parseFloat(order.subtotal || 0);
-        const date    = new Date(order.created_at || order.orderDate).toLocaleString();
+        const date = new Date(order.created_at || order.orderDate).toLocaleString();
 
         // Build items HTML
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
-                const name  = item.productName || item.product_name || item.productNameAr || '—';
-                const qty   = item.quantity || 0;
+                const name = item.productName || item.product_name || item.productNameAr || '—';
+                const qty = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
-                const img   = item.image_url || '';
+                const img = item.image_url || '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
@@ -559,7 +562,7 @@ async function viewOrderDetails(orderId) {
                     <div><strong>Phone:</strong> ${phone}</div>
                     <div><strong>Location:</strong> ${city}${city && country ? ', ' : ''}${country}</div>
                     ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${notes   ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
+                    ${notes ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
                 </div>
 
                 <!-- Order items table -->
@@ -612,27 +615,27 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate   = document.getElementById('reportToDate')?.value;
+        const toDate = document.getElementById('reportToDate')?.value;
         let orders = await getOrders();
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at||o.orderDate) >= new Date(fromDate));
-        if (toDate)   orders = orders.filter(o => new Date(o.created_at||o.orderDate) <= new Date(toDate));
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
+        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
-            const id     = o.order_id || o.orderId;
-            const name   = o.customer_name || o.customerName;
-            const phone  = o.customer_phone || o.customerPhone;
+            const id = o.order_id || o.orderId;
+            const name = o.customer_name || o.customerName;
+            const phone = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
-            const date   = new Date(o.created_at||o.orderDate).toLocaleString();
-            const items  = (o.items||[]).map(i => `${i.productName||''}x${i.quantity}`).join('; ');
-            csv += `"${id}","${name}","${phone}","${o.delivery_city||''}","${o.delivery_country||''}","${o.delivery_address||''}","${items}",${o.subtotal||0},${o.displayed_shipping_cost||0},${o.total},"${status}","${date}"\n`;
+            const date = new Date(o.created_at || o.orderDate).toLocaleString();
+            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
+            csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
         a.download = `primejo_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);

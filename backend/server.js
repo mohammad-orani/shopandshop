@@ -97,17 +97,26 @@ app.post('/api/auth/login', async (req, res) => {
 
 // ============ CATEGORIES ============
 
+// GET 
 app.get('/api/categories', async (req, res) => {
     try {
-        const [categories] = await pool.query('SELECT * FROM categories ORDER BY name_en');
+        const showAll = req.query.visible === 'false';
+        const query = showAll
+            ? 'SELECT * FROM categories ORDER BY name_en'
+            : 'SELECT * FROM categories WHERE is_visible = 1 ORDER BY name_en';
+        const [categories] = await pool.query(query);
         res.json(categories);
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
+// POST
 app.post('/api/categories', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { id, name_en, name_ar } = req.body;
-        await pool.query('INSERT INTO categories (id, name_en, name_ar) VALUES (?, ?, ?)', [id, name_en, name_ar]);
+        const { id, name_en, name_ar, is_visible = 1 } = req.body;
+        await pool.query(
+            'INSERT INTO categories (id, name_en, name_ar, is_visible) VALUES (?, ?, ?, ?)',
+            [id, name_en, name_ar, is_visible ? 1 : 0]
+        );
         res.status(201).json({ success: true, message: 'Category created', id });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -119,12 +128,13 @@ app.delete('/api/categories/:id', authenticateToken, isAdmin, async (req, res) =
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
+// PUT — update
 app.put('/api/categories/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { name_en, name_ar } = req.body;
+        const { name_en, name_ar, is_visible } = req.body;
         await pool.query(
-            'UPDATE categories SET name_en = ?, name_ar = ? WHERE id = ?',
-            [name_en, name_ar, req.params.id]
+            'UPDATE categories SET name_en = ?, name_ar = ?, is_visible = ? WHERE id = ?',
+            [name_en, name_ar, is_visible ? 1 : 0, req.params.id]
         );
         res.json({ success: true, message: 'Category updated' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
