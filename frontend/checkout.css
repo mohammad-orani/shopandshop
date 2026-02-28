@@ -164,8 +164,8 @@
 .order-summary {
     border: 2px solid #d4af37;
     padding: 1.8rem;
-    position: sticky;
-    top: 100px;
+    position: relative;
+    top: auto;
     background: #fff;
 }
 
