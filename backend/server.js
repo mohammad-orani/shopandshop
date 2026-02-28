@@ -1,4 +1,6 @@
 // backend/server.js - Main Express Server
+
+const { notifyOrderStatusChange } = require('./notifications');
 require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
@@ -428,15 +430,18 @@ app.patch('/api/orders/:id/status', authenticateToken, isAdmin, async (req, res)
         const { order_status } = req.body;
         const param = req.params.id;
 
-        console.log('PATCH status - param:', param, 'type:', typeof param);  // ← ADD THIS
-        console.log('PATCH status - body:', req.body);  // ← ADD THIS
-
-        // Handle both numeric DB id and string order_id like "ORD-..."
         if (/^\d+$/.test(param)) {
             await pool.query('UPDATE orders SET order_status = ? WHERE id = ?', [order_status, parseInt(param)]);
         } else {
             await pool.query('UPDATE orders SET order_status = ? WHERE order_id = ?', [order_status, param]);
         }
+
+        // Fetch order and send notification
+        const [[order]] = await pool.query(
+            'SELECT * FROM orders WHERE order_id = ? OR id = ? LIMIT 1',
+            [param, parseInt(param) || 0]
+        );
+        if (order) await notifyOrderStatusChange(order, order_status);
 
         res.json({ success: true, message: 'Order status updated' });
     } catch (error) {

@@ -448,6 +448,8 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             delivery_address:      completeAddress,
             order_notes:           document.getElementById('orderNotes')?.value          || '',
             payment_method:        document.querySelector('input[name="payment"]:checked')?.value || 'cash',
+            notification_method:   document.querySelector('input[name="notification"]:checked')?.value || 'none',
+            notification_email:    document.getElementById('notificationEmail')?.value || '',
             items:                 orderItems,
             subtotal:              subtotal,
             // Maps to displayed_shipping_cost + actual_shipping_cost in DB
@@ -554,6 +556,16 @@ document.getElementById('deliveryCity')?.addEventListener('change', updateDelive
 
 function closeSuccessModal() {
     window.location.href = 'index.html';
+}
+
+// ==================== NOTIFICATION TOGGLE ====================
+
+function toggleNotificationFields() {
+    const val = document.querySelector('input[name="notification"]:checked')?.value;
+    const emailField = document.getElementById('emailNotificationField');
+    if (emailField) {
+        emailField.style.display = (val === 'email' || val === 'both') ? 'block' : 'none';
+    }
 }
 
 // ==================== INITIALIZATION ====================
