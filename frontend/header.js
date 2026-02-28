@@ -6,7 +6,7 @@
  */
 
 (function () {
-
+ 
     var headerHTML = '<header class="topbaic-header">' +
         '<div class="header-main">' +
             '<div class="header-main-inner">' +
