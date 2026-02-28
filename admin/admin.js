@@ -41,7 +41,8 @@ async function loadDashboard() {
         const [products, orders] = await Promise.all([getProducts(), getOrders()]);
 
         const pendingOrders = orders.filter(o => (o.order_status || o.status) === 'pending');
-        const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+        const deliveredOrders = orders.filter(o => (o.order_status || o.status) === 'delivered');
+        const totalRevenue = deliveredOrders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
 
         setEl('totalProducts', products.length);
         setEl('totalOrders', orders.length);
@@ -421,26 +422,58 @@ document.getElementById('categoryFormElement')?.addEventListener('submit', async
 
 // ==================== ORDERS ====================
 
-async function loadOrders() {
+async function loadOrders(filterStatus = '') {
     const tbody = document.getElementById('ordersTableBody');
     if (!tbody) return;
 
+    // Render filter bar once
+    const filterBar = document.getElementById('ordersFilterBar');
+    if (filterBar && !filterBar.dataset.built) {
+        filterBar.dataset.built = '1';
+        filterBar.innerHTML = `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;">
+                <span style="font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">Filter:</span>
+                ${['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `
+                    <button onclick="loadOrders('${s}')"
+                            id="filterBtn_${s || 'all'}"
+                            style="padding:6px 16px;border:2px solid #e0e0e0;background:#fff;
+                                   font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;
+                                   text-transform:capitalize;transition:all 0.15s;">
+                        ${s || 'All'}
+                    </button>`).join('')}
+            </div>`;
+    }
+
+    // Highlight active filter button
+    ['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].forEach(s => {
+        const btn = document.getElementById('filterBtn_' + (s || 'all'));
+        if (btn) {
+            const isActive = s === filterStatus;
+            btn.style.background = isActive ? '#1a1a1a' : '#fff';
+            btn.style.color = isActive ? '#fff' : '#1a1a1a';
+            btn.style.borderColor = isActive ? '#1a1a1a' : '#e0e0e0';
+        }
+    });
+
     try {
         showLoading('ordersTableBody', 'Loading orders...', 8);
-        const orders = await getOrders();
+        const allOrders = await getOrders();
+        const orders = filterStatus ? allOrders.filter(o => (o.order_status || o.status) === filterStatus) : allOrders;
 
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No orders yet</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#888;">
+                ${filterStatus ? `No ${filterStatus} orders found` : 'No orders yet'}
+            </td></tr>`;
             return;
         }
 
         tbody.innerHTML = orders.map(order => {
-            const id     = order.order_id || order.orderId;
-            const name   = order.customer_name || order.customerName;
-            const phone  = order.customer_phone || order.customerPhone;
+            const id = order.order_id || order.orderId;
+            const name = order.customer_name || order.customerName;
+            const phone = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total  = parseFloat(order.total || 0);
-            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total = parseFloat(order.total || 0);
+            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -455,11 +488,11 @@ async function loadOrders() {
                     <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
                     <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
-                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
-                        <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
-                        <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
-                        <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
             </tr>`;
@@ -495,7 +528,7 @@ async function viewOrderDetails(orderId) {
                 const data = await res.json();
                 if (data && data.order_id) order = data;
             }
-        } catch(e) { /* fallback below */ }
+        } catch (e) { /* fallback below */ }
 
         // Fallback: search in already-loaded orders list
         if (!order) {
@@ -505,28 +538,28 @@ async function viewOrderDetails(orderId) {
 
         if (!order) { alert('Order not found'); return; }
 
-        const status  = order.order_status || order.status;
-        const name    = order.customer_name || order.customerName;
-        const phone   = order.customer_phone || order.customerPhone;
-        const city    = order.delivery_city || '';
+        const status = order.order_status || order.status;
+        const name = order.customer_name || order.customerName;
+        const phone = order.customer_phone || order.customerPhone;
+        const city = order.delivery_city || '';
         const country = order.delivery_country || '';
         const address = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-        const notes   = order.order_notes || order.orderNotes || '';
+        const notes = order.order_notes || order.orderNotes || '';
         const payment = order.payment_method || order.paymentMethod || 'N/A';
-        const total   = parseFloat(order.total || 0);
+        const total = parseFloat(order.total || 0);
         const displayedShipping = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0);
         const subtotal = parseFloat(order.subtotal || 0);
-        const date    = new Date(order.created_at || order.orderDate).toLocaleString();
+        const date = new Date(order.created_at || order.orderDate).toLocaleString();
 
         // Build items HTML
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
-                const name  = item.productName || item.product_name || item.productNameAr || '—';
-                const qty   = item.quantity || 0;
+                const name = item.productName || item.product_name || item.productNameAr || '—';
+                const qty = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
-                const img   = item.image_url || '';
+                const img = item.image_url || '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
@@ -588,7 +621,7 @@ async function viewOrderDetails(orderId) {
                     <div><strong>Phone:</strong> ${phone}</div>
                     <div><strong>Location:</strong> ${city}${city && country ? ', ' : ''}${country}</div>
                     ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${notes   ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
+                    ${notes ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
                 </div>
 
                 <!-- Order items table -->
@@ -673,27 +706,27 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate   = document.getElementById('reportToDate')?.value;
+        const toDate = document.getElementById('reportToDate')?.value;
         let orders = await getOrders();
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at||o.orderDate) >= new Date(fromDate));
-        if (toDate)   orders = orders.filter(o => new Date(o.created_at||o.orderDate) <= new Date(toDate));
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
+        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
-            const id     = o.order_id || o.orderId;
-            const name   = o.customer_name || o.customerName;
-            const phone  = o.customer_phone || o.customerPhone;
+            const id = o.order_id || o.orderId;
+            const name = o.customer_name || o.customerName;
+            const phone = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
-            const date   = new Date(o.created_at||o.orderDate).toLocaleString();
-            const items  = (o.items||[]).map(i => `${i.productName||''}x${i.quantity}`).join('; ');
-            csv += `"${id}","${name}","${phone}","${o.delivery_city||''}","${o.delivery_country||''}","${o.delivery_address||''}","${items}",${o.subtotal||0},${o.displayed_shipping_cost||0},${o.total},"${status}","${date}"\n`;
+            const date = new Date(o.created_at || o.orderDate).toLocaleString();
+            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
+            csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
         a.download = `primejo_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);

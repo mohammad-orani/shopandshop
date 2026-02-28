@@ -418,9 +418,9 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             const itemTotal = price * item.quantity;
             subtotal += itemTotal;
             return {
-                productId: product.id,
-                productName: product.name_en,
-                productNameAr: product.name_ar,
+                productId: parseInt(product.id) || parseInt(item.productId),
+                productName: product.name_en || '',
+                productNameAr: product.name_ar || '',
                 quantity: item.quantity,
                 price: price,
                 costPrice: product.costPrice || product.cost_price || 0,
@@ -478,10 +478,6 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
 
             const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
 
-            // Populate order ID
-            const orderIdEl = document.getElementById('orderIdDisplay');
-            if (orderIdEl) orderIdEl.textContent = orderId;
-
             // Populate order items in modal
             const modalItemsEl = document.getElementById('modalOrderItems');
             if (modalItemsEl) {
@@ -520,6 +516,10 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             if (modal) modal.classList.add('show');
 
             if (typeof switchLanguage === 'function') switchLanguage(currentLanguage);
+
+            // Set order ID AFTER switchLanguage so it doesn't get overwritten
+            const orderIdEl = document.getElementById('orderIdDisplay');
+            if (orderIdEl) orderIdEl.textContent = orderId;
         } else {
             throw new Error(result.error || 'Failed to create order');
         }
