@@ -11,10 +11,15 @@ const https = require('https');
 // SENDGRID_FROM      = your verified sender email (e.g. orders@primejo.store)
 // STORE_NAME         = Primejo
 
-const CALLMEBOT_APIKEY = process.env.CALLMEBOT_APIKEY || '';
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '';
-const SENDGRID_FROM    = process.env.SENDGRID_FROM    || 'orders@primejo.store';
-const STORE_NAME       = process.env.STORE_NAME       || 'Primejo';
+// Read at runtime, not build time
+function getConfig() {
+    return {
+        CALLMEBOT_APIKEY: process.env.CALLMEBOT_APIKEY || '',
+        SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || '',
+        SENDGRID_FROM:    process.env.SENDGRID_FROM    || 'orders@primejo.store',
+        STORE_NAME:       process.env.STORE_NAME       || 'Primejo'
+    };
+}
 
 // ==================== STATUS MESSAGES ====================
 
@@ -42,6 +47,7 @@ const statusMessages = {
 };
 
 function buildMessage(order, newStatus) {
+    const { STORE_NAME } = getConfig();
     const lang = order.language || 'ar';
     const statusMsg = statusMessages[newStatus]?.[lang] || statusMessages[newStatus]?.en || `Status updated to: ${newStatus}`;
     const orderId = order.order_id || order.id;
@@ -58,6 +64,7 @@ function buildMessage(order, newStatus) {
 // ==================== WHATSAPP via CALLMEBOT ====================
 
 async function sendWhatsApp(phone, message) {
+    const { CALLMEBOT_APIKEY, SENDGRID_API_KEY, SENDGRID_FROM, STORE_NAME } = getConfig();
     if (!CALLMEBOT_APIKEY) {
         console.warn('⚠️ CALLMEBOT_APIKEY not set — skipping WhatsApp');
         return { success: false, error: 'API key not configured' };
@@ -86,6 +93,7 @@ async function sendWhatsApp(phone, message) {
 // ==================== EMAIL via SENDGRID ====================
 
 async function sendEmail(toEmail, subject, message, order) {
+    const { SENDGRID_API_KEY, SENDGRID_FROM, STORE_NAME } = getConfig();
     if (!SENDGRID_API_KEY) {
         console.warn('⚠️ SENDGRID_API_KEY not set — skipping email');
         return { success: false, error: 'API key not configured' };
