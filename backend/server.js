@@ -299,7 +299,18 @@ app.post('/api/orders', async (req, res) => {
                 [dbOrderId, parseInt(item.productId), item.productName || '', item.productNameAr || '', item.quantity, item.price, item.total]
             );
         }
-
+        // Reduce stock
+        for (const item of (items || [])) {
+            if (item.productId) {
+                await connection.query(
+                    `UPDATE products 
+             SET stock = GREATEST(0, stock - ?),
+                 quantity_to_sell = GREATEST(0, quantity_to_sell - ?)
+             WHERE id = ?`,
+                    [item.quantity, item.quantity, parseInt(item.productId)]
+                );
+            }
+        }
         await connection.commit();
         console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${(items || []).length} items`);
         res.status(201).json({ success: true, message: 'Order created successfully', order_id });
