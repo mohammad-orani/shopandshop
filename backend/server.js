@@ -296,7 +296,7 @@ app.post('/api/orders', async (req, res) => {
             await connection.query(
                 `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, total)
                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [dbOrderId, item.productId || null, item.productName || '', item.productNameAr || '', item.quantity, item.price, item.total]
+                [dbOrderId, parseInt(item.productId), item.productName || '', item.productNameAr || '', item.quantity, item.price, item.total]
             );
         }
 
@@ -411,13 +411,26 @@ app.get('/api/orders/:id', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// PATCH /api/orders/:id/status  (PROTECTED)
+// PATCH /api/orders/:id/status
 app.patch('/api/orders/:id/status', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { order_status } = req.body;
-        await pool.query('UPDATE orders SET order_status = ? WHERE id = ?', [order_status, req.params.id]);
+        const param = req.params.id;
+
+        console.log('PATCH status - param:', param, 'type:', typeof param);  // ← ADD THIS
+        console.log('PATCH status - body:', req.body);  // ← ADD THIS
+
+        // Handle both numeric DB id and string order_id like "ORD-..."
+        if (/^\d+$/.test(param)) {
+            await pool.query('UPDATE orders SET order_status = ? WHERE id = ?', [order_status, parseInt(param)]);
+        } else {
+            await pool.query('UPDATE orders SET order_status = ? WHERE order_id = ?', [order_status, param]);
+        }
+
         res.json({ success: true, message: 'Order status updated' });
-    } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // ============ DELIVERY ============
