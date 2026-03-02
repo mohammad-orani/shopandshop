@@ -6,8 +6,8 @@ const autoplayDelay = 5000;
 
 async function loadBanners() {
     try {
-        const API_URL = window.API_URL || 'https://primejo-ecommerce-ba.up.railway.app';
-        const res = await fetch(`${API_URL}/api/banners`);
+        const API_URL = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+        const res = await fetch(`${API_URL}/banners`);
         const data = await res.json();
         const banners = data.banners || [];
 
