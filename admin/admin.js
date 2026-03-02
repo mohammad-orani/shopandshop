@@ -49,7 +49,7 @@ async function loadDashboard() {
         setEl('totalProducts', products.length);
         setEl('totalOrders', orders.length);
         setEl('pendingOrders', pendingOrders.length);
-        setEl('totalRevenue', `$${totalRevenue.toFixed(2)}`);
+        setEl('totalRevenue', `${totalRevenue.toFixed(2)}JD`);
 
         const recentOrders = orders.slice(0, 5);
         const recentHTML = recentOrders.map(order => {
@@ -63,7 +63,7 @@ async function loadDashboard() {
                         ${name}
                     </div>
                     <div>
-                        <strong>$${parseFloat(order.total || 0).toFixed(2)}</strong><br>
+                        <strong>${parseFloat(order.total || 0).toFixed(2)}JD</strong><br>
                         <span class="status-badge status-${status}">${status}</span>
                     </div>
                 </div>`;
@@ -120,7 +120,7 @@ function renderProductsTable(products) {
                          style="width:60px;height:60px;object-fit:cover;"></td>
                 <td>${p.name_en}</td>
                 <td>${p.category || p.category_id || '-'}</td>
-                <td>$${parseFloat(p.newPrice || p.new_price || 0).toFixed(2)}</td>
+                <td>${parseFloat(p.newPrice || p.new_price || 0).toFixed(2)}JD</td>
                 <td>${p.stock || 0}</td>
                 <td><span class="status-badge status-${(p.visible !== false && p.is_visible !== false) ? 'visible' : 'hidden'}">
                     ${(p.visible !== false && p.is_visible !== false) ? 'Visible' : 'Hidden'}</span></td>
@@ -483,7 +483,7 @@ async function loadOrders(filterStatus = '') {
                 <td>${name}</td>
                 <td>${phone}</td>
                 <td>${order.items?.length || '?'} items</td>
-                <td>$${total.toFixed(2)}</td>
+                <td>${total.toFixed(2)}JD</td>
                 <td>${date}</td>
                 <td><span class="status-badge status-${status}">${status}</span></td>
                 <td>
@@ -571,8 +571,8 @@ async function viewOrderDetails(orderId) {
                             </div>
                         </td>
                         <td style="padding:10px 12px;text-align:center;color:#555;">${qty}</td>
-                        <td style="padding:10px 12px;text-align:right;color:#555;">$${price}</td>
-                        <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1a1a1a;">$${total}</td>
+                        <td style="padding:10px 12px;text-align:right;color:#555;">${price}JD</td>
+                        <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1a1a1a;">${total}JD</td>
                     </tr>`;
             }).join('');
 
@@ -632,12 +632,12 @@ async function viewOrderDetails(orderId) {
                 <!-- Totals -->
                 <div style="border-top:2px solid #1a1a1a;padding-top:0.8rem;">
                     ${subtotal > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;color:#666;">
-                        <span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>` : ''}
+                        <span>Subtotal</span><span>${subtotal.toFixed(2)}JD</span></div>` : ''}
                     ${displayedShipping > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;color:#666;">
-                        <span>Shipping</span><span>$${displayedShipping.toFixed(2)}</span></div>` : ''}
+                        <span>Shipping</span><span>${displayedShipping.toFixed(2)}JD</span></div>` : ''}
                     <div style="display:flex;justify-content:space-between;font-size:1.3rem;font-weight:900;margin-top:0.4rem;">
                         <span>Total</span>
-                        <span style="color:#1a1a1a;">$${total.toFixed(2)}</span>
+                        <span style="color:#1a1a1a;">${total.toFixed(2)}JD</span>
                     </div>
                 </div>
             </div>
@@ -699,8 +699,8 @@ async function loadReports() {
             <div class="stats-grid">
                 <div class="stat-card"><h3>Total Orders</h3><p class="stat-number">${orders.length}</p></div>
                 <div class="stat-card"><h3>Completed</h3><p class="stat-number">${completed.length}</p></div>
-                <div class="stat-card"><h3>Total Revenue</h3><p class="stat-number">$${total.toFixed(2)}</p></div>
-                <div class="stat-card"><h3>Completed Revenue</h3><p class="stat-number">$${completedRevenue.toFixed(2)}</p></div>
+                <div class="stat-card"><h3>Total Revenue</h3><p class="stat-number">${total.toFixed(2)}JD</p></div>
+                <div class="stat-card"><h3>Completed Revenue</h3><p class="stat-number">${completedRevenue.toFixed(2)}JD</p></div>
             </div>`);
     } catch (error) { console.error('Reports error:', error); }
 }
