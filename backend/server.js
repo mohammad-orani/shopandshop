@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 app.use(cors({
     origin: [
         'https://primejo.store',
