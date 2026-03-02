@@ -29,7 +29,7 @@ async function loadDeliveryCountries() {
                 <td>${c.name_en}</td>
                 <td>${c.name_ar}</td>
                 <td>${c.phone_prefix || c.phonePrefix || '-'}</td>
-                <td>${c.delivery_fee || c.defaultFee || 0} JOD</td>
+                <td>${c.delivery_fee || c.defaultFee || 0}JD</td>
                 <td>
                     <button class="btn-info" onclick="editCountryPrompt('${c.id}', '${c.name_en}', '${c.name_ar}', '${c.phone_prefix || c.phonePrefix || ''}', ${c.delivery_fee || c.defaultFee || 0})" style="margin-right:0.5rem;">Edit</button>
                     <button class="btn-danger" onclick="confirmDeleteCountry('${c.id}')">Delete</button>
@@ -77,8 +77,8 @@ async function loadCitiesForCountry() {
             <tr>
                 <td>${city.name_en}</td>
                 <td>${city.name_ar}</td>
-                <td>${city.displayed_fee ?? city.delivery_fee ?? 0} JOD</td>
-                <td>${city.actual_fee ?? city.delivery_fee ?? 0} JOD</td>
+                <td>${city.displayed_fee ?? city.delivery_fee ?? 0}JD</td>
+                <td>${city.actual_fee ?? city.delivery_fee ?? 0}JD</td>
                 <td>
                     <button class="btn-info" onclick="editCityPrompt('${city.id}', '${city.name_en}', '${city.name_ar}', ${city.displayed_fee ?? city.delivery_fee ?? 0}, ${city.actual_fee ?? city.delivery_fee ?? 0})" style="margin-right:0.5rem;">Edit</button>
                     <button class="btn-danger" onclick="confirmDeleteCity('${city.id}')">Delete</button>

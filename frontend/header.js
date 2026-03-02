@@ -6,12 +6,12 @@
  */
 
 (function () {
- 
+
     var headerHTML = '<header class="topbaic-header">' +
         '<div class="header-main">' +
             '<div class="header-main-inner">' +
                 '<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open menu">&#9776;</button>' +
-                '<a href="index.html" class="topbaic-logo"><img src="Prime_Jo_Logo.png" alt="PrimeJo" style="height:50px;width:auto;object-fit:contain;"></a>' +
+                '<a href="index.html" class="topbaic-logo"><img src="Prime_Jo_Logo.png" alt="PrimeJo" loading="eager" style="height:45px;width:auto;object-fit:contain;display:block;max-width:180px;"></a>' +
                 '<nav class="topbaic-nav" id="mobileNav">' +
                     '<a href="index.html" data-en="Home" data-ar="\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629">Home</a>' +
                     '<div class="nav-item" id="navCategories">' +

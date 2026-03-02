@@ -37,6 +37,10 @@
                 <a href="#reports" class="nav-link" onclick="showSection('reports')">
                     <span>📈</span> Reports
                 </a>
+                <a href="#banners" class="nav-link" onclick="showSection('banners')">
+                    <span>🖼️</span> Banners
+                </a>
+
             </nav>
         </aside>
 
@@ -67,7 +71,7 @@
                     </div>
                     <div class="stat-card">
                         <h3>Total Revenue</h3>
-                        <p class="stat-number" id="totalRevenue">$0</p>
+                        <p class="stat-number" id="totalRevenue">0JD</p>
                     </div>
                 </div>
 
@@ -470,6 +474,175 @@
                 </div>
                 <div class="stats-summary" id="reportStats"></div>
             </section>
+
+            <!-- ===== BANNERS SECTION =====
+Add this inside your admin/index.html, as a new section alongside Products, Orders, etc.
+Add "Banners" to your sidebar nav too:
+<a href="#banners" onclick="showSection('banners')">🖼️ Banners</a>
+-->
+
+            <section id="banners" class="content-section">
+                <h2>Banner Management</h2>
+
+                <!-- Current Banners -->
+                <div style="margin-bottom:2rem;">
+                    <h3
+                        style="margin-bottom:1rem;font-size:1rem;text-transform:uppercase;letter-spacing:1px;color:#888;">
+                        Current Banners</h3>
+                    <div id="bannersContainer">
+                        <p style="color:#888;">Loading banners...</p>
+                    </div>
+                </div>
+
+                <!-- Add / Edit Form -->
+                <div id="bannerForm"
+                    style="background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;padding:1.5rem;">
+                    <h3 id="bannerFormTitle"
+                        style="margin-bottom:1.5rem;font-size:1rem;text-transform:uppercase;letter-spacing:1px;">Add New
+                        Banner
+                    </h3>
+                    <input type="hidden" id="bannerEditId">
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Title
+                                (English)</label>
+                            <input type="text" id="bannerTitleEn" placeholder="e.g. Summer Collection 2024"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Title
+                                (Arabic)
+                                العنوان</label>
+                            <input type="text" id="bannerTitleAr" placeholder="مجموعة صيف 2024" dir="rtl"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Subtitle
+                                (English)</label>
+                            <input type="text" id="bannerSubtitleEn" placeholder="e.g. Discover the latest trends"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Subtitle
+                                (Arabic)
+                                الوصف</label>
+                            <input type="text" id="bannerSubtitleAr" placeholder="اكتشف أحدث الصيحات" dir="rtl"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Button
+                                Text
+                                (English)</label>
+                            <input type="text" id="bannerBtnEn" placeholder="SHOP NOW"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Button
+                                Text
+                                (Arabic) نص الزر</label>
+                            <input type="text" id="bannerBtnAr" placeholder="تسوق الآن" dir="rtl"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Button
+                            Link</label>
+                        <input type="text" id="bannerBtnLink" placeholder="e.g. category.html or https://..."
+                            style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                    </div>
+
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">
+                            Image URL <span style="color:#888;font-weight:400;">(paste direct image link — leave empty
+                                to use
+                                background color)</span>
+                        </label>
+                        <input type="text" id="bannerImageUrl" placeholder="https://example.com/banner.jpg"
+                            style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;"
+                            oninput="previewBannerImage(this.value)">
+                        <div id="bannerImagePreview" style="margin-top:8px;display:none;">
+                            <img id="bannerPreviewImg"
+                                style="height:100px;border-radius:6px;object-fit:cover;max-width:300px;">
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">
+                                Background Color <span style="color:#888;font-weight:400;">(used if no image)</span>
+                            </label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="color" id="bannerBgColor" value="#667eea"
+                                    style="width:50px;height:36px;border:1px solid #ddd;border-radius:4px;cursor:pointer;">
+                                <span style="font-size:0.8rem;color:#888;">Or paste gradient CSS</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Sort
+                                Order</label>
+                            <input type="number" id="bannerSortOrder" value="0" min="0"
+                                style="width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:4px;">
+                        </div>
+                        <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="checkbox" id="bannerIsActive" checked style="width:18px;height:18px;">
+                                <span style="font-size:0.85rem;font-weight:600;">Active</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:1rem;">
+                        <button onclick="saveBanner(event)"
+                            style="padding:0.75rem 2rem;background:#1a1a1a;color:white;border:none;font-weight:700;cursor:pointer;border-radius:4px;">
+                            💾 Save Banner
+                        </button>
+                        <button onclick="resetBannerForm()"
+                            style="padding:0.75rem 1.5rem;background:#e0e0e0;color:#333;border:none;font-weight:600;cursor:pointer;border-radius:4px;">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <script>
+                function previewBannerImage(url) {
+                    const preview = document.getElementById('bannerImagePreview');
+                    const img = document.getElementById('bannerPreviewImg');
+                    if (url) {
+                        img.src = url;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                }
+            </script>
+            <!-- General Info Section -->
+            <section id="general-info-section" class="content-section">
+                <h2>🏢 General Information</h2>
+                <form id="generalInfoForm" class="form-container">
+                    <div class="form-group">
+                        <label>Brand Name:</label>
+                        <input type="text" id="brandName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number:</label>
+                        <input type="tel" id="phoneNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address:</label>
+                        <input type="email" id="emailAddress" required>
+                    </div>
+                    <button type="submit" class="btn-primary">💾 Save General Info</button>
+                </form>
+            </section>
         </main>
     </div>
 
@@ -489,25 +662,6 @@
         </div>
     </div>
 
-    <!-- General Info Section -->
-    <section id="general-info-section" class="content-section">
-        <h2>🏢 General Information</h2>
-        <form id="generalInfoForm" class="form-container">
-            <div class="form-group">
-                <label>Brand Name:</label>
-                <input type="text" id="brandName" required>
-            </div>
-            <div class="form-group">
-                <label>Phone Number:</label>
-                <input type="tel" id="phoneNumber" required>
-            </div>
-            <div class="form-group">
-                <label>Email Address:</label>
-                <input type="email" id="emailAddress" required>
-            </div>
-            <button type="submit" class="btn-primary">💾 Save General Info</button>
-        </form>
-    </section>
 
     <!-- ✅ Load order: auth-check first, then api, then app logic -->
     <script src="auth-check.js"></script>

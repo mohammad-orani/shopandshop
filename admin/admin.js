@@ -18,7 +18,8 @@ function showSection(sectionId) {
         'categories': 'Category Management',
         'orders': 'Order Management',
         'delivery': 'Delivery Management',
-        'reports': 'Reports & Export'
+        'reports': 'Reports & Export',
+        'banners': 'Banner Management'
     };
 
     const titleEl = document.getElementById('pageTitle');
@@ -30,6 +31,7 @@ function showSection(sectionId) {
     if (sectionId === 'orders') loadOrders();
     if (sectionId === 'delivery') loadDelivery();
     if (sectionId === 'reports') loadReports();
+    if (sectionId === 'banners') loadBanners();
 }
 
 // ==================== DASHBOARD ====================
@@ -788,3 +790,119 @@ function showToast(msg, duration = 3000) {
 // ==================== INIT ====================
 
 loadDashboard();
+
+// ==================== BANNERS ====================
+
+async function loadBanners() {
+    const container = document.getElementById('bannersContainer');
+    if (!container) return;
+    try {
+        const res = await fetch(`${API_URL}/api/banners`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        const banners = data.banners || [];
+
+        if (!banners.length) {
+            container.innerHTML = '<p style="color:#888;text-align:center;padding:2rem;">No banners yet. Add your first banner below.</p>';
+            return;
+        }
+
+        container.innerHTML = banners.map(b => `
+            <div class="banner-card" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:1rem;">
+                <div style="height:120px;background:${b.image_url ? `url('${b.image_url}') center/cover` : (b.bg_color || '#667eea')};position:relative;">
+                    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
+                        <div style="color:white;text-align:center;">
+                            <strong style="font-size:1.1rem;">${b.title_en || ''}</strong><br>
+                            <small>${b.subtitle_en || ''}</small>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;background:#fafafa;">
+                    <span style="font-size:0.8rem;color:#888;">Order: ${b.sort_order || 0} | ${b.is_active ? '✅ Active' : '❌ Inactive'}</span>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="editBanner(${JSON.stringify(b).replace(/"/g, '&quot;')})"
+                            style="padding:5px 12px;background:#1a1a1a;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;">
+                            Edit
+                        </button>
+                        <button onclick="deleteBanner(${b.id})"
+                            style="padding:5px 12px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = '<p style="color:red;">Failed to load banners</p>';
+    }
+}
+
+function editBanner(b) {
+    document.getElementById('bannerEditId').value = b.id || '';
+    document.getElementById('bannerTitleEn').value = b.title_en || '';
+    document.getElementById('bannerTitleAr').value = b.title_ar || '';
+    document.getElementById('bannerSubtitleEn').value = b.subtitle_en || '';
+    document.getElementById('bannerSubtitleAr').value = b.subtitle_ar || '';
+    document.getElementById('bannerBtnEn').value = b.btn_text_en || '';
+    document.getElementById('bannerBtnAr').value = b.btn_text_ar || '';
+    document.getElementById('bannerBtnLink').value = b.btn_link || '';
+    document.getElementById('bannerImageUrl').value = b.image_url || '';
+    document.getElementById('bannerBgColor').value = b.bg_color || '#667eea';
+    document.getElementById('bannerSortOrder').value = b.sort_order || 0;
+    document.getElementById('bannerIsActive').checked = b.is_active !== false;
+    document.getElementById('bannerFormTitle').textContent = 'Edit Banner';
+    document.getElementById('bannerForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetBannerForm() {
+    document.getElementById('bannerEditId').value = '';
+    document.getElementById('bannerForm').reset();
+    document.getElementById('bannerFormTitle').textContent = 'Add New Banner';
+    document.getElementById('bannerBgColor').value = '#667eea';
+}
+
+async function saveBanner(e) {
+    e.preventDefault();
+    const id = document.getElementById('bannerEditId').value;
+    const payload = {
+        title_en: document.getElementById('bannerTitleEn').value,
+        title_ar: document.getElementById('bannerTitleAr').value,
+        subtitle_en: document.getElementById('bannerSubtitleEn').value,
+        subtitle_ar: document.getElementById('bannerSubtitleAr').value,
+        btn_text_en: document.getElementById('bannerBtnEn').value,
+        btn_text_ar: document.getElementById('bannerBtnAr').value,
+        btn_link: document.getElementById('bannerBtnLink').value,
+        image_url: document.getElementById('bannerImageUrl').value,
+        bg_color: document.getElementById('bannerBgColor').value,
+        sort_order: parseInt(document.getElementById('bannerSortOrder').value) || 0,
+        is_active: document.getElementById('bannerIsActive').checked
+    };
+
+    const url = id ? `${API_URL}/api/banners/${id}` : `${API_URL}/api/banners`;
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, { method, headers: getAuthHeaders(), body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) {
+            alert(id ? 'Banner updated!' : 'Banner added!');
+            resetBannerForm();
+            loadBanners();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (err) {
+        alert('Failed to save banner');
+    }
+}
+
+async function deleteBanner(id) {
+    if (!confirm('Delete this banner?')) return;
+    try {
+        const res = await fetch(`${API_URL}/api/banners/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success) { loadBanners(); }
+        else alert('Error: ' + data.error);
+    } catch (err) {
+        alert('Failed to delete banner');
+    }
+}

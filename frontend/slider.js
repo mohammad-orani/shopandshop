@@ -1,9 +1,46 @@
-// ===== Hero Slider Functionality =====
-// Single initialization - do NOT call initSlider from app.js
+// ===== Hero Slider - Loads from API =====
 
 let currentSlide = 0;
 let autoplayInterval;
 const autoplayDelay = 5000;
+
+async function loadBanners() {
+    try {
+        const API_URL = window.API_URL || 'https://primejo-ecommerce-ba.up.railway.app';
+        const res = await fetch(`${API_URL}/api/banners`);
+        const data = await res.json();
+        const banners = data.banners || [];
+
+        const container = document.querySelector('.slider-container');
+        if (!container || !banners.length) return;
+
+        container.innerHTML = banners.map((b, i) => {
+            const bg = b.image_url
+                ? `background: url('${b.image_url}') center/cover no-repeat;`
+                : `background: ${b.bg_color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};`;
+
+            const lang = document.documentElement.lang || 'en';
+            const title = (lang === 'ar' && b.title_ar) ? b.title_ar : (b.title_en || b.title || '');
+            const subtitle = (lang === 'ar' && b.subtitle_ar) ? b.subtitle_ar : (b.subtitle_en || b.subtitle || '');
+            const btnText = (lang === 'ar' && b.btn_text_ar) ? b.btn_text_ar : (b.btn_text_en || b.btn_text || 'SHOP NOW');
+            const btnLink = b.btn_link || '#';
+
+            return `<div class="slide ${i === 0 ? 'active' : ''}" style="${bg}">
+                <div class="slide-content">
+                    ${title ? `<h1>${title}</h1>` : ''}
+                    ${subtitle ? `<p>${subtitle}</p>` : ''}
+                    ${btnText ? `<a href="${btnLink}" class="slide-btn">${btnText}</a>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        window._sliderInitialized = false;
+        initSlider();
+    } catch (err) {
+        console.warn('Banners load failed, using static slides', err);
+        initSlider();
+    }
+}
 
 function createDots() {
     const dotsContainer = document.querySelector('.slider-dots');
@@ -43,18 +80,14 @@ function startAutoplay() {
     stopAutoplay();
     autoplayInterval = setInterval(() => changeSlide(1), autoplayDelay);
 }
-
 function stopAutoplay() {
     if (autoplayInterval) { clearInterval(autoplayInterval); autoplayInterval = null; }
 }
-
 function resetAutoplay() { stopAutoplay(); startAutoplay(); }
 
 function initSlider() {
     const slides = document.querySelectorAll('.slide');
     if (!slides.length) return;
-
-    // Prevent double init
     if (window._sliderInitialized) return;
     window._sliderInitialized = true;
 
@@ -82,9 +115,9 @@ function initSlider() {
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSlider);
+    document.addEventListener('DOMContentLoaded', loadBanners);
 } else {
-    initSlider();
+    loadBanners();
 }
 
 window.changeSlide = changeSlide;
