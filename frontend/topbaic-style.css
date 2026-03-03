@@ -1283,9 +1283,12 @@ body[dir="rtl"] .social-link:hover {
 }
 
 .topbaic-logo img {
-    height: 45px;
+    height: 80px;
     width: auto;
-    max-width: 180px;
-    object-fit: contain;
     display: block;
+    object-fit: contain;
+}
+
+.header-main-inner {
+    align-items: center;
 }
