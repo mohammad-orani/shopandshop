@@ -24,13 +24,25 @@ async function loadBanners() {
             const subtitle = (lang === 'ar' && b.subtitle_ar) ? b.subtitle_ar : (b.subtitle_en || b.subtitle || '');
             const btnText = (lang === 'ar' && b.btn_text_ar) ? b.btn_text_ar : (b.btn_text_en || b.btn_text || 'SHOP NOW');
             const btnLink = b.btn_link || '#';
+            const imageLink = b.image_link || btnLink;
 
-            return `<div class="slide ${i === 0 ? 'active' : ''}" style="${bg}">
+            // If banner has a destination link, make the whole slide clickable
+            const slideInner = `
                 <div class="slide-content">
                     ${title ? `<h1>${title}</h1>` : ''}
                     ${subtitle ? `<p>${subtitle}</p>` : ''}
-                    ${btnText ? `<a href="${btnLink}" class="slide-btn">${btnText}</a>` : ''}
-                </div>
+                   
+                </div>`;
+
+            if (imageLink && imageLink !== '#') {
+                return `<div class="slide ${i === 0 ? 'active' : ''}" style="${bg}">
+                    <a href="${imageLink}" class="slide-link" style="position:absolute;inset:0;z-index:1;" aria-label="${title}"></a>
+                    ${slideInner}
+                </div>`;
+            }
+
+            return `<div class="slide ${i === 0 ? 'active' : ''}" style="${bg}">
+                ${slideInner}
             </div>`;
         }).join('');
 
