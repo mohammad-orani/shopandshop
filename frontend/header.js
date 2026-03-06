@@ -225,5 +225,26 @@
         });
     });
 
+    // ── Show search bar on scroll UP, hide on scroll DOWN ──
+    var lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', function () {
+        var currentScrollY = window.scrollY;
+        var searchBar = document.getElementById('primejoSearchBar');
+        if (!searchBar) return;
+
+        if (currentScrollY < lastScrollY) {
+            // Scrolling UP — show
+            searchBar.classList.remove('search-hidden');
+            searchBar.classList.add('search-visible');
+        } else if (currentScrollY > 80) {
+            // Scrolling DOWN past 80px — hide
+            searchBar.classList.remove('search-visible');
+            searchBar.classList.add('search-hidden');
+        }
+
+        lastScrollY = currentScrollY;
+    });
+
     console.log('✅ Header loaded');
 })();

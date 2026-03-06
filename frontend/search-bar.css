@@ -99,9 +99,33 @@
     animation: searchDropIn 0.18s ease;
 }
 
+/* ── Search bar scroll show/hide ── */
+.primejo-search-bar {
+    transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+.primejo-search-bar.search-hidden {
+    transform: translateY(-110%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.primejo-search-bar.search-visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
 @keyframes searchDropIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .search-result-item {
@@ -115,9 +139,13 @@
     text-decoration: none;
 }
 
-.search-result-item:last-child { border-bottom: none; }
+.search-result-item:last-child {
+    border-bottom: none;
+}
 
-.search-result-item:hover { background: #faf7f0; }
+.search-result-item:hover {
+    background: #faf7f0;
+}
 
 .search-result-img {
     width: 50px;
@@ -169,7 +197,9 @@
     letter-spacing: 0.5px;
 }
 
-.search-view-all:hover { background: #faf7f0; }
+.search-view-all:hover {
+    background: #faf7f0;
+}
 
 .search-no-results {
     padding: 24px;
