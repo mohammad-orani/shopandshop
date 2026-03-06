@@ -2,7 +2,7 @@
 
 let currentSlide = 0;
 let autoplayInterval;
-const autoplayDelay = 5000;
+const autoplayDelay = 7000;
 
 async function loadBanners() {
     try {

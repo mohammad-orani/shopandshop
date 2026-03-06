@@ -17,12 +17,12 @@
     /* Show hamburger */
     .mobile-menu-toggle {
         display: block;
-        order: 1;
+        order: 2;
     }
 
     /* Logo center */
     .topbaic-logo {
-        order: 2;
+        order: 1;
         flex: 1;
         text-align: center;
     }

@@ -26,19 +26,19 @@ async function loadDeliveryCountries() {
 
         tbody.innerHTML = countries.map(c => `
             <tr>
-                <td>${c.name_en}</td>
-                <td>${c.name_ar}</td>
+                <td>${c.country_name_en}</td>
+                <td>${c.country_name_ar}</td>
                 <td>${c.phone_prefix || c.phonePrefix || '-'}</td>
-                <td>${c.delivery_fee || c.defaultFee || 0}JD</td>
+                <td>${c.default_fee || 0}JD</td>
                 <td>
-                    <button class="btn-info" onclick="editCountryPrompt('${c.id}', '${c.name_en}', '${c.name_ar}', '${c.phone_prefix || c.phonePrefix || ''}', ${c.delivery_fee || c.defaultFee || 0})" style="margin-right:0.5rem;">Edit</button>
+                    <button class="btn-info" onclick="editCountryPrompt('${c.id}', '${c.country_name_en}', '${c.country_name_ar}', '${c.phone_prefix || c.phonePrefix || ''}', ${c.delivery_fee || c.defaultFee || 0})" style="margin-right:0.5rem;">Edit</button>
                     <button class="btn-danger" onclick="confirmDeleteCountry('${c.id}')">Delete</button>
                 </td>
             </tr>`).join('');
 
         if (countrySelect) {
             countrySelect.innerHTML = '<option value="">-- Select Country --</option>' +
-                countries.map(c => `<option value="${c.id}">${c.name_en} / ${c.name_ar}</option>`).join('');
+                countries.map(c => `<option value="${c.id}">${c.country_name_en} / ${c.country_name_ar}</option>`).join('');
         }
 
     } catch (error) {
@@ -75,12 +75,12 @@ async function loadCitiesForCountry() {
 
         tbody.innerHTML = cities.map(city => `
             <tr>
-                <td>${city.name_en}</td>
-                <td>${city.name_ar}</td>
+                <td>${city.city_name_en}</td>
+                <td>${city.city_name_ar}</td>
                 <td>${city.displayed_fee ?? city.delivery_fee ?? 0}JD</td>
                 <td>${city.actual_fee ?? city.delivery_fee ?? 0}JD</td>
                 <td>
-                    <button class="btn-info" onclick="editCityPrompt('${city.id}', '${city.name_en}', '${city.name_ar}', ${city.displayed_fee ?? city.delivery_fee ?? 0}, ${city.actual_fee ?? city.delivery_fee ?? 0})" style="margin-right:0.5rem;">Edit</button>
+                    <button class="btn-info" onclick="editCityPrompt('${city.id}', '${city.city_name_en}', '${city.city_name_ar}', ${city.displayed_fee ?? city.delivery_fee ?? 0}, ${city.actual_fee ?? city.delivery_fee ?? 0})" style="margin-right:0.5rem;">Edit</button>
                     <button class="btn-danger" onclick="confirmDeleteCity('${city.id}')">Delete</button>
                 </td>
             </tr>`).join('');
