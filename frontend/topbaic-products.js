@@ -162,11 +162,14 @@ async function addToCartTopBaic(productId) {
         const nameKey = `name_${currentLanguage || 'en'}`;
         const name = product[nameKey] || product.name_en;
 
-        if (window.ModernAnimations && window.ModernAnimations.showToast) {
-            window.ModernAnimations.showToast(
-                currentLanguage === 'ar' ? `✓ تمت الإضافة: ${name}` : `✓ Added: ${name}`,
-                'success'
-            );
+        const msg = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
+            ? `تمت إضافة عنصر إلى السلة! 🛒`
+            : `1 item(s) added to cart! 🛒`;
+
+        if (window.ModernAnimations?.showToast) {
+            window.ModernAnimations.showToast(msg, 'success');
+        } else {
+            alert(msg);
         }
     } catch (err) {
         console.error('addToCartTopBaic error:', err);

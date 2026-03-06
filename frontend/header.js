@@ -34,12 +34,32 @@
         '<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>' +
         '</header>';
 
-    // Inject
+    var searchBarHTML =
+        '<div class="primejo-search-bar" id="primejoSearchBar">' +
+            '<div class="search-bar-inner">' +
+                '<div class="search-input-wrap">' +
+                    '<span class="search-icon">&#128269;</span>' +
+                    '<input type="text" id="primejoSearchInput" ' +
+                           'placeholder="\u0627\u0628\u062d\u062b \u0639\u0646 \u0645\u0646\u062a\u062c... / Search products..." ' +
+                           'autocomplete="off" />' +
+                    '<button class="search-clear" id="searchClear" style="display:none;">&#10005;</button>' +
+                '</div>' +
+                '<div class="search-dropdown" id="searchDropdown"></div>' +
+            '</div>' +
+        '</div>';
+
+    // Inject header
     var placeholder = document.getElementById('site-header');
     if (placeholder) {
         placeholder.outerHTML = headerHTML;
     } else {
         document.body.insertAdjacentHTML('afterbegin', headerHTML);
+    }
+
+    // Inject search bar right after the header
+    var headerEl = document.querySelector('.topbaic-header');
+    if (headerEl) {
+        headerEl.insertAdjacentHTML('afterend', searchBarHTML);
     }
 
     // ── Mobile menu ──
@@ -82,6 +102,116 @@
         }
 
         console.log('✅ Mobile menu ready');
+    }
+
+    // ── Search logic ──
+    var allProducts = [];
+    var searchTimeout = null;
+
+    function initSearch() {
+        var input = document.getElementById('primejoSearchInput');
+        var dropdown = document.getElementById('searchDropdown');
+        var clearBtn = document.getElementById('searchClear');
+        if (!input) return;
+
+        // Pre-load products for instant results
+        if (typeof getProducts === 'function') {
+            getProducts().then(function (p) { allProducts = p || []; }).catch(function () {});
+        }
+
+        input.addEventListener('input', function () {
+            var q = this.value.trim();
+            clearBtn.style.display = q ? 'block' : 'none';
+            clearTimeout(searchTimeout);
+            if (!q) { hideDropdown(); return; }
+            searchTimeout = setTimeout(function () { showResults(q); }, 200);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                var q = this.value.trim();
+                if (q) goToProductsPage(q);
+            }
+            if (e.key === 'Escape') hideDropdown();
+        });
+
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            clearBtn.style.display = 'none';
+            hideDropdown();
+            input.focus();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.search-bar-inner')) hideDropdown();
+        });
+    }
+
+    function showResults(query) {
+        var dropdown = document.getElementById('searchDropdown');
+        if (!dropdown) return;
+
+        var lang = (typeof currentLanguage !== 'undefined' ? currentLanguage : 'en');
+        var nameKey = 'name_' + lang;
+        var q = query.toLowerCase();
+
+        var matches = allProducts.filter(function (p) {
+            return (p[nameKey] || p.name_en || '').toLowerCase().includes(q) ||
+                   (p.name_en || '').toLowerCase().includes(q) ||
+                   (p.name_ar || '').toLowerCase().includes(q);
+        }).slice(0, 6);
+
+        if (matches.length === 0) {
+            dropdown.innerHTML = '<div class="search-no-results">&#128269; ' +
+                (lang === 'ar' ? '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u062a\u0627\u0626\u062c' : 'No results found') +
+                '</div>';
+            dropdown.classList.add('visible');
+            return;
+        }
+
+        var items = matches.map(function (p) {
+            var name = p[nameKey] || p.name_en || '';
+            var price = parseFloat(p.new_price || p.newPrice || 0).toFixed(2);
+            var img = p.image_url || p.image || 'https://placehold.co/52x52?text=?';
+            var highlighted = name.replace(
+                new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'),
+                '<mark>$1</mark>'
+            );
+            return '<div class="search-result-item" onclick="window.location.href=\'product.html?id=' + p.id + '\'">' +
+                '<img class="search-result-img" src="' + img + '" alt="' + name + '" ' +
+                     'onerror="this.src=\'https://placehold.co/52x52?text=?\'">' +
+                '<div class="search-result-info">' +
+                    '<div class="search-result-name">' + highlighted + '</div>' +
+                    '<div class="search-result-price">' + price + ' JOD</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+
+        var viewAllLabel = lang === 'ar'
+            ? '\u0639\u0631\u0636 \u0643\u0644 \u0627\u0644\u0646\u062a\u0627\u0626\u062c \u0644\u0640 "' + query + '" \u2190'
+            : 'View all results for &quot;' + query + '&quot; &rarr;';
+
+        var viewAll = '<div class="search-view-all" onclick="goToProductsPage(\'' +
+            query.replace(/'/g, "\\'") + '\')">' + viewAllLabel + '</div>';
+
+        dropdown.innerHTML = items + viewAll;
+        dropdown.classList.add('visible');
+    }
+
+    function hideDropdown() {
+        var dropdown = document.getElementById('searchDropdown');
+        if (dropdown) dropdown.classList.remove('visible');
+    }
+
+    window.goToProductsPage = function (query) {
+        window.location.href = 'products.html?search=' + encodeURIComponent(query);
+    };
+
+    // Init search after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSearch);
+    } else {
+        setTimeout(initSearch, 150);
     }
 
     // Currency selector

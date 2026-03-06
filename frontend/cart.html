@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,7 @@
     <!-- <link rel="stylesheet" href="modern-animations.css"> -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="search-bar.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
@@ -49,6 +50,24 @@
             </div>
         </div>
     </div>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-content">
+            <div class="filter-left">
+                <button class="filter-btn" onclick="filterProducts('topseller', this)" data-en="Top Sellers"
+                    data-ar="الأكثر مبيعاً">
+                    Top Sellers
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <section class="topbaic-products">
+        <div class="products-grid" id="topbaicTopSellerProductsGrid">
+            <!-- Products will be loaded here by JavaScript -->
+        </div>
+    </section>
 
     <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
     <!-- TOP BAIC Style Footer with Social Media - Include on all pages -->
@@ -144,7 +163,8 @@
     <!-- <script src="mobile-menu.js"></script> -->
     <script src="api.js"></script>
     <script src="app.js"></script>
-    <script src="countries-data.js"></script>
+    <script src="countries-data.js"></script> 
+    <script src="topbaic-products.js"></script>
     <script src="settings.js"></script>
     <script src="cart-page.js"></script>
     <script src="modern-animations.js"></script>

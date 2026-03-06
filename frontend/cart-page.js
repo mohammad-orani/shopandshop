@@ -125,4 +125,125 @@ function proceedToCheckout() {
     }
     window.location.href = 'checkout.html';
 }
+
+
+/****Load Top seller products****/
+// Load Top seller products into grid — fetches from API
+async function loadTopBaicTopSellerProducts() {
+    const grid = document.getElementById('topbaicTopSellerProductsGrid');
+    if (!grid) return;
+
+    // Skeleton loading
+    if (window.ModernAnimations && window.ModernAnimations.showProductSkeleton) {
+        window.ModernAnimations.showProductSkeleton(grid, 8);
+    } else {
+        grid.innerHTML = '<p style="padding:40px;text-align:center;color:#999;">Loading...</p>';
+    }
+
+    try {
+        const products = await getProducts();
+
+        if (!products.length) {
+            grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#999;" data-en="No products available" data-ar="لا توجد منتجات">No products available</p>';
+            return;
+        }
+
+        grid.innerHTML = products.map(p => createTopBaicProductCard(p)).join('');
+
+        // Product count
+        const countEl = document.getElementById('productCount');
+        if (countEl) {
+            countEl.innerHTML = `<span data-en="Showing ${products.length} products"
+                                       data-ar="عرض ${products.length} منتج">
+                                    Showing ${products.length} products
+                                 </span>`;
+        }
+
+        if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
+
+        // Scroll reveals
+        setTimeout(() => {
+            document.querySelectorAll('.scroll-reveal').forEach((el, i) => {
+                setTimeout(() => el.classList.add('revealed'), i * 80);
+            });
+        }, 100);
+
+        console.log('✅ Loaded', products.length, 'products');
+
+    } catch (err) {
+        console.error('loadTopBaicTopSellerProducts error:', err);
+        grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#e74c3c;">Failed to load products.</p>';
+    }
+}
+
+// Filter (works on already-loaded cards)
+let defaultFilter = 'topseller';
+
+async function filterProducts(filter, clickedBtn) {
+    defaultFilter = filter;
+
+    // Use passed button element — global event is unreliable in async functions
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (clickedBtn) clickedBtn.classList.add('active');
+
+    const grid = document.getElementById('topbaicTopSellerProductsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '<p style="padding:40px;text-align:center;color:#999;">Loading...</p>';
+
+    const allProducts = await getProducts();
+    let filtered = allProducts;
+
+    // Check both raw API fields (is_top_seller/is_offer) AND mapped fields (topSeller/isOffer)
+    if (filter === 'new') filtered = allProducts.filter(p => p.is_offer == 1 || p.isOffer || p.isNew);
+    if (filter === 'topseller') filtered = allProducts.filter(p => p.is_top_seller == 1 || p.topSeller || p.isTopSeller);
+
+    if (filtered.length === 0) {
+        grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#999;" data-en="No products found" data-ar="لا توجد منتجات">No products found</p>';
+        if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => createTopBaicProductCard(p)).join('');
+    if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
+}
+
+// Sort
+async function sortProducts(sortBy) {
+    const grid = document.getElementById('topbaicTopSellerProductsGrid');
+    if (!grid) return;
+
+    const allProducts = await getProducts();
+    let sorted = allProducts.map(normalizeProduct);
+
+    if (defaultFilter === 'new') sorted = sorted.filter(p => p.isOffer || p.isNew);
+    if (defaultFilter === 'topseller') sorted = sorted.filter(p => p.isTopSeller);
+
+    switch (sortBy) {
+        case 'price-low': sorted.sort((a, b) => a.newPrice - b.newPrice); break;
+        case 'price-high': sorted.sort((a, b) => b.newPrice - a.newPrice); break;
+        case 'name': sorted.sort((a, b) => (a.name_en || '').localeCompare(b.name_en || '')); break;
+    }
+
+    grid.innerHTML = sorted.map(p => createTopBaicProductCard(p)).join('');
+    if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
+}
+
+// Navbar scroll effect
+window.addEventListener('scroll', function () {
+    const header = document.querySelector('.topbaic-header');
+    if (header) header.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('topbaicTopSellerProductsGrid')) {
+        loadTopBaicTopSellerProducts().then(() => {
+            const topsellerBtn = document.querySelector('.filter-btn[onclick*="topseller"]');
+            if (topsellerBtn) topsellerBtn.click();
+        });
+    }
+    console.log('✓ TOP BAIC style loaded');
+});
+
 console.log('✅ cart-page.js loaded');

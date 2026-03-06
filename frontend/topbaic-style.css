@@ -1292,3 +1292,59 @@ body[dir="rtl"] .social-link:hover {
 .header-main-inner {
     align-items: center;
 }
+
+/* ============================================
+   MOBILE HEADER LAYOUT FIX
+   ============================================ */
+
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--primary-black);
+    padding: 8px;
+}
+
+@media (max-width: 768px) {
+
+    .header-main-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        position: relative;
+        /* ← add this */
+    }
+
+    /* Hamburger LEFT */
+    .mobile-menu-toggle {
+        display: block;
+        order: 1;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Logo TRULY CENTERED */
+    .header-main-inner>a:first-child {
+        order: 2;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        flex: unset;
+    }
+
+    /* Icons RIGHT */
+    .header-icons {
+        order: 3;
+        flex-shrink: 0;
+        gap: 12px;
+        margin-left: auto;
+        position: relative;
+        z-index: 2;
+    }
+}
