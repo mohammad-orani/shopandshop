@@ -165,7 +165,7 @@ app.get('/api/products', async (req, res) => {
             query += ' AND (name_en LIKE ? OR name_ar LIKE ? OR description_en LIKE ?)';
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
         }
-        query += ' ORDER BY created_at DESC';
+        query += ' ORDER BY quantity_to_sell DESC';
         const [products] = await pool.query(query, params);
         res.json(products);
     } catch (error) { res.status(500).json({ error: error.message }); }
