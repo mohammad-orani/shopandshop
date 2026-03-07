@@ -41,6 +41,8 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 body {
@@ -52,6 +54,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    max-width: 100%;
 }
 
 ::selection {
@@ -1293,6 +1296,24 @@ body[dir="rtl"] .social-link:hover {
     align-items: center;
 }
 
+/* Remove space between search bar and slider */
+#site-header+* {
+    margin-top: 0.5 !important;
+    margin-bottom: 0.5 !important;
+}
+
+.hero-slider {
+    margin-top: 0.5 !important;
+    padding-top: 0.5 !important;
+    margin-bottom: 0.5 !important;
+    padding-bottom: 0.5 !important;
+}
+
+.primejo-search-bar+.hero-slider {
+    margin-top: 0.5 !important;
+    margin-bottom: 0.5 !important;
+}
+
 /* ============================================
    MOBILE HEADER LAYOUT FIX
    ============================================ */
@@ -1315,7 +1336,7 @@ body[dir="rtl"] .social-link:hover {
         justify-content: space-between;
         padding: 0 16px;
         position: relative;
-        /* ← add this */
+        gap: 0 !important;
     }
 
     /* Hamburger LEFT */

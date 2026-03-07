@@ -307,3 +307,23 @@ async function getStats() {
         return {};
     }
 }
+
+// ==================== CHANGE PASSWORD ====================
+// Password is sent to the backend which hashes it with bcrypt before saving
+
+async function changePassword(currentPassword, newPassword) {
+    try {
+        const response = await fetch(`${API_URL}/auth/change-password`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password:     newPassword
+            })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error changing password:', error);
+        return { error: 'Failed to change password' };
+    }
+}

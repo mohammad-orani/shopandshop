@@ -13,25 +13,28 @@ function showSection(sectionId) {
     if (link) link.classList.add('active');
 
     const titles = {
-        'dashboard': 'Dashboard',
-        'products': 'Product Management',
-        'categories': 'Category Management',
-        'orders': 'Order Management',
-        'delivery': 'Delivery Management',
-        'reports': 'Reports & Export',
-        'banners': 'Banner Management'
+        'dashboard':          'Dashboard',
+        'products':           'Product Management',
+        'categories':         'Category Management',
+        'orders':             'Order Management',
+        'delivery':           'Delivery Management',
+        'reports':            'Reports & Export',
+        'banners':            'Banner Management',
+        'general-info-section': 'General Info & Social Media',
+        'settings':           'Account Settings'
     };
 
     const titleEl = document.getElementById('pageTitle');
     if (titleEl) titleEl.textContent = titles[sectionId] || sectionId;
 
-    if (sectionId === 'dashboard') loadDashboard();
-    if (sectionId === 'products') loadProducts();
-    if (sectionId === 'categories') loadCategories();
-    if (sectionId === 'orders') loadOrders();
-    if (sectionId === 'delivery') loadDelivery();
-    if (sectionId === 'reports') loadReports();
-    if (sectionId === 'banners') loadBanners();
+    if (sectionId === 'dashboard')            loadDashboard();
+    if (sectionId === 'products')             loadProducts();
+    if (sectionId === 'categories')           loadCategories();
+    if (sectionId === 'orders')               loadOrders();
+    if (sectionId === 'delivery')             loadDelivery();
+    if (sectionId === 'reports')              loadReports();
+    if (sectionId === 'banners')              loadBanners();
+    if (sectionId === 'general-info-section') loadGeneralInfo();
 }
 
 // ==================== DASHBOARD ====================
@@ -785,6 +788,110 @@ function showToast(msg, duration = 3000) {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
     }, duration);
+}
+
+// ==================== GENERAL INFO ====================
+
+async function loadGeneralInfo() {
+    try {
+        const info = await getGeneralInfo();
+        if (!info) return;
+
+        setVal('brandName',        info.brand_name     || info.brandName     || '');
+        setVal('phoneNumber',      info.phone_number   || info.phoneNumber   || '');
+        setVal('emailAddress',     info.email          || info.emailAddress  || '');
+        setVal('whatsappNumber',   info.whatsapp       || info.whatsappNumber|| '');
+        setVal('instagramUrl',     info.instagram      || '');
+        setVal('facebookUrl',      info.facebook       || '');
+        setVal('snapchatUrl',      info.snapchat       || '');
+        setVal('tiktokUrl',        info.tiktok         || '');
+        setVal('youtubeUrl',       info.youtube        || '');
+        setVal('freeDeliveryMin',  info.free_delivery_min_amount || info.freeDeliveryMin || '');
+        setVal('deliveryNote',     info.delivery_note  || '');
+
+        console.log('✅ General info loaded');
+    } catch (err) {
+        console.error('loadGeneralInfo error:', err);
+    }
+}
+
+async function saveGeneralInfo(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+    const data = {
+        brand_name:              document.getElementById('brandName')?.value        || '',
+        phone_number:            document.getElementById('phoneNumber')?.value      || '',
+        email:                   document.getElementById('emailAddress')?.value     || '',
+        whatsapp:                document.getElementById('whatsappNumber')?.value   || '',
+        instagram:               document.getElementById('instagramUrl')?.value     || '',
+        facebook:                document.getElementById('facebookUrl')?.value      || '',
+        snapchat:                document.getElementById('snapchatUrl')?.value      || '',
+        tiktok:                  document.getElementById('tiktokUrl')?.value        || '',
+        youtube:                 document.getElementById('youtubeUrl')?.value       || '',
+        free_delivery_min_amount: parseFloat(document.getElementById('freeDeliveryMin')?.value) || 0,
+        delivery_note:           document.getElementById('deliveryNote')?.value     || ''
+    };
+
+    try {
+        const result = await updateGeneralInfo(data);
+        if (result.error) {
+            showToast('❌ Error: ' + result.error);
+        } else {
+            showToast('✅ General info saved!');
+        }
+    } catch (err) {
+        showToast('❌ ' + err.message);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Save Changes'; }
+    }
+}
+
+// ==================== CHANGE PASSWORD ====================
+
+async function submitChangePassword(e) {
+    e.preventDefault();
+
+    const current  = document.getElementById('currentPassword')?.value;
+    const newPass  = document.getElementById('newPassword')?.value;
+    const confirm  = document.getElementById('confirmPassword')?.value;
+    const btn      = e.target.querySelector('button[type="submit"]');
+    const msgEl    = document.getElementById('passwordMsg');
+
+    if (!current || !newPass || !confirm) {
+        if (msgEl) { msgEl.textContent = '⚠️ All fields are required.'; msgEl.style.color = 'red'; }
+        return;
+    }
+
+    // Client-side strength check
+    if (newPass.length < 8) {
+        if (msgEl) { msgEl.textContent = '⚠️ Password must be at least 8 characters.'; msgEl.style.color = 'red'; }
+        return;
+    }
+
+    if (newPass !== confirm) {
+        if (msgEl) { msgEl.textContent = '⚠️ New passwords do not match.'; msgEl.style.color = 'red'; }
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    if (msgEl) msgEl.textContent = '';
+
+    try {
+        const result = await changePassword(current, newPass);
+        if (result.error) {
+            if (msgEl) { msgEl.textContent = '❌ ' + result.error; msgEl.style.color = 'red'; }
+        } else {
+            if (msgEl) { msgEl.textContent = '✅ Password changed successfully!'; msgEl.style.color = 'green'; }
+            e.target.reset();
+            showToast('✅ Password updated!');
+        }
+    } catch (err) {
+        if (msgEl) { msgEl.textContent = '❌ ' + err.message; msgEl.style.color = 'red'; }
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🔒 Change Password'; }
+    }
 }
 
 // ==================== INIT ====================

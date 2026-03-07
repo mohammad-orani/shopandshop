@@ -138,6 +138,9 @@
         </div>
 
         <div id="errorMessage" class="error-message"></div>
+        <div id="expiredMessage" class="error-message" style="background:#fff3cd;color:#856404;display:none;">
+            ⚠️ Your session has expired. Please log in again.
+        </div>
 
         <form id="loginForm">
             <div class="form-group">
@@ -225,8 +228,13 @@
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('adminToken');
             if (token) {
-                // Already logged in, redirect to admin
                 window.location.href = 'index.html';
+                return;
+            }
+            // Show expired session message
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('reason') === 'expired') {
+                document.getElementById('expiredMessage').style.display = 'block';
             }
         });
     </script>
