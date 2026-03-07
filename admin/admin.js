@@ -13,27 +13,27 @@ function showSection(sectionId) {
     if (link) link.classList.add('active');
 
     const titles = {
-        'dashboard':          'Dashboard',
-        'products':           'Product Management',
-        'categories':         'Category Management',
-        'orders':             'Order Management',
-        'delivery':           'Delivery Management',
-        'reports':            'Reports & Export',
-        'banners':            'Banner Management',
+        'dashboard': 'Dashboard',
+        'products': 'Product Management',
+        'categories': 'Category Management',
+        'orders': 'Order Management',
+        'delivery': 'Delivery Management',
+        'reports': 'Reports & Export',
+        'banners': 'Banner Management',
         'general-info-section': 'General Info & Social Media',
-        'settings':           'Account Settings'
+        'settings': 'Account Settings'
     };
 
     const titleEl = document.getElementById('pageTitle');
     if (titleEl) titleEl.textContent = titles[sectionId] || sectionId;
 
-    if (sectionId === 'dashboard')            loadDashboard();
-    if (sectionId === 'products')             loadProducts();
-    if (sectionId === 'categories')           loadCategories();
-    if (sectionId === 'orders')               loadOrders();
-    if (sectionId === 'delivery')             loadDelivery();
-    if (sectionId === 'reports')              loadReports();
-    if (sectionId === 'banners')              loadBanners();
+    if (sectionId === 'dashboard') loadDashboard();
+    if (sectionId === 'products') loadProducts();
+    if (sectionId === 'categories') loadCategories();
+    if (sectionId === 'orders') loadOrders();
+    if (sectionId === 'delivery') loadDelivery();
+    if (sectionId === 'reports') loadReports();
+    if (sectionId === 'banners') loadBanners();
     if (sectionId === 'general-info-section') loadGeneralInfo();
 }
 
@@ -473,12 +473,12 @@ async function loadOrders(filterStatus = '') {
         }
 
         tbody.innerHTML = orders.map(order => {
-            const id     = order.order_id || order.orderId;
-            const name   = order.customer_name || order.customerName;
-            const phone  = order.customer_phone || order.customerPhone;
+            const id = order.order_id || order.orderId;
+            const name = order.customer_name || order.customerName;
+            const phone = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total  = parseFloat(order.total || 0);
-            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total = parseFloat(order.total || 0);
+            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -493,11 +493,11 @@ async function loadOrders(filterStatus = '') {
                     <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
                     <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
-                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
-                        <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
-                        <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
-                        <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
             </tr>`;
@@ -533,7 +533,7 @@ async function viewOrderDetails(orderId) {
                 const data = await res.json();
                 if (data && data.order_id) order = data;
             }
-        } catch(e) { /* fallback below */ }
+        } catch (e) { /* fallback below */ }
 
         // Fallback: search in already-loaded orders list
         if (!order) {
@@ -543,28 +543,28 @@ async function viewOrderDetails(orderId) {
 
         if (!order) { alert('Order not found'); return; }
 
-        const status  = order.order_status || order.status;
-        const name    = order.customer_name || order.customerName;
-        const phone   = order.customer_phone || order.customerPhone;
-        const city    = order.delivery_city || '';
+        const status = order.order_status || order.status;
+        const name = order.customer_name || order.customerName;
+        const phone = order.customer_phone || order.customerPhone;
+        const city = order.delivery_city || '';
         const country = order.delivery_country || '';
         const address = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-        const notes   = order.order_notes || order.orderNotes || '';
+        const notes = order.order_notes || order.orderNotes || '';
         const payment = order.payment_method || order.paymentMethod || 'N/A';
-        const total   = parseFloat(order.total || 0);
+        const total = parseFloat(order.total || 0);
         const displayedShipping = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0);
         const subtotal = parseFloat(order.subtotal || 0);
-        const date    = new Date(order.created_at || order.orderDate).toLocaleString();
+        const date = new Date(order.created_at || order.orderDate).toLocaleString();
 
         // Build items HTML
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
-                const name  = item.productName || item.product_name || item.productNameAr || '—';
-                const qty   = item.quantity || 0;
+                const name = item.productName || item.product_name || item.productNameAr || '—';
+                const qty = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
-                const img   = item.image_url || '';
+                const img = item.image_url || '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
@@ -626,7 +626,7 @@ async function viewOrderDetails(orderId) {
                     <div><strong>Phone:</strong> ${phone}</div>
                     <div><strong>Location:</strong> ${city}${city && country ? ', ' : ''}${country}</div>
                     ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${notes   ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
+                    ${notes ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
                 </div>
 
                 <!-- Order items table -->
@@ -711,27 +711,27 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate   = document.getElementById('reportToDate')?.value;
+        const toDate = document.getElementById('reportToDate')?.value;
         let orders = await getOrders();
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at||o.orderDate) >= new Date(fromDate));
-        if (toDate)   orders = orders.filter(o => new Date(o.created_at||o.orderDate) <= new Date(toDate));
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
+        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
-            const id     = o.order_id || o.orderId;
-            const name   = o.customer_name || o.customerName;
-            const phone  = o.customer_phone || o.customerPhone;
+            const id = o.order_id || o.orderId;
+            const name = o.customer_name || o.customerName;
+            const phone = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
-            const date   = new Date(o.created_at||o.orderDate).toLocaleString();
-            const items  = (o.items||[]).map(i => `${i.productName||''}x${i.quantity}`).join('; ');
-            csv += `"${id}","${name}","${phone}","${o.delivery_city||''}","${o.delivery_country||''}","${o.delivery_address||''}","${items}",${o.subtotal||0},${o.displayed_shipping_cost||0},${o.total},"${status}","${date}"\n`;
+            const date = new Date(o.created_at || o.orderDate).toLocaleString();
+            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
+            csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
         a.download = `primejo_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
@@ -797,17 +797,17 @@ async function loadGeneralInfo() {
         const info = await getGeneralInfo();
         if (!info) return;
 
-        setVal('brandName',        info.brand_name     || info.brandName     || '');
-        setVal('phoneNumber',      info.phone_number   || info.phoneNumber   || '');
-        setVal('emailAddress',     info.email          || info.emailAddress  || '');
-        setVal('whatsappNumber',   info.whatsapp       || info.whatsappNumber|| '');
-        setVal('instagramUrl',     info.instagram      || '');
-        setVal('facebookUrl',      info.facebook       || '');
-        setVal('snapchatUrl',      info.snapchat       || '');
-        setVal('tiktokUrl',        info.tiktok         || '');
-        setVal('youtubeUrl',       info.youtube        || '');
-        setVal('freeDeliveryMin',  info.free_delivery_min_amount || info.freeDeliveryMin || '');
-        setVal('deliveryNote',     info.delivery_note  || '');
+        setVal('brandName', info.brand_name || info.brandName || '');
+        setVal('phoneNumber', info.phone_number || info.phoneNumber || '');
+        setVal('emailAddress', info.email_address || '');
+        setVal('whatsappNumber', info.whatsapp || info.whatsappNumber || '');
+        setVal('instagramUrl', info.instagram || '');
+        setVal('facebookUrl', info.facebook || '');
+        setVal('snapchatUrl', info.snapchat || '');
+        setVal('tiktokUrl', info.tiktok || '');
+        setVal('youtubeUrl', info.youtube || '');
+        setVal('freeDeliveryMin', info.minimum_order_amount || '');
+        setVal('deliveryNote', info.delivery_note || '');
 
         console.log('✅ General info loaded');
     } catch (err) {
@@ -821,17 +821,17 @@ async function saveGeneralInfo(e) {
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
     const data = {
-        brand_name:              document.getElementById('brandName')?.value        || '',
-        phone_number:            document.getElementById('phoneNumber')?.value      || '',
-        email:                   document.getElementById('emailAddress')?.value     || '',
-        whatsapp:                document.getElementById('whatsappNumber')?.value   || '',
-        instagram:               document.getElementById('instagramUrl')?.value     || '',
-        facebook:                document.getElementById('facebookUrl')?.value      || '',
-        snapchat:                document.getElementById('snapchatUrl')?.value      || '',
-        tiktok:                  document.getElementById('tiktokUrl')?.value        || '',
-        youtube:                 document.getElementById('youtubeUrl')?.value       || '',
+        brand_name: document.getElementById('brandName')?.value || '',
+        phone_number: document.getElementById('phoneNumber')?.value || '',
+        email: document.getElementById('emailAddress')?.value || '',
+        whatsapp: document.getElementById('whatsappNumber')?.value || '',
+        instagram: document.getElementById('instagramUrl')?.value || '',
+        facebook: document.getElementById('facebookUrl')?.value || '',
+        snapchat: document.getElementById('snapchatUrl')?.value || '',
+        tiktok: document.getElementById('tiktokUrl')?.value || '',
+        youtube: document.getElementById('youtubeUrl')?.value || '',
         free_delivery_min_amount: parseFloat(document.getElementById('freeDeliveryMin')?.value) || 0,
-        delivery_note:           document.getElementById('deliveryNote')?.value     || ''
+        delivery_note: document.getElementById('deliveryNote')?.value || ''
     };
 
     try {
@@ -853,11 +853,11 @@ async function saveGeneralInfo(e) {
 async function submitChangePassword(e) {
     e.preventDefault();
 
-    const current  = document.getElementById('currentPassword')?.value;
-    const newPass  = document.getElementById('newPassword')?.value;
-    const confirm  = document.getElementById('confirmPassword')?.value;
-    const btn      = e.target.querySelector('button[type="submit"]');
-    const msgEl    = document.getElementById('passwordMsg');
+    const current = document.getElementById('currentPassword')?.value;
+    const newPass = document.getElementById('newPassword')?.value;
+    const confirm = document.getElementById('confirmPassword')?.value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    const msgEl = document.getElementById('passwordMsg');
 
     if (!current || !newPass || !confirm) {
         if (msgEl) { msgEl.textContent = '⚠️ All fields are required.'; msgEl.style.color = 'red'; }
@@ -971,17 +971,17 @@ async function saveBanner(e) {
     e.preventDefault();
     const id = document.getElementById('bannerEditId').value;
     const payload = {
-        title_en:     document.getElementById('bannerTitleEn').value,
-        title_ar:     document.getElementById('bannerTitleAr').value,
-        subtitle_en:  document.getElementById('bannerSubtitleEn').value,
-        subtitle_ar:  document.getElementById('bannerSubtitleAr').value,
-        btn_text_en:  document.getElementById('bannerBtnEn').value,
-        btn_text_ar:  document.getElementById('bannerBtnAr').value,
-        btn_link:     document.getElementById('bannerBtnLink').value,
-        image_url:    document.getElementById('bannerImageUrl').value,
-        bg_color:     document.getElementById('bannerBgColor').value,
-        sort_order:   parseInt(document.getElementById('bannerSortOrder').value) || 0,
-        is_active:    document.getElementById('bannerIsActive').checked
+        title_en: document.getElementById('bannerTitleEn').value,
+        title_ar: document.getElementById('bannerTitleAr').value,
+        subtitle_en: document.getElementById('bannerSubtitleEn').value,
+        subtitle_ar: document.getElementById('bannerSubtitleAr').value,
+        btn_text_en: document.getElementById('bannerBtnEn').value,
+        btn_text_ar: document.getElementById('bannerBtnAr').value,
+        btn_link: document.getElementById('bannerBtnLink').value,
+        image_url: document.getElementById('bannerImageUrl').value,
+        bg_color: document.getElementById('bannerBgColor').value,
+        sort_order: parseInt(document.getElementById('bannerSortOrder').value) || 0,
+        is_active: document.getElementById('bannerIsActive').checked
     };
 
     const url = id ? `${API_URL}/banners/${id}` : `${API_URL}/banners`;
