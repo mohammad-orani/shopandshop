@@ -7,7 +7,6 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -76,6 +75,53 @@ async function ensureOrdersColumns() {
 }
 ensureOrdersColumns();
 
+
+// ============ ADMIN LOGS ============
+
+async function logAction(req, action, entityType, entityId, details) {
+    try {
+        const user = req.user || {};
+        const userName = user.name || user.email || 'system';
+        const userId = user.userId || null;
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+                || req.socket?.remoteAddress
+                || req.ip
+                || 'unknown';
+        await pool.query(
+            `INSERT INTO admin_logs (user_id, user_name, action, entity_type, entity_id, details, ip_address)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [userId, userName, action, entityType, String(entityId || ''), details || '', ip]
+        );
+    } catch (err) {
+        console.warn('Log warning:', err.message);
+    }
+}
+
+async function ensureAdminLogsTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS admin_logs (
+                id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id     INT,
+                user_name   VARCHAR(100),
+                action      VARCHAR(50),
+                entity_type VARCHAR(50),
+                entity_id   VARCHAR(100),
+                details     TEXT,
+                ip_address  VARCHAR(60),
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_created (created_at),
+                INDEX idx_user (user_name),
+                INDEX idx_action (action)
+            )
+        `);
+        console.log('admin_logs table ready');
+    } catch (err) {
+        console.warn('admin_logs migration warning:', err.message);
+    }
+}
+ensureAdminLogsTable();
+
 // ============ AUTH MIDDLEWARE ============
 
 const authenticateToken = (req, res, next) => {
@@ -97,47 +143,15 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const [users] = await pool.query('SELECT id, email, name, password FROM users WHERE email = ?', [email]);
-        if (users.length === 0) return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        if (users.length === 0 || password !== users[0].password)
+            return res.status(401).json({ success: false, error: 'Invalid email or password' });
         const user = users[0];
-        // Support both bcrypt hashes and legacy plain-text passwords
-        const isHashed = user.password && user.password.startsWith('$2');
-        const passwordMatch = isHashed
-            ? await bcrypt.compare(password, user.password)
-            : password === user.password;
-        if (!passwordMatch) return res.status(401).json({ success: false, error: 'Invalid email or password' });
         const token = jwt.sign({ userId: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+        // Log login — inject fake req.user so logAction can read it
+        await logAction({ ...req, user: { userId: user.id, name: user.name || user.email } }, 'LOGIN', 'auth', user.id, `Logged in as ${user.email}`);
         res.json({ success: true, token, user: { id: user.id, email: user.email, name: user.name || user.email } });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Login failed: ' + error.message });
-    }
-});
-
-// POST /api/auth/change-password (PROTECTED)
-app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
-    try {
-        const { current_password, new_password } = req.body;
-        if (!current_password || !new_password)
-            return res.status(400).json({ success: false, error: 'Both current and new password are required' });
-        if (new_password.length < 8)
-            return res.status(400).json({ success: false, error: 'New password must be at least 8 characters' });
-
-        const [users] = await pool.query('SELECT id, password FROM users WHERE id = ?', [req.user.userId]);
-        if (users.length === 0) return res.status(404).json({ success: false, error: 'User not found' });
-
-        const user = users[0];
-        const isHashed = user.password && user.password.startsWith('$2');
-        const passwordMatch = isHashed
-            ? await bcrypt.compare(current_password, user.password)
-            : current_password === user.password;
-
-        if (!passwordMatch) return res.status(401).json({ success: false, error: 'Current password is incorrect' });
-
-        const hashedNew = await bcrypt.hash(new_password, 12);
-        await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedNew, req.user.userId]);
-
-        res.json({ success: true, message: 'Password changed successfully' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Failed to change password: ' + error.message });
     }
 });
 
@@ -163,6 +177,7 @@ app.post('/api/categories', authenticateToken, isAdmin, async (req, res) => {
             'INSERT INTO categories (id, name_en, name_ar, is_visible) VALUES (?, ?, ?, ?)',
             [id, name_en, name_ar, is_visible ? 1 : 0]
         );
+        await logAction(req, 'CREATE', 'category', id, `Created category: ${name_en} / ${name_ar}`);
         res.status(201).json({ success: true, message: 'Category created', id });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -170,6 +185,7 @@ app.post('/api/categories', authenticateToken, isAdmin, async (req, res) => {
 app.delete('/api/categories/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM categories WHERE id = ?', [req.params.id]);
+        await logAction(req, 'DELETE', 'category', req.params.id, `Deleted category ID: ${req.params.id}`);
         res.json({ success: true, message: 'Category deleted' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -182,6 +198,7 @@ app.put('/api/categories/:id', authenticateToken, isAdmin, async (req, res) => {
             'UPDATE categories SET name_en = ?, name_ar = ?, is_visible = ? WHERE id = ?',
             [name_en, name_ar, is_visible ? 1 : 0, req.params.id]
         );
+        await logAction(req, 'UPDATE', 'category', req.params.id, `Updated category ID: ${req.params.id} → ${name_en}`);
         res.json({ success: true, message: 'Category updated' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -229,6 +246,7 @@ app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
                 image_url, additional_images, video_url,
                 is_offer || false, is_top_seller || false, is_visible !== false]
         );
+        await logAction(req, 'CREATE', 'product', result.insertId, `Created product: ${name_en}`);
         res.status(201).json({ success: true, message: 'Product created', id: result.insertId });
     } catch (error) {
         console.error('Create product error:', error);
@@ -251,6 +269,7 @@ app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
                 image_url, additional_images, video_url,
                 is_offer, is_top_seller, is_visible, req.params.id]
         );
+        await logAction(req, 'UPDATE', 'product', req.params.id, `Updated product ID: ${req.params.id} → ${name_en}`);
         res.json({ success: true, message: 'Product updated' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -258,6 +277,7 @@ app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
 app.delete('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id = ?', [req.params.id]);
+        await logAction(req, 'DELETE', 'product', req.params.id, `Deleted product ID: ${req.params.id}`);
         res.json({ success: true, message: 'Product deleted' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -487,7 +507,42 @@ app.patch('/api/orders/:id/status', authenticateToken, isAdmin, async (req, res)
         );
         if (order) await notifyOrderStatusChange(order, order_status);
 
+        await logAction(req, 'STATUS_CHANGE', 'order', param, `Order ${param} → ${order_status}`);
         res.json({ success: true, message: 'Order status updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
+// PATCH /api/orders/:id/refund
+app.patch('/api/orders/:id/refund', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { refund_reason } = req.body;
+        const param = req.params.id;
+        if (!refund_reason || !refund_reason.trim())
+            return res.status(400).json({ success: false, error: 'Refund reason is required' });
+
+        if (/^d+$/.test(param)) {
+            await pool.query(
+                'UPDATE orders SET order_status = ?, order_notes = ? WHERE id = ?',
+                ['refunded', refund_reason.trim(), parseInt(param)]
+            );
+        } else {
+            await pool.query(
+                'UPDATE orders SET order_status = ?, order_notes = ? WHERE order_id = ?',
+                ['refunded', refund_reason.trim(), param]
+            );
+        }
+
+        const [[order]] = await pool.query(
+            'SELECT * FROM orders WHERE order_id = ? OR id = ? LIMIT 1',
+            [param, parseInt(param) || 0]
+        );
+        if (order) await notifyOrderStatusChange(order, 'refunded');
+        await logAction(req, 'REFUND', 'order', param, `Order ${param} refunded — reason: ${refund_reason.trim()}`);
+
+        res.json({ success: true, message: 'Order marked as refunded' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -547,6 +602,7 @@ app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
                 [brand_name, phone_number, email_address, minimum_order_amount, existing[0].gi_id]
             );
         }
+        await logAction(req, 'UPDATE', 'general_info', 1, `Updated store general info`);
         res.json({ success: true, message: 'General info updated' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -592,6 +648,7 @@ app.post('/api/banners', authenticateToken, isAdmin, async (req, res) => {
                 bg_color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 sort_order || 0, is_active !== false ? 1 : 0]
         );
+        await logAction(req, 'CREATE', 'banner', result.insertId, `Created banner: ${title_en || 'untitled'}`);
         res.status(201).json({ success: true, id: result.insertId });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -610,6 +667,7 @@ app.put('/api/banners/:id', authenticateToken, isAdmin, async (req, res) => {
                 bg_color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 sort_order || 0, is_active ? 1 : 0, req.params.id]
         );
+        await logAction(req, 'UPDATE', 'banner', req.params.id, `Updated banner ID: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -617,9 +675,29 @@ app.put('/api/banners/:id', authenticateToken, isAdmin, async (req, res) => {
 app.delete('/api/banners/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM banners WHERE id = ?', [req.params.id]);
+        await logAction(req, 'DELETE', 'banner', req.params.id, `Deleted banner ID: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
+
+// GET /api/admin-logs (PROTECTED)
+app.get('/api/admin-logs', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { action, user, limit = 200, offset = 0 } = req.query;
+        let query = 'SELECT * FROM admin_logs WHERE 1=1';
+        const params = [];
+        if (action) { query += ' AND action = ?'; params.push(action); }
+        if (user)   { query += ' AND user_name LIKE ?'; params.push(`%${user}%`); }
+        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        const [logs] = await pool.query(query, params);
+        const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM admin_logs');
+        res.json({ success: true, logs, total });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ============ START ============
 
 app.listen(PORT, () => {

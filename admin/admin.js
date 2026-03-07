@@ -19,9 +19,7 @@ function showSection(sectionId) {
         'orders': 'Order Management',
         'delivery': 'Delivery Management',
         'reports': 'Reports & Export',
-        'banners': 'Banner Management',
-        'general-info-section': 'General Info & Social Media',
-        'settings': 'Account Settings'
+        'banners': 'Banner Management'
     };
 
     const titleEl = document.getElementById('pageTitle');
@@ -34,7 +32,6 @@ function showSection(sectionId) {
     if (sectionId === 'delivery') loadDelivery();
     if (sectionId === 'reports') loadReports();
     if (sectionId === 'banners') loadBanners();
-    if (sectionId === 'general-info-section') loadGeneralInfo();
 }
 
 // ==================== DASHBOARD ====================
@@ -473,12 +470,12 @@ async function loadOrders(filterStatus = '') {
         }
 
         tbody.innerHTML = orders.map(order => {
-            const id = order.order_id || order.orderId;
-            const name = order.customer_name || order.customerName;
-            const phone = order.customer_phone || order.customerPhone;
+            const id     = order.order_id || order.orderId;
+            const name   = order.customer_name || order.customerName;
+            const phone  = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total = parseFloat(order.total || 0);
-            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total  = parseFloat(order.total || 0);
+            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -493,11 +490,11 @@ async function loadOrders(filterStatus = '') {
                     <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
                     <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
-                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
-                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
-                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
-                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
+                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
+                        <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
+                        <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
+                        <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
                     </select>
                 </td>
             </tr>`;
@@ -533,7 +530,7 @@ async function viewOrderDetails(orderId) {
                 const data = await res.json();
                 if (data && data.order_id) order = data;
             }
-        } catch (e) { /* fallback below */ }
+        } catch(e) { /* fallback below */ }
 
         // Fallback: search in already-loaded orders list
         if (!order) {
@@ -543,28 +540,28 @@ async function viewOrderDetails(orderId) {
 
         if (!order) { alert('Order not found'); return; }
 
-        const status = order.order_status || order.status;
-        const name = order.customer_name || order.customerName;
-        const phone = order.customer_phone || order.customerPhone;
-        const city = order.delivery_city || '';
+        const status  = order.order_status || order.status;
+        const name    = order.customer_name || order.customerName;
+        const phone   = order.customer_phone || order.customerPhone;
+        const city    = order.delivery_city || '';
         const country = order.delivery_country || '';
         const address = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-        const notes = order.order_notes || order.orderNotes || '';
+        const notes   = order.order_notes || order.orderNotes || '';
         const payment = order.payment_method || order.paymentMethod || 'N/A';
-        const total = parseFloat(order.total || 0);
+        const total   = parseFloat(order.total || 0);
         const displayedShipping = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0);
         const subtotal = parseFloat(order.subtotal || 0);
-        const date = new Date(order.created_at || order.orderDate).toLocaleString();
+        const date    = new Date(order.created_at || order.orderDate).toLocaleString();
 
         // Build items HTML
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
-                const name = item.productName || item.product_name || item.productNameAr || '—';
-                const qty = item.quantity || 0;
+                const name  = item.productName || item.product_name || item.productNameAr || '—';
+                const qty   = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
-                const img = item.image_url || '';
+                const img   = item.image_url || '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
@@ -626,7 +623,7 @@ async function viewOrderDetails(orderId) {
                     <div><strong>Phone:</strong> ${phone}</div>
                     <div><strong>Location:</strong> ${city}${city && country ? ', ' : ''}${country}</div>
                     ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${notes ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
+                    ${notes   ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
                 </div>
 
                 <!-- Order items table -->
@@ -711,27 +708,27 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate = document.getElementById('reportToDate')?.value;
+        const toDate   = document.getElementById('reportToDate')?.value;
         let orders = await getOrders();
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
-        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at||o.orderDate) >= new Date(fromDate));
+        if (toDate)   orders = orders.filter(o => new Date(o.created_at||o.orderDate) <= new Date(toDate));
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
-            const id = o.order_id || o.orderId;
-            const name = o.customer_name || o.customerName;
-            const phone = o.customer_phone || o.customerPhone;
+            const id     = o.order_id || o.orderId;
+            const name   = o.customer_name || o.customerName;
+            const phone  = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
-            const date = new Date(o.created_at || o.orderDate).toLocaleString();
-            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
-            csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
+            const date   = new Date(o.created_at||o.orderDate).toLocaleString();
+            const items  = (o.items||[]).map(i => `${i.productName||''}x${i.quantity}`).join('; ');
+            csv += `"${id}","${name}","${phone}","${o.delivery_city||''}","${o.delivery_country||''}","${o.delivery_address||''}","${items}",${o.subtotal||0},${o.displayed_shipping_cost||0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
         a.download = `primejo_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
@@ -790,107 +787,147 @@ function showToast(msg, duration = 3000) {
     }, duration);
 }
 
-// ==================== GENERAL INFO ====================
 
-async function loadGeneralInfo() {
+// ==================== ACTIVITY LOG ====================
+
+const LOG_ACTION_COLORS = {
+    LOGIN:          { bg: '#dbeafe', color: '#1d4ed8', label: '🔐 Login' },
+    PASSWORD_CHANGE:{ bg: '#ede9fe', color: '#6d28d9', label: '🔑 Password' },
+    CREATE:         { bg: '#dcfce7', color: '#15803d', label: '➕ Create' },
+    UPDATE:         { bg: '#fef9c3', color: '#a16207', label: '✏️ Update' },
+    DELETE:         { bg: '#fee2e2', color: '#b91c1c', label: '🗑️ Delete' },
+    STATUS_CHANGE:  { bg: '#e0f2fe', color: '#0369a1', label: '🔄 Status' },
+    REFUND:         { bg: '#f3e8ff', color: '#7c3aed', label: '💸 Refund' },
+};
+
+async function loadLogs(filterAction = '', filterUser = '') {
+    const container = document.getElementById('logsTableBody');
+    if (!container) return;
+
+    // Build filter bar once
+    const filterBar = document.getElementById('logsFilterBar');
+    if (filterBar && !filterBar.dataset.built) {
+        filterBar.dataset.built = '1';
+        filterBar.innerHTML = `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
+                <span style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;">Filter:</span>
+                ${['', 'LOGIN', 'CREATE', 'UPDATE', 'DELETE', 'STATUS_CHANGE', 'REFUND', 'PASSWORD_CHANGE'].map(a => {
+                    const meta = LOG_ACTION_COLORS[a] || { bg:'#f0f0f0', color:'#333', label:'All' };
+                    return `<button onclick="loadLogs('${a}', document.getElementById('logsUserSearch')?.value || '')"
+                        id="logFilterBtn_${a || 'all'}"
+                        style="padding:5px 14px;border:2px solid ${meta.bg};background:#fff;color:${meta.color};
+                               font-size:0.8rem;font-weight:700;cursor:pointer;border-radius:3px;transition:all 0.15s;">
+                        ${meta.label || 'All'}
+                    </button>`;
+                }).join('')}
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:1.2rem;">
+                <input id="logsUserSearch" type="text" placeholder="🔍 Filter by username..."
+                    value="${filterUser}"
+                    style="padding:7px 12px;border:1.5px solid #e0e0e0;font-size:0.88rem;outline:none;border-radius:3px;width:220px;"
+                    oninput="loadLogs(document.getElementById('logFilterBtn_all') ? window._currentLogFilter || '' : '', this.value)"
+                    onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e0e0e0'">
+                <button onclick="loadLogs('', ''); document.getElementById('logsUserSearch').value='';"
+                    style="padding:7px 14px;background:#f0f0f0;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;">
+                    Clear
+                </button>
+                <button onclick="exportLogs()"
+                    style="padding:7px 14px;background:#1a1a1a;color:#fff;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;margin-left:auto;">
+                    ⬇️ Export CSV
+                </button>
+            </div>
+        `;
+    }
+
+    // Highlight active filter
+    window._currentLogFilter = filterAction;
+    ['', 'LOGIN', 'CREATE', 'UPDATE', 'DELETE', 'STATUS_CHANGE', 'REFUND', 'PASSWORD_CHANGE'].forEach(a => {
+        const btn = document.getElementById('logFilterBtn_' + (a || 'all'));
+        if (!btn) return;
+        const meta = LOG_ACTION_COLORS[a] || { bg: '#e0e0e0', color: '#333' };
+        const active = a === filterAction;
+        btn.style.background = active ? meta.color : '#fff';
+        btn.style.color = active ? '#fff' : meta.color;
+        btn.style.borderColor = meta.color;
+    });
+
     try {
-        const info = await getGeneralInfo();
-        if (!info) return;
+        container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#888;">Loading logs...</td></tr>';
+        const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
+        const API_BASE = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
+        const params = new URLSearchParams({ limit: 300 });
+        if (filterAction) params.append('action', filterAction);
+        if (filterUser)   params.append('user', filterUser);
 
-        setVal('brandName', info.brand_name || info.brandName || '');
-        setVal('phoneNumber', info.phone_number || info.phoneNumber || '');
-        setVal('emailAddress', info.email_address || '');
-        setVal('whatsappNumber', info.whatsapp || info.whatsappNumber || '');
-        setVal('instagramUrl', info.instagram || '');
-        setVal('facebookUrl', info.facebook || '');
-        setVal('snapchatUrl', info.snapchat || '');
-        setVal('tiktokUrl', info.tiktok || '');
-        setVal('youtubeUrl', info.youtube || '');
-        setVal('freeDeliveryMin', info.minimum_order_amount || '');
-        setVal('deliveryNote', info.delivery_note || '');
+        const res = await fetch(`${API_BASE}/api/admin-logs?${params}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
 
-        console.log('✅ General info loaded');
+        if (!data.success || !data.logs.length) {
+            container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">No logs found</td></tr>';
+            const countEl = document.getElementById('logsCount');
+            if (countEl) countEl.textContent = '0 entries';
+            return;
+        }
+
+        const countEl = document.getElementById('logsCount');
+        if (countEl) countEl.textContent = `${data.logs.length} of ${data.total} entries`;
+
+        container.innerHTML = data.logs.map(log => {
+            const meta = LOG_ACTION_COLORS[log.action] || { bg: '#f0f0f0', color: '#333', label: log.action };
+            const date = new Date(log.created_at).toLocaleString('en-GB', {
+                day:'2-digit', month:'short', year:'numeric',
+                hour:'2-digit', minute:'2-digit', second:'2-digit'
+            });
+            const entityLabel = log.entity_type ? `<span style="color:#888;font-size:0.78rem;">${log.entity_type}${log.entity_id ? ' #' + log.entity_id : ''}</span>` : '—';
+            return `
+            <tr style="border-bottom:1px solid #f5f5f5;transition:background 0.1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
+                <td style="padding:10px 12px;white-space:nowrap;">
+                    <span style="display:inline-block;padding:3px 10px;background:${meta.bg};color:${meta.color};
+                                 font-size:0.75rem;font-weight:700;border-radius:3px;letter-spacing:0.3px;">
+                        ${meta.label || log.action}
+                    </span>
+                </td>
+                <td style="padding:10px 12px;font-weight:600;font-size:0.88rem;">${log.user_name || '—'}</td>
+                <td style="padding:10px 12px;">${entityLabel}</td>
+                <td style="padding:10px 12px;color:#444;font-size:0.88rem;max-width:320px;">${log.details || '—'}</td>
+                <td style="padding:10px 12px;color:#888;font-size:0.8rem;white-space:nowrap;">${log.ip_address || '—'}</td>
+                <td style="padding:10px 12px;color:#888;font-size:0.8rem;white-space:nowrap;">${date}</td>
+            </tr>`;
+        }).join('');
+
     } catch (err) {
-        console.error('loadGeneralInfo error:', err);
+        container.innerHTML = `<tr><td colspan="6" style="color:red;text-align:center;padding:2rem;">Error: ${err.message}</td></tr>`;
     }
 }
 
-async function saveGeneralInfo(e) {
-    e.preventDefault();
-    const btn = e.target.querySelector('button[type="submit"]');
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-
-    const data = {
-        brand_name: document.getElementById('brandName')?.value || '',
-        phone_number: document.getElementById('phoneNumber')?.value || '',
-        email: document.getElementById('emailAddress')?.value || '',
-        whatsapp: document.getElementById('whatsappNumber')?.value || '',
-        instagram: document.getElementById('instagramUrl')?.value || '',
-        facebook: document.getElementById('facebookUrl')?.value || '',
-        snapchat: document.getElementById('snapchatUrl')?.value || '',
-        tiktok: document.getElementById('tiktokUrl')?.value || '',
-        youtube: document.getElementById('youtubeUrl')?.value || '',
-        free_delivery_min_amount: parseFloat(document.getElementById('freeDeliveryMin')?.value) || 0,
-        delivery_note: document.getElementById('deliveryNote')?.value || ''
-    };
-
+async function exportLogs() {
     try {
-        const result = await updateGeneralInfo(data);
-        if (result.error) {
-            showToast('❌ Error: ' + result.error);
-        } else {
-            showToast('✅ General info saved!');
-        }
+        const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
+        const API_BASE = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
+        const res = await fetch(`${API_BASE}/api/admin-logs?limit=9999`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) { alert('Failed to load logs'); return; }
+
+        let csv = 'Action,User,Entity Type,Entity ID,Details,IP Address,Timestamp\n';
+        data.logs.forEach(log => {
+            const date = new Date(log.created_at).toLocaleString();
+            csv += `"${log.action}","${log.user_name || ''}","${log.entity_type || ''}","${log.entity_id || ''}","${(log.details || '').replace(/"/g, '""')}","${log.ip_address || ''}","${date}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `primejo_admin_logs_${Date.now()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('✅ Logs exported!');
     } catch (err) {
-        showToast('❌ ' + err.message);
-    } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '💾 Save Changes'; }
-    }
-}
-
-// ==================== CHANGE PASSWORD ====================
-
-async function submitChangePassword(e) {
-    e.preventDefault();
-
-    const current = document.getElementById('currentPassword')?.value;
-    const newPass = document.getElementById('newPassword')?.value;
-    const confirm = document.getElementById('confirmPassword')?.value;
-    const btn = e.target.querySelector('button[type="submit"]');
-    const msgEl = document.getElementById('passwordMsg');
-
-    if (!current || !newPass || !confirm) {
-        if (msgEl) { msgEl.textContent = '⚠️ All fields are required.'; msgEl.style.color = 'red'; }
-        return;
-    }
-
-    // Client-side strength check
-    if (newPass.length < 8) {
-        if (msgEl) { msgEl.textContent = '⚠️ Password must be at least 8 characters.'; msgEl.style.color = 'red'; }
-        return;
-    }
-
-    if (newPass !== confirm) {
-        if (msgEl) { msgEl.textContent = '⚠️ New passwords do not match.'; msgEl.style.color = 'red'; }
-        return;
-    }
-
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-    if (msgEl) msgEl.textContent = '';
-
-    try {
-        const result = await changePassword(current, newPass);
-        if (result.error) {
-            if (msgEl) { msgEl.textContent = '❌ ' + result.error; msgEl.style.color = 'red'; }
-        } else {
-            if (msgEl) { msgEl.textContent = '✅ Password changed successfully!'; msgEl.style.color = 'green'; }
-            e.target.reset();
-            showToast('✅ Password updated!');
-        }
-    } catch (err) {
-        if (msgEl) { msgEl.textContent = '❌ ' + err.message; msgEl.style.color = 'red'; }
-    } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '🔒 Change Password'; }
+        alert('Export error: ' + err.message);
     }
 }
 
@@ -971,17 +1008,17 @@ async function saveBanner(e) {
     e.preventDefault();
     const id = document.getElementById('bannerEditId').value;
     const payload = {
-        title_en: document.getElementById('bannerTitleEn').value,
-        title_ar: document.getElementById('bannerTitleAr').value,
-        subtitle_en: document.getElementById('bannerSubtitleEn').value,
-        subtitle_ar: document.getElementById('bannerSubtitleAr').value,
-        btn_text_en: document.getElementById('bannerBtnEn').value,
-        btn_text_ar: document.getElementById('bannerBtnAr').value,
-        btn_link: document.getElementById('bannerBtnLink').value,
-        image_url: document.getElementById('bannerImageUrl').value,
-        bg_color: document.getElementById('bannerBgColor').value,
-        sort_order: parseInt(document.getElementById('bannerSortOrder').value) || 0,
-        is_active: document.getElementById('bannerIsActive').checked
+        title_en:     document.getElementById('bannerTitleEn').value,
+        title_ar:     document.getElementById('bannerTitleAr').value,
+        subtitle_en:  document.getElementById('bannerSubtitleEn').value,
+        subtitle_ar:  document.getElementById('bannerSubtitleAr').value,
+        btn_text_en:  document.getElementById('bannerBtnEn').value,
+        btn_text_ar:  document.getElementById('bannerBtnAr').value,
+        btn_link:     document.getElementById('bannerBtnLink').value,
+        image_url:    document.getElementById('bannerImageUrl').value,
+        bg_color:     document.getElementById('bannerBgColor').value,
+        sort_order:   parseInt(document.getElementById('bannerSortOrder').value) || 0,
+        is_active:    document.getElementById('bannerIsActive').checked
     };
 
     const url = id ? `${API_URL}/banners/${id}` : `${API_URL}/banners`;

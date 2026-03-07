@@ -46,6 +46,8 @@
                 <a href="#settings" class="nav-link" onclick="showSection('settings')">
                     <span>🔒</span> Settings
                 </a>
+                <a href="#logs" class="nav-link" onclick="showSection('logs')">
+                    <span>📋</span> Activity Log
                 </a>
 
             </nav>
@@ -634,109 +636,54 @@ Add "Banners" to your sidebar nav too:
             </script>
             <!-- General Info Section -->
             <section id="general-info-section" class="content-section">
-                <div class="section-header">
-                    <h3>🏢 General Info & Social Media</h3>
-                </div>
-                <form id="generalInfoForm" class="form-container" onsubmit="saveGeneralInfo(event)">
-                    <h4>Store Details</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Brand Name</label>
-                            <input type="text" id="brandName" placeholder="e.g. Primejo" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" id="emailAddress" placeholder="info@primejo.com">
-                        </div>
+                <h2>🏢 General Information</h2>
+                <form id="generalInfoForm" class="form-container">
+                    <div class="form-group">
+                        <label>Brand Name:</label>
+                        <input type="text" id="brandName" required>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="phoneNumber" placeholder="+962 7X XXX XXXX">
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp Number</label>
-                            <input type="tel" id="whatsappNumber" placeholder="+962 7X XXX XXXX">
-                        </div>
+                    <div class="form-group">
+                        <label>Phone Number:</label>
+                        <input type="tel" id="phoneNumber" required>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Free Delivery Minimum (JD)</label>
-                            <input type="number" id="freeDeliveryMin" placeholder="e.g. 15" step="0.01" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Delivery Note</label>
-                            <input type="text" id="deliveryNote" placeholder="e.g. Delivery within 2-3 days">
-                        </div>
+                    <div class="form-group">
+                        <label>Email Address:</label>
+                        <input type="email" id="emailAddress" required>
                     </div>
-
-                    <h4 style="margin-top:1.5rem;">Social Media Links</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>📸 Instagram URL</label>
-                            <input type="url" id="instagramUrl" placeholder="https://instagram.com/yourpage">
-                        </div>
-                        <div class="form-group">
-                            <label>📘 Facebook URL</label>
-                            <input type="url" id="facebookUrl" placeholder="https://facebook.com/yourpage">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>👻 Snapchat URL</label>
-                            <input type="url" id="snapchatUrl" placeholder="https://snapchat.com/add/yourname">
-                        </div>
-                        <div class="form-group">
-                            <label>🎵 TikTok URL</label>
-                            <input type="url" id="tiktokUrl" placeholder="https://tiktok.com/@yourname">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>▶️ YouTube URL</label>
-                            <input type="url" id="youtubeUrl" placeholder="https://youtube.com/@yourchannel">
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Save Changes</button>
-                    </div>
+                    <button type="submit" class="btn-primary">💾 Save General Info</button>
                 </form>
-            </section>
-
-            <!-- Settings Section -->
-            <section id="settings" class="content-section">
-                <div class="section-header">
-                    <h3>🔒 Account Settings</h3>
-                </div>
-                <div class="form-container" style="max-width:500px;">
-                    <h4>Change Password</h4>
-                    <p style="color:#666;font-size:0.9rem;margin-bottom:1.5rem;">
-                        Your new password will be encrypted and saved securely.
-                    </p>
-                    <form id="changePasswordForm" onsubmit="submitChangePassword(event)">
-                        <div class="form-group">
-                            <label>Current Password</label>
-                            <input type="password" id="currentPassword" placeholder="Enter current password" required autocomplete="current-password">
-                        </div>
-                        <div class="form-group">
-                            <label>New Password</label>
-                            <input type="password" id="newPassword" placeholder="Min. 8 characters" required autocomplete="new-password">
-                            <small style="color:#888;font-size:0.8rem;">Use at least 8 characters with a mix of letters and numbers.</small>
-                        </div>
-                        <div class="form-group">
-                            <label>Confirm New Password</label>
-                            <input type="password" id="confirmPassword" placeholder="Repeat new password" required autocomplete="new-password">
-                        </div>
-                        <p id="passwordMsg" style="font-size:0.9rem;margin-bottom:1rem;min-height:1.2rem;"></p>
-                        <div class="form-actions">
-                            <button type="submit" class="btn-primary">🔒 Change Password</button>
-                        </div>
-                    </form>
-                </div>
             </section>
         </main>
     </div>
+
+
+            <!-- Activity Log Section -->
+            <section id="logs" class="content-section">
+                <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+                    <div>
+                        <h3>Activity Log</h3>
+                        <span id="logsCount" style="font-size:0.82rem;color:#888;font-weight:500;"></span>
+                    </div>
+                </div>
+                <div id="logsFilterBar"></div>
+                <div class="table-container">
+                    <table class="data-table" style="font-size:0.88rem;">
+                        <thead>
+                            <tr>
+                                <th style="width:110px;">Action</th>
+                                <th style="width:130px;">User</th>
+                                <th style="width:130px;">Entity</th>
+                                <th>Details</th>
+                                <th style="width:120px;">IP Address</th>
+                                <th style="width:150px;">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Open Activity Log from the sidebar to load</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
     <!-- Order Details Modal -->
     <div id="orderModal" class="modal">

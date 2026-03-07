@@ -354,6 +354,11 @@ body {
     color: white;
 }
 
+.status-refunded {
+    background: #7c3aed;
+    color: white;
+}
+
 .status-cancelled {
     background: var(--danger);
     color: white;
