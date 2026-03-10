@@ -330,7 +330,8 @@ async function fetchOrderItems(dbId) {
             oi.total,
             COALESCE(p.name_en, oi.product_name_en, 'Unknown Product') AS product_name_en,
             COALESCE(p.name_ar, oi.product_name_ar, 'منتج غير معروف')  AS product_name_ar,
-            p.image_url
+            p.image_url,
+            p.cost_price
          FROM order_items oi
          LEFT JOIN products p ON p.id = oi.product_id
          WHERE oi.order_id = ?`,
@@ -344,7 +345,8 @@ async function fetchOrderItems(dbId) {
         image_url: r.image_url || '',
         quantity: r.quantity,
         price: parseFloat(r.price || 0),
-        total: parseFloat(r.total || 0)
+        total: parseFloat(r.total || 0),
+        cost_price: parseFloat(r.cost_price || 0)
     }));
 }
 
@@ -454,7 +456,8 @@ app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
                 oi.total,
                 COALESCE(p.name_en, oi.product_name_en, 'Unknown Product') AS product_name,
                 COALESCE(p.name_ar, oi.product_name_ar, 'منتج غير معروف')  AS product_name_ar,
-                p.image_url
+                p.image_url,
+                p.cost_price
              FROM order_items oi
              LEFT JOIN products p ON p.id = oi.product_id
              WHERE oi.order_id IN (${placeholders})`,
@@ -475,7 +478,8 @@ app.get('/api/orders', authenticateToken, isAdmin, async (req, res) => {
                 image_url: item.image_url || '',
                 quantity: item.quantity,
                 price: parseFloat(item.price || 0),
-                total: parseFloat(item.total || 0)
+                total: parseFloat(item.total || 0),
+                cost_price: parseFloat(item.cost_price || 0)
             });
         });
 
@@ -607,17 +611,54 @@ app.get('/api/delivery/cities/:countryId', async (req, res) => {
 
 // ============ GENERAL INFO ============
 
+async function ensureGeneralInfoColumns() {
+    try {
+        const newCols = [
+            { name: 'gi_whatsapp',     def: 'VARCHAR(30)' },
+            { name: 'gi_instagram',    def: 'VARCHAR(300)' },
+            { name: 'gi_facebook',     def: 'VARCHAR(300)' },
+            { name: 'gi_snapchat',     def: 'VARCHAR(300)' },
+            { name: 'gi_tiktok',       def: 'VARCHAR(300)' },
+            { name: 'gi_youtube',      def: 'VARCHAR(300)' },
+            { name: 'gi_delivery_note',def: 'VARCHAR(300)' },
+        ];
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'general_info'`
+        );
+        const existing = cols.map(c => c.COLUMN_NAME);
+        for (const col of newCols) {
+            if (!existing.includes(col.name)) {
+                await pool.query(`ALTER TABLE general_info ADD COLUMN \`${col.name}\` ${col.def}`);
+                console.log(`Added column: general_info.${col.name}`);
+            }
+        }
+        console.log('general_info columns verified');
+    } catch (err) {
+        console.warn('general_info migration warning:', err.message);
+    }
+}
+ensureGeneralInfoColumns();
+
 app.get('/api/general-info', async (req, res) => {
     try {
         const [info] = await pool.query('SELECT * FROM general_info LIMIT 1');
         if (info.length === 0) return res.json({ success: false, message: 'No general info found' });
+        const row = info[0];
         res.json({
             success: true,
             info: {
-                brand_name: info[0].gi_brand_name,
-                phone_number: info[0].gi_phone_number,
-                email_address: info[0].gi_email_address,
-                minimum_order_amount: info[0].gi_minimum_order_amount
+                brand_name:           row.gi_brand_name,
+                phone_number:         row.gi_phone_number,
+                email_address:        row.gi_email_address,
+                minimum_order_amount: row.gi_minimum_order_amount,
+                whatsapp:             row.gi_whatsapp      || '',
+                instagram:            row.gi_instagram     || '',
+                facebook:             row.gi_facebook      || '',
+                snapchat:             row.gi_snapchat      || '',
+                tiktok:               row.gi_tiktok        || '',
+                youtube:              row.gi_youtube       || '',
+                delivery_note:        row.gi_delivery_note || ''
             }
         });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
@@ -625,17 +666,34 @@ app.get('/api/general-info', async (req, res) => {
 
 app.put('/api/general-info', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { brand_name, phone_number, email_address, minimum_order_amount } = req.body;
+        const {
+            brand_name, phone_number, email, email_address,
+            whatsapp, instagram, facebook, snapchat, tiktok, youtube,
+            free_delivery_min_amount, minimum_order_amount, delivery_note
+        } = req.body;
+
+        const emailVal   = email || email_address || '';
+        const minOrder   = free_delivery_min_amount ?? minimum_order_amount ?? 0;
+
         const [existing] = await pool.query('SELECT * FROM general_info LIMIT 1');
         if (existing.length === 0) {
             await pool.query(
-                'INSERT INTO general_info (gi_brand_name, gi_phone_number, gi_email_address, gi_minimum_order_amount) VALUES (?, ?, ?, ?)',
-                [brand_name, phone_number, email_address, minimum_order_amount]
+                `INSERT INTO general_info
+                 (gi_brand_name, gi_phone_number, gi_email_address, gi_minimum_order_amount,
+                  gi_whatsapp, gi_instagram, gi_facebook, gi_snapchat, gi_tiktok, gi_youtube, gi_delivery_note)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [brand_name, phone_number, emailVal, minOrder,
+                 whatsapp||'', instagram||'', facebook||'', snapchat||'', tiktok||'', youtube||'', delivery_note||'']
             );
         } else {
             await pool.query(
-                'UPDATE general_info SET gi_brand_name=?, gi_phone_number=?, gi_email_address=?, gi_minimum_order_amount=? WHERE gi_id=?',
-                [brand_name, phone_number, email_address, minimum_order_amount, existing[0].gi_id]
+                `UPDATE general_info SET
+                 gi_brand_name=?, gi_phone_number=?, gi_email_address=?, gi_minimum_order_amount=?,
+                 gi_whatsapp=?, gi_instagram=?, gi_facebook=?, gi_snapchat=?, gi_tiktok=?, gi_youtube=?, gi_delivery_note=?
+                 WHERE gi_id=?`,
+                [brand_name, phone_number, emailVal, minOrder,
+                 whatsapp||'', instagram||'', facebook||'', snapchat||'', tiktok||'', youtube||'', delivery_note||'',
+                 existing[0].gi_id]
             );
         }
         await logAction(req, 'UPDATE', 'general_info', 1, `Updated store general info`);
