@@ -363,6 +363,40 @@ body {
     background: var(--danger);
     color: white;
 }
+.status-processing {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-shipped {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-delivered {
+    background: #155724;
+    color: white;
+}
+
+/* Logs table — tighter rows */
+#logsTableBody td {
+    padding: 8px 12px;
+    vertical-align: middle;
+}
+
+/* Sidebar scrollable on overflow */
+.sidebar-nav {
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+}
+
+/* Section header allows column layout for logs count */
+.section-header > div h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
 
 /* Recent Orders */
 .recent-orders {

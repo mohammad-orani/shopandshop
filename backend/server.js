@@ -7,6 +7,7 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -143,15 +144,50 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const [users] = await pool.query('SELECT id, email, name, password FROM users WHERE email = ?', [email]);
-        if (users.length === 0 || password !== users[0].password)
-            return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        if (users.length === 0) return res.status(401).json({ success: false, error: 'Invalid email or password' });
         const user = users[0];
+        // Support both bcrypt hashes and legacy plain-text passwords
+        const isHashed = user.password && user.password.startsWith('$2');
+        const passwordMatch = isHashed
+            ? await bcrypt.compare(password, user.password)
+            : password === user.password;
+        if (!passwordMatch) return res.status(401).json({ success: false, error: 'Invalid email or password' });
         const token = jwt.sign({ userId: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
         // Log login — inject fake req.user so logAction can read it
         await logAction({ ...req, user: { userId: user.id, name: user.name || user.email } }, 'LOGIN', 'auth', user.id, `Logged in as ${user.email}`);
         res.json({ success: true, token, user: { id: user.id, email: user.email, name: user.name || user.email } });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Login failed: ' + error.message });
+    }
+});
+
+// POST /api/auth/change-password (PROTECTED)
+app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { current_password, new_password } = req.body;
+        if (!current_password || !new_password)
+            return res.status(400).json({ success: false, error: 'Both current and new password are required' });
+        if (new_password.length < 8)
+            return res.status(400).json({ success: false, error: 'New password must be at least 8 characters' });
+
+        const [users] = await pool.query('SELECT id, password FROM users WHERE id = ?', [req.user.userId]);
+        if (users.length === 0) return res.status(404).json({ success: false, error: 'User not found' });
+
+        const user = users[0];
+        const isHashed = user.password && user.password.startsWith('$2');
+        const passwordMatch = isHashed
+            ? await bcrypt.compare(current_password, user.password)
+            : current_password === user.password;
+
+        if (!passwordMatch) return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+
+        const hashedNew = await bcrypt.hash(new_password, 12);
+        await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedNew, req.user.userId]);
+        await logAction(req, 'PASSWORD_CHANGE', 'auth', req.user.userId, `Password changed for user ID: ${req.user.userId}`);
+
+        res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to change password: ' + error.message });
     }
 });
 

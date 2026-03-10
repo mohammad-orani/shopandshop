@@ -788,6 +788,155 @@ function showToast(msg, duration = 3000) {
 }
 
 
+
+// ==================== GENERAL INFO ====================
+
+async function loadGeneralInfo() {
+    try {
+        const info = await getGeneralInfo();
+        if (!info) return;
+        setVal('brandName',       info.brand_name      || info.brandName    || '');
+        setVal('phoneNumber',     info.phone_number    || info.phoneNumber  || '');
+        setVal('emailAddress',    info.email_address   || info.email        || '');
+        setVal('whatsappNumber',  info.whatsapp        || '');
+        setVal('instagramUrl',    info.instagram       || '');
+        setVal('facebookUrl',     info.facebook        || '');
+        setVal('snapchatUrl',     info.snapchat        || '');
+        setVal('tiktokUrl',       info.tiktok          || '');
+        setVal('youtubeUrl',      info.youtube         || '');
+        setVal('freeDeliveryMin', info.minimum_order_amount || info.free_delivery_min_amount || '');
+        setVal('deliveryNote',    info.delivery_note   || '');
+        console.log('✅ General info loaded');
+    } catch (err) {
+        console.error('loadGeneralInfo error:', err);
+    }
+}
+
+async function saveGeneralInfo(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    const data = {
+        brand_name:                document.getElementById('brandName')?.value       || '',
+        phone_number:              document.getElementById('phoneNumber')?.value     || '',
+        email:                     document.getElementById('emailAddress')?.value    || '',
+        whatsapp:                  document.getElementById('whatsappNumber')?.value  || '',
+        instagram:                 document.getElementById('instagramUrl')?.value    || '',
+        facebook:                  document.getElementById('facebookUrl')?.value     || '',
+        snapchat:                  document.getElementById('snapchatUrl')?.value     || '',
+        tiktok:                    document.getElementById('tiktokUrl')?.value       || '',
+        youtube:                   document.getElementById('youtubeUrl')?.value      || '',
+        free_delivery_min_amount:  parseFloat(document.getElementById('freeDeliveryMin')?.value) || 0,
+        delivery_note:             document.getElementById('deliveryNote')?.value    || ''
+    };
+    try {
+        const result = await updateGeneralInfo(data);
+        if (result.error) { showToast('❌ Error: ' + result.error); }
+        else               { showToast('✅ General info saved!'); }
+    } catch (err) {
+        showToast('❌ ' + err.message);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Save Changes'; }
+    }
+}
+
+// ==================== CHANGE PASSWORD ====================
+
+async function submitChangePassword(e) {
+    e.preventDefault();
+    const current = document.getElementById('currentPassword')?.value;
+    const newPass  = document.getElementById('newPassword')?.value;
+    const confirm  = document.getElementById('confirmPassword')?.value;
+    const btn      = e.target.querySelector('button[type="submit"]');
+    const msgEl    = document.getElementById('passwordMsg');
+
+    if (!current || !newPass || !confirm) {
+        if (msgEl) { msgEl.textContent = '⚠️ All fields are required.'; msgEl.style.color = 'red'; }
+        return;
+    }
+    if (newPass.length < 8) {
+        if (msgEl) { msgEl.textContent = '⚠️ Password must be at least 8 characters.'; msgEl.style.color = 'red'; }
+        return;
+    }
+    if (newPass !== confirm) {
+        if (msgEl) { msgEl.textContent = '⚠️ New passwords do not match.'; msgEl.style.color = 'red'; }
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    if (msgEl) msgEl.textContent = '';
+
+    try {
+        const result = await changePassword(current, newPass);
+        if (result.error) {
+            if (msgEl) { msgEl.textContent = '❌ ' + result.error; msgEl.style.color = 'red'; }
+        } else {
+            if (msgEl) { msgEl.textContent = '✅ Password changed successfully!'; msgEl.style.color = 'green'; }
+            e.target.reset();
+            showToast('✅ Password updated!');
+        }
+    } catch (err) {
+        if (msgEl) { msgEl.textContent = '❌ ' + err.message; msgEl.style.color = 'red'; }
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🔒 Change Password'; }
+    }
+}
+
+// ==================== REFUND ====================
+
+function openRefundModal(orderId) {
+    document.getElementById('refundOrderId').value = orderId;
+    document.getElementById('refundReason').value  = '';
+    document.getElementById('refundMsg').textContent = '';
+    document.getElementById('refundModal').classList.add('show');
+}
+
+function closeRefundModal() {
+    document.getElementById('refundModal').classList.remove('show');
+}
+
+async function submitRefund(e) {
+    e.preventDefault();
+    const orderId = document.getElementById('refundOrderId').value;
+    const reason  = document.getElementById('refundReason').value.trim();
+    const btn     = e.target.querySelector('button[type="submit"]');
+    const msgEl   = document.getElementById('refundMsg');
+
+    if (!reason) {
+        msgEl.textContent = '⚠️ Please enter a refund reason.';
+        msgEl.style.color = '#dc2626';
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+    msgEl.textContent = '';
+
+    try {
+        const token    = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
+        const API_BASE = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
+        const res  = await fetch(`${API_BASE}/api/orders/${orderId}/refund`, {
+            method:  'PATCH',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ refund_reason: reason })
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeRefundModal();
+            showToast('💸 Order marked as refunded!');
+            loadOrders();
+            loadDashboard();
+        } else {
+            msgEl.textContent = '❌ ' + (data.error || 'Failed to process refund');
+            msgEl.style.color = '#dc2626';
+        }
+    } catch (err) {
+        msgEl.textContent = '❌ ' + err.message;
+        msgEl.style.color = '#dc2626';
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💸 Confirm Refund'; }
+    }
+}
+
 // ==================== ACTIVITY LOG ====================
 
 const LOG_ACTION_COLORS = {
