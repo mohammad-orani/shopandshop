@@ -32,6 +32,8 @@ function showSection(sectionId) {
     if (sectionId === 'delivery') loadDelivery();
     if (sectionId === 'reports') loadReports();
     if (sectionId === 'banners') loadBanners();
+    if (sectionId === 'general-info-section') loadGeneralInfo();
+    if (sectionId === 'logs') loadLogs();
 }
 
 // ==================== DASHBOARD ====================
@@ -521,10 +523,10 @@ async function viewOrderDetails(orderId) {
         // Try fetching single order with items from dedicated endpoint first
         let order = null;
         try {
-            const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
-            const API_URL = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
+    
+            const API_URL = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
             const res = await fetch(`${API_URL}/api/orders/${orderId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${getAdminToken()}` }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -692,15 +694,32 @@ async function loadReports() {
     try {
         const orders = await getOrders();
         const total = orders.reduce((s, o) => s + parseFloat(o.total || 0), 0);
-        const completed = orders.filter(o => (o.order_status || o.status) === 'completed');
-        const completedRevenue = completed.reduce((s, o) => s + parseFloat(o.total || 0), 0);
+        const delivered = orders.filter(o => (o.order_status || o.status) === 'delivered');
+
+        // Net Profit = order total - cost of items sold - actual delivery fee
+        let totalProfit = 0;
+        delivered.forEach(o => {
+            const orderTotal     = parseFloat(o.total || 0);
+            const actualDelivery = parseFloat(o.actual_shipping_cost || o.actual_delivery_fee || 0);
+            const itemsCost      = (o.items || []).reduce((sum, item) => {
+                return sum + (parseFloat(item.cost_price || 0) * (item.quantity || 1));
+            }, 0);
+            totalProfit += orderTotal - itemsCost - actualDelivery;
+        });
+
+        const deliveredRevenue = delivered.reduce((s, o) => s + parseFloat(o.total || 0), 0);
 
         setEl('reportStats', `
             <div class="stats-grid">
                 <div class="stat-card"><h3>Total Orders</h3><p class="stat-number">${orders.length}</p></div>
-                <div class="stat-card"><h3>Completed</h3><p class="stat-number">${completed.length}</p></div>
+                <div class="stat-card"><h3>Delivered Orders</h3><p class="stat-number">${delivered.length}</p></div>
                 <div class="stat-card"><h3>Total Revenue</h3><p class="stat-number">${total.toFixed(2)}JD</p></div>
-                <div class="stat-card"><h3>Completed Revenue</h3><p class="stat-number">${completedRevenue.toFixed(2)}JD</p></div>
+                <div class="stat-card"><h3>Delivered Revenue</h3><p class="stat-number">${deliveredRevenue.toFixed(2)}JD</p></div>
+                <div class="stat-card" style="border-color:#16a34a;">
+                    <h3 style="color:#16a34a;">Net Profit</h3>
+                    <p class="stat-number" style="color:#16a34a;">${totalProfit.toFixed(2)}JD</p>
+                    <small style="color:#888;font-size:0.75rem;">Revenue − Cost Price − Actual Delivery</small>
+                </div>
             </div>`);
     } catch (error) { console.error('Reports error:', error); }
 }
@@ -912,11 +931,11 @@ async function submitRefund(e) {
     msgEl.textContent = '';
 
     try {
-        const token    = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
-        const API_BASE = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
-        const res  = await fetch(`${API_BASE}/api/orders/${orderId}/refund`, {
+
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const res  = await fetch(`${API_BASE}/orders/${orderId}/refund`, {
             method:  'PATCH',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
             body:    JSON.stringify({ refund_reason: reason })
         });
         const data = await res.json();
@@ -1002,14 +1021,14 @@ async function loadLogs(filterAction = '', filterUser = '') {
 
     try {
         container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#888;">Loading logs...</td></tr>';
-        const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
-        const API_BASE = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
+
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
         const params = new URLSearchParams({ limit: 300 });
         if (filterAction) params.append('action', filterAction);
         if (filterUser)   params.append('user', filterUser);
 
-        const res = await fetch(`${API_BASE}/api/admin-logs?${params}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch(`${API_BASE}/admin-logs?${params}`, {
+            headers: { 'Authorization': `Bearer ${getAdminToken()}` }
         });
         const data = await res.json();
 
@@ -1053,10 +1072,10 @@ async function loadLogs(filterAction = '', filterUser = '') {
 
 async function exportLogs() {
     try {
-        const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
-        const API_BASE = (typeof window.API_URL !== 'undefined' ? window.API_URL : '') || window.location.origin;
-        const res = await fetch(`${API_BASE}/api/admin-logs?limit=9999`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const res = await fetch(`${API_BASE}/admin-logs?limit=9999`, {
+            headers: { 'Authorization': `Bearer ${getAdminToken()}` }
         });
         const data = await res.json();
         if (!data.success) { alert('Failed to load logs'); return; }

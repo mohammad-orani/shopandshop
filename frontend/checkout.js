@@ -7,7 +7,6 @@ let minimumOrderAmount = 15; // default, overridden by DB
 // ==================== FREE DELIVERY POPUP ====================
 
 function showFreeDeliveryPopup(cartTotal, minAmount) {
-    // Remove existing popup if any
     const existing = document.getElementById('freeDeliveryPopup');
     if (existing) existing.remove();
 
@@ -60,11 +59,7 @@ function showFreeDeliveryPopup(cartTotal, minAmount) {
     `;
 
     document.body.appendChild(popup);
-
-    // Animate in
     requestAnimationFrame(() => popup.classList.add('fdp-visible'));
-
-    // Auto-close after 6s if free
     if (isFree) setTimeout(closeFreeDeliveryPopup, 6000);
 }
 
@@ -75,7 +70,6 @@ function closeFreeDeliveryPopup() {
     setTimeout(() => popup.remove(), 300);
 }
 
-// Inject popup styles once
 (function injectFreeDeliveryStyles() {
     if (document.getElementById('fdpStyles')) return;
     const style = document.createElement('style');
@@ -91,74 +85,28 @@ function closeFreeDeliveryPopup() {
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             filter: drop-shadow(0 8px 32px rgba(0,0,0,0.18));
         }
-        #freeDeliveryPopup.fdp-visible {
-            transform: translateX(-50%) translateY(0);
-        }
+        #freeDeliveryPopup.fdp-visible { transform: translateX(-50%) translateY(0); }
         .fdp-inner {
-            background: #fff;
-            border-radius: 16px;
-            padding: 20px 24px 18px;
-            border: 2px solid #f0f0f0;
-            position: relative;
-            text-align: center;
+            background: #fff; border-radius: 16px; padding: 20px 24px 18px;
+            border: 2px solid #f0f0f0; position: relative; text-align: center;
         }
         .fdp-close {
-            position: absolute;
-            top: 10px; right: 12px;
-            background: none; border: none;
-            font-size: 14px; color: #aaa;
-            cursor: pointer; line-height: 1;
+            position: absolute; top: 10px; right: 12px;
+            background: none; border: none; font-size: 14px; color: #aaa; cursor: pointer; line-height: 1;
         }
         .fdp-close:hover { color: #333; }
         .fdp-icon { font-size: 2rem; margin-bottom: 6px; }
-        .fdp-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            line-height: 1.4;
-        }
+        .fdp-title { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; line-height: 1.4; }
         .fdp-title.fdp-success { color: #10b981; }
-        .fdp-sub {
-            font-size: 0.82rem;
-            color: #888;
-            margin-bottom: 14px;
-        }
-        .fdp-bar-track {
-            width: 100%;
-            height: 10px;
-            background: #f0f0f0;
-            border-radius: 99px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-        .fdp-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #d4af37, #f0c040);
-            border-radius: 99px;
-            transition: width 0.8s ease;
-        }
-        .fdp-bar-fill.fdp-bar-done {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-        .fdp-bar-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: #999;
-            margin-bottom: 14px;
-        }
+        .fdp-sub { font-size: 0.82rem; color: #888; margin-bottom: 14px; }
+        .fdp-bar-track { width: 100%; height: 10px; background: #f0f0f0; border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+        .fdp-bar-fill { height: 100%; background: linear-gradient(90deg, #d4af37, #f0c040); border-radius: 99px; transition: width 0.8s ease; }
+        .fdp-bar-fill.fdp-bar-done { background: linear-gradient(90deg, #10b981, #34d399); }
+        .fdp-bar-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #999; margin-bottom: 14px; }
         .fdp-shop-btn {
-            width: 100%;
-            padding: 10px;
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.88rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s ease;
+            width: 100%; padding: 10px; background: #1a1a1a; color: white;
+            border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 700;
+            cursor: pointer; transition: background 0.2s ease;
         }
         .fdp-shop-btn:hover { background: #d4af37; }
         [dir="rtl"] .fdp-close { right: auto; left: 12px; }
@@ -181,8 +129,7 @@ async function loadDeliveryCountries() {
         }
 
         const jordanCountry = countries.find(c =>
-            c.id === 'JO' ||
-            c.id === 'jordan' ||
+            c.id === 'JO' || c.id === 'jordan' ||
             (c.name_en && c.name_en.toLowerCase() === 'jordan') ||
             c.name_ar === 'الأردن'
         );
@@ -236,7 +183,8 @@ async function loadDeliveryCities(countryId) {
                 <option value="${city.id}"
                         data-name-en="${city.name_en}"
                         data-name-ar="${city.name_ar}"
-                        data-delivery-fee="${city.displayed_fee || city.delivery_fee || 0}">
+                        data-displayed-fee="${city.displayed_fee || city.delivery_fee || 0}"
+                        data-actual-fee="${city.actual_fee || city.displayed_fee || city.delivery_fee || 0}">
                     ${city.name_en} / ${city.name_ar}
                 </option>
             `).join('');
@@ -259,20 +207,17 @@ async function updateDeliveryFee() {
         return;
     }
 
-    const cityDeliveryFee = parseFloat(selectedOption.dataset.deliveryFee) || 0;
+    // ✅ Fixed: read both displayed and actual fee from correct data attributes
+    const cityDisplayedFee = parseFloat(selectedOption.dataset.displayedFee) || 0;
+    const cityActualFee    = parseFloat(selectedOption.dataset.actualFee)    || cityDisplayedFee;
 
-    // Get cart total
     const cart = getCart();
     const products = await getProducts();
     const cartTotal = cart.reduce((total, item) => {
         const product = products.find(p => String(p.id) === String(item.productId));
-        if (product) {
-            return total + (parseFloat(product.newPrice || 0) * item.quantity);
-        }
-        return total;
+        return product ? total + (parseFloat(product.newPrice || 0) * item.quantity) : total;
     }, 0);
 
-    // Load minimum order amount from DB
     try {
         const info = await getGeneralInfoFromAPI();
         minimumOrderAmount = parseFloat(info.minimum_order_amount) || 15;
@@ -284,16 +229,15 @@ async function updateDeliveryFee() {
 
     if (isFree) {
         selectedDeliveryFee = 0;
-        selectedActualFee = cityDeliveryFee;
+        selectedActualFee   = 0; // server will look up actual_fee from DB — free delivery means 0 cost to customer
 
         const freeText = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
             ? 'مجاناً ✓' : 'FREE ✓';
-
         document.getElementById('deliveryFeeDisplay').innerHTML =
             `<span style="color:#10b981;font-weight:700;">${freeText}</span>`;
     } else {
-        selectedDeliveryFee = cityDeliveryFee;
-        selectedActualFee = cityDeliveryFee;
+        selectedDeliveryFee = cityDisplayedFee;
+        selectedActualFee   = cityActualFee;
 
         const remaining = minimumOrderAmount - cartTotal;
         const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
@@ -302,7 +246,7 @@ async function updateDeliveryFee() {
             : `Add ${formatPrice(remaining)} for free delivery`;
 
         document.getElementById('deliveryFeeDisplay').innerHTML = `
-            <span style="font-weight:700;">${formatPrice(cityDeliveryFee)}</span>
+            <span style="font-weight:700;">${formatPrice(cityDisplayedFee)}</span>
             ${minimumOrderAmount > 0 ? `
                 <span style="display:block;font-size:0.75rem;color:#e74c3c;margin-top:2px;cursor:pointer;"
                       onclick="showFreeDeliveryPopup(${cartTotal}, ${minimumOrderAmount})">
@@ -312,14 +256,13 @@ async function updateDeliveryFee() {
         `;
     }
 
-    // Show the popup
     showFreeDeliveryPopup(cartTotal, minimumOrderAmount);
     updateOrderTotal();
 }
 
 function resetDeliveryFee() {
     selectedDeliveryFee = 0;
-    selectedActualFee = 0;
+    selectedActualFee   = 0;
     const displayEl = document.getElementById('deliveryFeeDisplay');
     if (displayEl) {
         const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
@@ -378,7 +321,6 @@ async function loadOrderSummary() {
         orderItemsContainer.innerHTML = orderHTML;
         const subtotalEl = document.getElementById('orderSubtotal');
         if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
-
         updateOrderTotal();
 
     } catch (error) {
@@ -393,22 +335,19 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
 
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn?.textContent;
-    if (submitBtn) {
-        submitBtn.textContent = 'Processing...';
-        submitBtn.disabled = true;
-    }
+    if (submitBtn) { submitBtn.textContent = 'Processing...'; submitBtn.disabled = true; }
 
     try {
         const cart = getCart();
         const products = await getProducts();
 
         const countrySelect = document.getElementById('deliveryCountry');
-        const citySelect = document.getElementById('deliveryCity');
+        const citySelect    = document.getElementById('deliveryCity');
         const selectedCountryOption = countrySelect.options[countrySelect.selectedIndex];
-        const selectedCityOption = citySelect.options[citySelect.selectedIndex];
+        const selectedCityOption    = citySelect.options[citySelect.selectedIndex];
 
         const countryName = selectedCountryOption.dataset.nameEn;
-        const cityName = selectedCityOption.dataset.nameEn;
+        const cityName    = selectedCityOption.dataset.nameEn; // city_name_en — matches delivery_cities JOIN on server
 
         let subtotal = 0;
         const orderItems = cart.map(item => {
@@ -418,47 +357,44 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             const itemTotal = price * item.quantity;
             subtotal += itemTotal;
             return {
-                productId: parseInt(product.id) || parseInt(item.productId),
-                productName: product.name_en || '',
-                productNameAr: product.name_ar || '',
-                quantity: item.quantity,
-                price: price,
-                costPrice: product.costPrice || product.cost_price || 0,
-                total: itemTotal
+                productId:      parseInt(product.id) || parseInt(item.productId),
+                productName:    product.name_en  || '',
+                productNameAr:  product.name_ar  || '',
+                quantity:       item.quantity,
+                price:          price,
+                total:          itemTotal
             };
         }).filter(Boolean);
 
-        const orderId = 'ORD-' + Date.now();
-        const phonePrefix = document.getElementById('phonePrefix')?.value || '';
-        const phoneNumber = document.getElementById('customerPhone')?.value || '';
-        const fullPhoneNumber = phonePrefix + phoneNumber;
+        const orderId        = 'ORD-' + Date.now();
+        const phonePrefix    = document.getElementById('phonePrefix')?.value  || '';
+        const phoneNumber    = document.getElementById('customerPhone')?.value || '';
+        const fullPhone      = phonePrefix + phoneNumber;
         const completeAddress = document.getElementById('deliveryAddress')?.value || '';
 
-        // ✅ orderData matches exact orders table schema
         const orderData = {
-            order_id:              orderId,
-            customer_name:         document.getElementById('customerName')?.value         || '',
-            customer_phone:        fullPhoneNumber,
-            customer_email:        document.getElementById('customerEmail')?.value        || '',
-            delivery_country:      countryName                                            || '',
-            delivery_city:         cityName                                               || '',
-            delivery_street:       document.getElementById('deliveryStreet')?.value      || '',
-            delivery_building:     document.getElementById('deliveryBuilding')?.value    || '',
-            delivery_floor:        document.getElementById('deliveryFloor')?.value       || '',
-            delivery_address:      completeAddress,
-            order_notes:           document.getElementById('orderNotes')?.value          || '',
-            payment_method:        document.querySelector('input[name="payment"]:checked')?.value || 'cash',
-            notification_method:   document.querySelector('input[name="notification"]:checked')?.value || 'none',
-            notification_email:    document.getElementById('notificationEmail')?.value || '',
-            items:                 orderItems,
-            subtotal:              subtotal,
-            // Maps to displayed_shipping_cost + actual_shipping_cost in DB
-            delivery_fee:          selectedDeliveryFee,
-            actual_delivery_fee:   selectedActualFee,
-            total:                 subtotal + selectedDeliveryFee,
-            currency:              (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
-            language:              (typeof currentLanguage !== 'undefined') ? currentLanguage  : 'en',
-            order_status:          'pending'
+            order_id:            orderId,
+            customer_name:       document.getElementById('customerName')?.value      || '',
+            customer_phone:      fullPhone,
+            customer_email:      document.getElementById('customerEmail')?.value     || '',
+            delivery_country:    countryName                                          || '',
+            delivery_city:       cityName                                             || '', // server looks up actual_fee by this value
+            delivery_street:     document.getElementById('deliveryStreet')?.value    || '',
+            delivery_building:   document.getElementById('deliveryBuilding')?.value  || '',
+            delivery_floor:      document.getElementById('deliveryFloor')?.value     || '',
+            delivery_address:    completeAddress,
+            order_notes:         document.getElementById('orderNotes')?.value        || '',
+            payment_method:      document.querySelector('input[name="payment"]:checked')?.value      || 'cash',
+            notification_method: document.querySelector('input[name="notification"]:checked')?.value || 'none',
+            notification_email:  document.getElementById('notificationEmail')?.value || '',
+            items:               orderItems,
+            subtotal:            subtotal,
+            delivery_fee:        selectedDeliveryFee,   // displayed fee shown to customer
+            actual_delivery_fee: selectedActualFee,     // server will override this with DB lookup
+            total:               subtotal + selectedDeliveryFee,
+            currency:            (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
+            language:            (typeof currentLanguage !== 'undefined') ? currentLanguage  : 'en',
+            order_status:        'pending'
         };
 
         const result = await createOrder(orderData);
@@ -467,33 +403,29 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             clearCart();
             closeFreeDeliveryPopup();
 
-            // Meta Pixel - Purchase event
             if (window.fbq) {
                 fbq('track', 'Purchase', {
-                    value: subtotal + selectedDeliveryFee,
-                    currency: (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
-                    content_ids: orderItems.map(i => String(i.productId)),
+                    value:        subtotal + selectedDeliveryFee,
+                    currency:     (typeof currentCurrency !== 'undefined') ? currentCurrency : 'JOD',
+                    content_ids:  orderItems.map(i => String(i.productId)),
                     content_type: 'product',
-                    num_items: orderItems.reduce((s, i) => s + i.quantity, 0)
+                    num_items:    orderItems.reduce((s, i) => s + i.quantity, 0)
                 });
             }
 
             const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
 
-            // Populate order items in modal
             const modalItemsEl = document.getElementById('modalOrderItems');
             if (modalItemsEl) {
-                const itemsHTML = orderItems.map(item => `
+                modalItemsEl.innerHTML = orderItems.map(item => `
                     <div class="modal-item-row">
                         <span class="modal-item-name">${isAr && item.productNameAr ? item.productNameAr : item.productName}</span>
                         <span class="modal-item-qty">×${item.quantity}</span>
                         <span class="modal-item-price">${formatPrice(item.total)}</span>
                     </div>
                 `).join('');
-                modalItemsEl.innerHTML = itemsHTML;
             }
 
-            // Populate subtotal, delivery, total in modal
             const modalSubtotalEl = document.getElementById('modalSubtotal');
             if (modalSubtotalEl) modalSubtotalEl.textContent = formatPrice(subtotal);
 
@@ -508,20 +440,17 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
             const modalTotalEl = document.getElementById('modalTotal');
             if (modalTotalEl) modalTotalEl.textContent = formatPrice(subtotal + selectedDeliveryFee);
 
-            // Populate customer name in modal
             const modalCustomerEl = document.getElementById('modalCustomerName');
-            if (modalCustomerEl) {
-                modalCustomerEl.textContent = document.getElementById('customerName')?.value || '';
-            }
+            if (modalCustomerEl) modalCustomerEl.textContent = document.getElementById('customerName')?.value || '';
 
             const modal = document.getElementById('successModal');
             if (modal) modal.classList.add('show');
 
             if (typeof switchLanguage === 'function') switchLanguage(currentLanguage);
 
-            // Set order ID AFTER switchLanguage so it doesn't get overwritten
             const orderIdEl = document.getElementById('orderIdDisplay');
             if (orderIdEl) orderIdEl.textContent = orderId;
+
         } else {
             throw new Error(result.error || 'Failed to create order');
         }
@@ -530,10 +459,7 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
         console.error('Order submission error:', error);
         alert('Error creating order: ' + error.message);
     } finally {
-        if (submitBtn) {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
+        if (submitBtn) { submitBtn.textContent = originalText; submitBtn.disabled = false; }
     }
 });
 
@@ -554,18 +480,14 @@ document.getElementById('deliveryCity')?.addEventListener('change', updateDelive
 
 // ==================== MODAL CLOSE ====================
 
-function closeSuccessModal() {
-    window.location.href = 'index.html';
-}
+function closeSuccessModal() { window.location.href = 'index.html'; }
 
 // ==================== NOTIFICATION TOGGLE ====================
 
 function toggleNotificationFields() {
     const val = document.querySelector('input[name="notification"]:checked')?.value;
     const emailField = document.getElementById('emailNotificationField');
-    if (emailField) {
-        emailField.style.display = (val === 'email' || val === 'both') ? 'block' : 'none';
-    }
+    if (emailField) emailField.style.display = (val === 'email' || val === 'both') ? 'block' : 'none';
 }
 
 // ==================== INITIALIZATION ====================
