@@ -369,7 +369,20 @@ app.post('/api/orders', async (req, res) => {
 
         const order_id = clientOrderId || ('ORD-' + Date.now());
         const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
-        const actualFee = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
+
+        // Always look up actual_fee from delivery_cities by city name — never trust frontend value
+        let actualFee = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
+        if (delivery_city) {
+            const [cityRows] = await connection.query(
+                `SELECT actual_fee FROM delivery_cities
+                 WHERE city_name_en = ? OR city_name_ar = ?
+                 LIMIT 1`,
+                [delivery_city, delivery_city]
+            );
+            if (cityRows.length > 0 && cityRows[0].actual_fee != null) {
+                actualFee = parseFloat(cityRows[0].actual_fee);
+            }
+        }
 
         const [orderResult] = await connection.query(
             `INSERT INTO orders (
@@ -788,6 +801,52 @@ app.get('/api/admin-logs', authenticateToken, isAdmin, async (req, res) => {
         const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM admin_logs');
         res.json({ success: true, logs, total });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============ REPORTS ============
+
+app.get('/api/reports/profit', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        // Single query: join order_items → products (cost_price) and orders → delivery_cities (actual_fee)
+        // Filters to delivered orders only
+        const [rows] = await pool.query(`
+            SELECT
+                o.id,
+                o.order_id,
+                o.total,
+                o.delivery_city,
+                SUM(oi.quantity * COALESCE(p.cost_price, 0))   AS total_cost_price,
+                COALESCE(dc.actual_fee, 0)                      AS actual_delivery_fee
+            FROM orders o
+            LEFT JOIN order_items oi  ON oi.order_id  = o.id
+            LEFT JOIN products p      ON p.id          = oi.product_id
+            LEFT JOIN delivery_cities dc ON dc.city_name_en = o.delivery_city
+            WHERE o.order_status = 'delivered'
+            GROUP BY o.id, o.order_id, o.total, o.delivery_city, dc.actual_fee
+        `);
+
+        let totalRevenue = 0, totalCost = 0, totalDelivery = 0;
+
+        rows.forEach(r => {
+            totalRevenue  += parseFloat(r.total             || 0);
+            totalCost     += parseFloat(r.total_cost_price  || 0);
+            totalDelivery += parseFloat(r.actual_delivery_fee || 0);
+        });
+
+        res.json({
+            success: true,
+            summary: {
+                orderCount:    rows.length,
+                totalRevenue:  +totalRevenue.toFixed(2),
+                totalCost:     +totalCost.toFixed(2),
+                totalDelivery: +totalDelivery.toFixed(2),
+                netProfit:     +(totalRevenue - totalCost - totalDelivery).toFixed(2)
+            }
+        });
+    } catch (error) {
+        console.error('Profit report error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
