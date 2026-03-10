@@ -368,6 +368,11 @@ app.post('/api/orders', async (req, res) => {
         } = req.body;
 
         const order_id = clientOrderId || ('ORD-' + Date.now());
+
+        // Sanitize phone: if number starts with + prefix followed by a 0, remove the 0
+        // e.g. +9620786215023 → +96286215023
+        const sanitizedPhone = (customer_phone || '').replace(/^(\+\d+?)0(\d)/, '$1$2');
+
         const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
 
         // Always look up actual_fee from delivery_cities by city name — never trust frontend value
@@ -397,7 +402,7 @@ app.post('/api/orders', async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 order_id,
-                customer_name || '', customer_phone || '', customer_email || '',
+                customer_name || '', sanitizedPhone, customer_email || '',
                 delivery_country || '', delivery_city || '',
                 delivery_street || '', delivery_building || '', delivery_floor || '',
                 delivery_address || '', order_notes || '',
