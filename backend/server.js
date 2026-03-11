@@ -581,7 +581,7 @@ app.patch('/api/orders/:id/refund', authenticateToken, isAdmin, async (req, res)
         if (!refund_reason || !refund_reason.trim())
             return res.status(400).json({ success: false, error: 'Refund reason is required' });
 
-        if (/^d+$/.test(param)) {
+        if (/^\d+$/.test(param)) {
             await pool.query(
                 'UPDATE orders SET order_status = ?, order_notes = ? WHERE id = ?',
                 ['refunded', refund_reason.trim(), parseInt(param)]
@@ -601,6 +601,40 @@ app.patch('/api/orders/:id/refund', authenticateToken, isAdmin, async (req, res)
         await logAction(req, 'REFUND', 'order', param, `Order ${param} refunded — reason: ${refund_reason.trim()}`);
 
         res.json({ success: true, message: 'Order marked as refunded' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
+// PATCH /api/orders/:id/cancel
+app.patch('/api/orders/:id/cancel', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { cancel_reason } = req.body;
+        const param = req.params.id;
+        if (!cancel_reason || !cancel_reason.trim())
+            return res.status(400).json({ success: false, error: 'Cancel reason is required' });
+
+        if (/^\d+$/.test(param)) {
+            await pool.query(
+                'UPDATE orders SET order_status = ?, order_notes = ? WHERE id = ?',
+                ['cancelled', cancel_reason.trim(), parseInt(param)]
+            );
+        } else {
+            await pool.query(
+                'UPDATE orders SET order_status = ?, order_notes = ? WHERE order_id = ?',
+                ['cancelled', cancel_reason.trim(), param]
+            );
+        }
+
+        const [[order]] = await pool.query(
+            'SELECT * FROM orders WHERE order_id = ? OR id = ? LIMIT 1',
+            [param, parseInt(param) || 0]
+        );
+        if (order) await notifyOrderStatusChange(order, 'cancelled');
+        await logAction(req, 'CANCEL', 'order', param, `Order ${param} cancelled — reason: ${cancel_reason.trim()}`);
+
+        res.json({ success: true, message: 'Order marked as cancelled' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -632,7 +666,7 @@ app.get('/api/delivery/cities/:countryId', async (req, res) => {
 async function ensureGeneralInfoColumns() {
     try {
         const newCols = [
-            { name: 'gi_whatsapp',     def: 'VARCHAR(30)' },
+            { name: 'gi_whatsapp',     def: 'VARCHAR(300)' },
             { name: 'gi_instagram',    def: 'VARCHAR(300)' },
             { name: 'gi_facebook',     def: 'VARCHAR(300)' },
             { name: 'gi_snapchat',     def: 'VARCHAR(300)' },
@@ -657,6 +691,13 @@ async function ensureGeneralInfoColumns() {
     }
 }
 ensureGeneralInfoColumns();
+
+// Ensure gi_whatsapp is wide enough for full URLs
+(async () => {
+    try {
+        await pool.query(`ALTER TABLE general_info MODIFY COLUMN gi_whatsapp VARCHAR(300)`);
+    } catch (e) { /* column may not exist yet — ensureGeneralInfoColumns will add it */ }
+})();
 
 app.get('/api/general-info', async (req, res) => {
     try {
