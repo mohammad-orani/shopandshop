@@ -607,6 +607,46 @@ app.patch('/api/orders/:id/refund', authenticateToken, isAdmin, async (req, res)
 });
 
 
+// PATCH /api/orders/:id  — edit order details
+app.patch('/api/orders/:id', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const param = req.params.id;
+        const {
+            customer_name, customer_phone,
+            delivery_country, delivery_city, delivery_address,
+            order_notes, delivery_fee
+        } = req.body;
+
+        const fields = [];
+        const values = [];
+
+        if (customer_name   !== undefined) { fields.push('customer_name = ?');    values.push(customer_name); }
+        if (customer_phone  !== undefined) { fields.push('customer_phone = ?');   values.push(customer_phone); }
+        if (delivery_country!== undefined) { fields.push('delivery_country = ?'); values.push(delivery_country); }
+        if (delivery_city   !== undefined) { fields.push('delivery_city = ?');    values.push(delivery_city); }
+        if (delivery_address!== undefined) { fields.push('delivery_address = ?'); values.push(delivery_address); }
+        if (order_notes     !== undefined) { fields.push('order_notes = ?');      values.push(order_notes); }
+        if (delivery_fee    !== undefined) { fields.push('displayed_shipping_cost = ?'); values.push(parseFloat(delivery_fee) || 0); }
+
+        if (fields.length === 0)
+            return res.status(400).json({ success: false, error: 'No fields to update' });
+
+        if (/^\d+$/.test(param)) {
+            values.push(parseInt(param));
+            await pool.query(`UPDATE orders SET ${fields.join(', ')} WHERE id = ?`, values);
+        } else {
+            values.push(param);
+            await pool.query(`UPDATE orders SET ${fields.join(', ')} WHERE order_id = ?`, values);
+        }
+
+        await logAction(req, 'UPDATE', 'order', param, `Order ${param} details edited`);
+        res.json({ success: true, message: 'Order updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
 // PATCH /api/orders/:id/cancel
 app.patch('/api/orders/:id/cancel', authenticateToken, isAdmin, async (req, res) => {
     try {
