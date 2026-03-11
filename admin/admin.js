@@ -437,7 +437,7 @@ async function loadOrders(filterStatus = '') {
         filterBar.innerHTML = `
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;">
                 <span style="font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">Filter:</span>
-                ${['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `
+                ${['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'].map(s => `
                     <button onclick="loadOrders('${s}')"
                             id="filterBtn_${s || 'all'}"
                             style="padding:6px 16px;border:2px solid #e0e0e0;background:#fff;
@@ -449,7 +449,7 @@ async function loadOrders(filterStatus = '') {
     }
 
     // Highlight active filter button
-    ['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].forEach(s => {
+    ['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'].forEach(s => {
         const btn = document.getElementById('filterBtn_' + (s || 'all'));
         if (btn) {
             const isActive = s === filterStatus;
@@ -471,6 +471,10 @@ async function loadOrders(filterStatus = '') {
             return;
         }
 
+        // Store orders map for edit button lookup
+        window._ordersMap = {};
+        orders.forEach(o => { window._ordersMap[o.order_id || o.orderId] = o; });
+
         tbody.innerHTML = orders.map(order => {
             const id     = order.order_id || order.orderId;
             const name   = order.customer_name || order.customerName;
@@ -488,15 +492,20 @@ async function loadOrders(filterStatus = '') {
                 <td>${total.toFixed(2)}JD</td>
                 <td>${date}</td>
                 <td><span class="status-badge status-${status}">${status}</span></td>
-                <td>
-                    <button class="btn-info" onclick="viewOrderDetails('${id}')">View</button>
-                    <select onchange="changeOrderStatus('${id}', this.value)" style="margin-left:5px;">
+                <td style="white-space:nowrap;">
+                    <button class="btn-info" onclick="viewOrderDetails('${id}')">👁 View</button>
+                    <button class="btn-warning" onclick="openEditOrderModal(window._ordersMap['${id}'])">✏️ Edit</button>
+                    <select onchange="changeOrderStatus('${id}', this.value)"
+                        style="margin-top:4px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:5px;
+                               font-size:0.78rem;font-weight:600;cursor:pointer;background:#fff;display:block;width:100%;">
+
                         <option value="">Change Status</option>
                         <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
                         <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
                         <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
                         <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
                         <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
+                        <option value="refunded"   ${status==='refunded'?'selected':''}>Refunded</option>
                     </select>
                 </td>
             </tr>`;
@@ -509,6 +518,17 @@ async function loadOrders(filterStatus = '') {
 
 async function changeOrderStatus(orderId, newStatus) {
     if (!newStatus) return;
+
+    // Intercept cancel and refund — require a reason first
+    if (newStatus === 'cancelled') {
+        openCancelModal(orderId);
+        return;
+    }
+    if (newStatus === 'refunded') {
+        openRefundModal(orderId);
+        return;
+    }
+
     try {
         const result = await updateOrderStatus(orderId, newStatus);
         if (result.error) { alert('Error: ' + result.error); return; }
@@ -956,6 +976,125 @@ async function submitRefund(e) {
     }
 }
 
+// ==================== EDIT ORDER ====================
+
+function openEditOrderModal(order) {
+    const id = order.order_id || order.orderId;
+    document.getElementById('editOrderId').value          = id;
+    document.getElementById('editCustomerName').value     = order.customer_name || order.customerName || '';
+    document.getElementById('editCustomerPhone').value    = order.customer_phone || order.customerPhone || '';
+    document.getElementById('editDeliveryCountry').value  = order.delivery_country || '';
+    document.getElementById('editDeliveryCity').value     = order.delivery_city || '';
+    document.getElementById('editDeliveryAddress').value  = order.delivery_address || order.complete_address || order.deliveryAddress || '';
+    document.getElementById('editDeliveryFee').value      = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0).toFixed(2);
+    document.getElementById('editOrderNotes').value       = order.order_notes || order.orderNotes || '';
+    document.getElementById('editOrderMsg').textContent   = '';
+    document.getElementById('editOrderModal').classList.add('show');
+}
+
+function closeEditOrderModal() {
+    document.getElementById('editOrderModal').classList.remove('show');
+}
+
+async function submitEditOrder(e) {
+    e.preventDefault();
+    const orderId = document.getElementById('editOrderId').value;
+    const msgEl   = document.getElementById('editOrderMsg');
+    const btn     = e.target.querySelector('button[type="submit"]');
+
+    const body = {
+        customer_name:     document.getElementById('editCustomerName').value.trim(),
+        customer_phone:    document.getElementById('editCustomerPhone').value.trim(),
+        delivery_country:  document.getElementById('editDeliveryCountry').value.trim(),
+        delivery_city:     document.getElementById('editDeliveryCity').value.trim(),
+        delivery_address:  document.getElementById('editDeliveryAddress').value.trim(),
+        delivery_fee:      document.getElementById('editDeliveryFee').value,
+        order_notes:       document.getElementById('editOrderNotes').value.trim(),
+    };
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    msgEl.textContent = '';
+
+    try {
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const res  = await fetch(`${API_BASE}/orders/${orderId}`, {
+            method:  'PATCH',
+            headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeEditOrderModal();
+            closeOrderModal();
+            showToast('✅ Order updated successfully!');
+            loadOrders();
+            loadDashboard();
+        } else {
+            msgEl.textContent = '❌ ' + (data.error || 'Failed to update order');
+            msgEl.style.color = '#dc2626';
+        }
+    } catch (err) {
+        msgEl.textContent = '❌ ' + err.message;
+        msgEl.style.color = '#dc2626';
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Save Changes'; }
+    }
+}
+
+// ==================== CANCEL ====================
+
+function openCancelModal(orderId) {
+    document.getElementById('cancelOrderId').value = orderId;
+    document.getElementById('cancelReason').value  = '';
+    document.getElementById('cancelMsg').textContent = '';
+    document.getElementById('cancelModal').classList.add('show');
+}
+
+function closeCancelModal() {
+    document.getElementById('cancelModal').classList.remove('show');
+}
+
+async function submitCancel(e) {
+    e.preventDefault();
+    const orderId = document.getElementById('cancelOrderId').value;
+    const reason  = document.getElementById('cancelReason').value.trim();
+    const btn     = e.target.querySelector('button[type="submit"]');
+    const msgEl   = document.getElementById('cancelMsg');
+
+    if (!reason) {
+        msgEl.textContent = '⚠️ Please enter a cancellation reason.';
+        msgEl.style.color = '#dc2626';
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+    msgEl.textContent = '';
+
+    try {
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const res  = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+            method:  'PATCH',
+            headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ cancel_reason: reason })
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeCancelModal();
+            showToast('🚫 Order cancelled!');
+            loadOrders();
+            loadDashboard();
+        } else {
+            msgEl.textContent = '❌ ' + (data.error || 'Failed to cancel order');
+            msgEl.style.color = '#dc2626';
+        }
+    } catch (err) {
+        msgEl.textContent = '❌ ' + err.message;
+        msgEl.style.color = '#dc2626';
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🚫 Confirm Cancellation'; }
+    }
+}
+
 // ==================== ACTIVITY LOG ====================
 
 const LOG_ACTION_COLORS = {
@@ -966,6 +1105,7 @@ const LOG_ACTION_COLORS = {
     DELETE:         { bg: '#fee2e2', color: '#b91c1c', label: '🗑️ Delete' },
     STATUS_CHANGE:  { bg: '#e0f2fe', color: '#0369a1', label: '🔄 Status' },
     REFUND:         { bg: '#f3e8ff', color: '#7c3aed', label: '💸 Refund' },
+    CANCEL:         { bg: '#fee2e2', color: '#dc2626', label: '🚫 Cancel' },
 };
 
 async function loadLogs(filterAction = '', filterUser = '') {

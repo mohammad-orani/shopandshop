@@ -88,6 +88,35 @@
             }
         });
 
+        // Update social media links
+        var socialMap = {
+            instagram: info.instagram,
+            facebook:  info.facebook,
+            snapchat:  info.snapchat,
+            tiktok:    info.tiktok,
+            youtube:   info.youtube,
+            whatsapp:  info.whatsapp
+        };
+        Object.keys(socialMap).forEach(function(platform) {
+            var url = socialMap[platform];
+            document.querySelectorAll('[data-social="' + platform + '"]').forEach(function(el) {
+                if (url) {
+                    el.href = url;
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        });
+
+        // Show delivery note on checkout page
+        const noteBox  = document.getElementById('delivery-note-box');
+        const noteText = document.getElementById('delivery-note-text');
+        if (noteBox && noteText && info.delivery_note) {
+            noteText.textContent = info.delivery_note;
+            noteBox.style.display = 'block';
+        }
+
         console.log('✅ General info loaded:', info);
         console.log('✅ Minimum order amount:', minAmount);
     }

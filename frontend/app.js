@@ -3,8 +3,8 @@
 
 // ==================== META PIXEL ====================
 (function initMetaPixel() {
-    const PIXEL_ID = '1246660534238802'; // ← Replace with your Pixel ID
-    if (window.fbq || !PIXEL_ID || PIXEL_ID === '1246660534238802') return;
+    const PIXEL_ID = '1246660534238802';
+    if (window.fbq || !PIXEL_ID) return;
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
     n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;

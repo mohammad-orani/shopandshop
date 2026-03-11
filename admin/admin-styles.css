@@ -157,33 +157,57 @@ body {
     color: var(--primary-white);
 }
 
-.btn-success {
-    padding: 0.5rem 1rem;
-    background: var(--success);
-    color: white;
+.btn-success,
+.btn-danger,
+.btn-info,
+.btn-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
     border: none;
+    border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
-    margin-right: 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.3px;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.btn-success,
+.btn-danger,
+.btn-info,
+.btn-warning {
+    margin-right: 4px;
+}
+
+.btn-success:hover,
+.btn-danger:hover,
+.btn-info:hover,
+.btn-warning:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
 }
 
 .btn-danger {
-    padding: 0.5rem 1rem;
     background: var(--danger);
     color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
 }
 
 .btn-info {
-    padding: 0.5rem 1rem;
-    background: var(--info);
+    background: #0ea5e9;
     color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    margin-right: 0.5rem;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
 }
 
 /* Stats Grid */
