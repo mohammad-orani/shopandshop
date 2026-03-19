@@ -1,6 +1,6 @@
 // ==================== ADMIN API CONFIGURATION ====================
-
-const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+// API_URL is defined in config.js — loaded before this script in every HTML page
+const API_URL = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
 // ==================== AUTH ====================
 
@@ -166,7 +166,8 @@ async function getOrders(filters = {}) {
             headers: getAuthHeaders()
         });
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        // API returns { total, orders: [] } — fall back to array for backwards compat
+        return Array.isArray(data) ? data : (data.orders || []);
     } catch (error) {
         console.error('Error fetching orders:', error);
         return [];

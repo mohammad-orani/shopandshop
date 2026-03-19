@@ -2,7 +2,8 @@
 // Handles all communication with the backend API
 // Uses Railway MySQL database via backend endpoints
 
-const API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+// API_URL is defined in config.js — loaded before this script in every HTML page
+const API_URL = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
 // ==================== PRODUCTS ====================
 
@@ -108,7 +109,7 @@ async function getDeliveryCities(countryId) {
             country_id: c.country_id,
             name_en: c.name_en || c.city_name_en,
             name_ar: c.name_ar || c.city_name_ar,
-            delivery_fee: parseFloat(c.displayed_fee || c.displayed_fee || 0),
+            delivery_fee: parseFloat(c.displayed_fee || c.delivery_fee || 0),
             actual_fee: parseFloat(c.actual_fee || 0),
             is_active: c.is_active
         }));

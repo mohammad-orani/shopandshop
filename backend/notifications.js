@@ -178,9 +178,6 @@ async function sendEmail(toEmail, subject, message, order) {
 async function notifyOrderStatusChange(order, newStatus) {
     if (!order || !newStatus) return;
 
-    const method = order.notification_method || 'none';
-    if (method === 'none') return;
-
     const message = buildMessage(order, newStatus);
     const lang = order.language || 'ar';
     const subject = lang === 'ar'
@@ -189,14 +186,15 @@ async function notifyOrderStatusChange(order, newStatus) {
 
     const results = {};
 
-    // WhatsApp
-    if ((method === 'whatsapp' || method === 'both') && order.customer_phone) {
+    // Send WhatsApp if customer has a phone number
+    if (order.customer_phone) {
         results.whatsapp = await sendWhatsApp(order.customer_phone, message);
     }
 
-    // Email
-    if ((method === 'email' || method === 'both') && order.notification_email) {
-        results.email = await sendEmail(order.notification_email, subject, message, order);
+    // Send email if customer has an email address
+    const customerEmail = order.customer_email || order.notification_email;
+    if (customerEmail) {
+        results.email = await sendEmail(customerEmail, subject, message, order);
     }
 
     console.log(`🔔 Notifications for order ${order.order_id}:`, JSON.stringify(results));

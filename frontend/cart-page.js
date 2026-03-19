@@ -16,11 +16,19 @@ async function loadCartItems() {
     }
 
     try {
-        // ✅ AWAIT the async function
-        const products = await getProducts();
+        // Fetch only the products that are actually in the cart
+        const productIds = cart.map(item => item.productId);
+        const fetched = await Promise.all(productIds.map(id => getProductByIdFromAPI(id)));
+        const products = fetched.filter(Boolean).map(raw => ({
+            id: raw.id,
+            name_en: raw.name_en,
+            name_ar: raw.name_ar,
+            newPrice: parseFloat(raw.new_price || raw.newPrice || 0),
+            image: raw.image_url || raw.image
+        }));
 
         if (!Array.isArray(products)) {
-            console.error('❌ getProducts() did not return an array:', products);
+            console.error('❌ products fetch failed');
             return;
         }
 
@@ -35,7 +43,6 @@ async function loadCartItems() {
             }
 
             const nameKey = `name_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
-            const total = product.newPrice * item.quantity;
 
             cartHTML += `
                 <div class="cart-item" data-product-id="${product.id}">
@@ -72,7 +79,12 @@ async function updateOrderSummary() {
     const cart = getCart();
 
     try {
-        const products = await getProducts();
+        const productIds = cart.map(item => item.productId);
+        const fetched = await Promise.all(productIds.map(id => getProductByIdFromAPI(id)));
+        const products = fetched.filter(Boolean).map(raw => ({
+            id: raw.id,
+            newPrice: parseFloat(raw.new_price || raw.newPrice || 0)
+        }));
 
         let subtotal = 0;
         cart.forEach(item => {

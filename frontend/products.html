@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-en="Search Results - Primejo" data-ar="نتائج البحث - Primejo">Search Results - Primejo</title>
+    <link rel="stylesheet" href="topbaic-style.css">
+    <link rel="stylesheet" href="mobile-nav-fix.css">
+    <link rel="stylesheet" href="search-bar.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        .search-results-header {
+            max-width: 1400px;
+            margin: 30px auto 10px;
+            padding: 0 20px;
+        }
+
+        .search-results-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .search-query-highlight {
+            color: #d4af37;
+        }
+
+        .search-results-count {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .search-no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .search-no-results svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        .search-no-results h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .search-no-results a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: #1a1a1a;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .search-no-results a:hover {
+            background: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="site-header"></div>
+
+    <!-- Breadcrumb -->
+    <div class="topbaic-breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
+            <span class="breadcrumb-separator">›</span>
+            <span data-en="Search Results" data-ar="نتائج البحث">Search Results</span>
+        </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="search-results-header">
+        <h1>
+            <span data-en="Results for" data-ar="نتائج البحث عن">Results for</span>
+            <span class="search-query-highlight" id="searchQueryLabel"></span>
+        </h1>
+        <p class="search-results-count" id="productCount"></p>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-content">
+            <div class="filter-left">
+                <button class="filter-btn active" onclick="applyFilter('all', this)"
+                    data-en="All" data-ar="الكل">All</button>
+                <button class="filter-btn" onclick="applyFilter('topseller', this)"
+                    data-en="Top Sellers" data-ar="الأكثر مبيعاً">Top Sellers</button>
+                <button class="filter-btn" onclick="applyFilter('offer', this)"
+                    data-en="Offers" data-ar="العروض">Offers</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <section class="topbaic-products">
+        <div class="products-grid" id="topbaicProductsGrid">
+            <p style="text-align:center;padding:3rem;color:#999;">Loading...</p>
+        </div>
+    </section>
+
+    <div id="site-footer"></div>
+
+    <!-- Scripts -->
+    <script src="header.js"></script>
+    <script src="footer.js"></script>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="settings.js"></script>
+    <script src="topbaic-products.js"></script>
+    <script src="modern-animations.js"></script>
+    <script src="general-info.js"></script>
+    <script>
+        // ==================== SEARCH RESULTS PAGE ====================
+
+        let allMatchedProducts = [];
+        let currentFilter = 'all';
+
+        async function initSearchPage() {
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get('search') || '';
+
+            // Show the query in the heading
+            const labelEl = document.getElementById('searchQueryLabel');
+            if (labelEl) labelEl.textContent = query ? `"${query}"` : '';
+
+            // Pre-fill the header search input if present
+            const searchInput = document.getElementById('primejoSearchInput');
+            if (searchInput && query) searchInput.value = query;
+
+            const grid = document.getElementById('topbaicProductsGrid');
+
+            if (!query.trim()) {
+                grid.innerHTML = `
+                    <div class="search-no-results">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <h2 data-en="No search term entered" data-ar="لم يتم إدخال كلمة بحث">No search term entered</h2>
+                        <a href="index.html" data-en="Back to Home" data-ar="العودة للرئيسية">Back to Home</a>
+                    </div>`;
+                return;
+            }
+
+            // Fetch all products and filter client-side
+            const allProducts = await getProducts();
+            const q = query.toLowerCase();
+            allMatchedProducts = allProducts.filter(p =>
+                (p.name_en || '').toLowerCase().includes(q) ||
+                (p.name_ar || '').toLowerCase().includes(q) ||
+                (p.description_en || '').toLowerCase().includes(q)
+            );
+
+            renderResults();
+        }
+
+        function renderResults() {
+            const grid = document.getElementById('topbaicProductsGrid');
+            const lang = (typeof currentLanguage !== 'undefined' ? currentLanguage : 'en');
+
+            let filtered = allMatchedProducts;
+            if (currentFilter === 'topseller') filtered = allMatchedProducts.filter(p => p.topSeller || p.is_top_seller);
+            if (currentFilter === 'offer') filtered = allMatchedProducts.filter(p => p.isOffer || p.is_offer);
+
+            const countEl = document.getElementById('productCount');
+            if (countEl) {
+                countEl.setAttribute('data-en', `${filtered.length} product(s) found`);
+                countEl.setAttribute('data-ar', `تم العثور على ${filtered.length} منتج`);
+                countEl.textContent = lang === 'ar' ? `تم العثور على ${filtered.length} منتج` : `${filtered.length} product(s) found`;
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="search-no-results">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <h2 data-en="No products found" data-ar="لا توجد منتجات">No products found</h2>
+                        <a href="index.html" data-en="Back to Home" data-ar="العودة للرئيسية">Back to Home</a>
+                    </div>`;
+            } else {
+                grid.innerHTML = filtered.map(p => createTopBaicProductCard(p)).join('');
+            }
+
+            if (typeof switchLanguage === 'function') switchLanguage(lang);
+        }
+
+        function applyFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderResults();
+        }
+
+        // Initialize on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSearchPage);
+        } else {
+            initSearchPage();
+        }
+    </script>
+</body>
+
+</html>

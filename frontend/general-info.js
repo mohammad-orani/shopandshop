@@ -2,10 +2,8 @@
 // Note: API_URL is defined in api.js - don't redeclare it here
 
 (function () {
-    // Use the global API_URL or fallback
-    const GENERAL_INFO_API = (typeof API_URL !== 'undefined')
-        ? API_URL
-        : 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+    // Use the global API_URL set in config.js
+    const GENERAL_INFO_API = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
 
     // Cache
     let generalInfoCache = null;
@@ -129,17 +127,15 @@
         if (topbarEmail) topbarEmail.textContent = `📧 ${info.email_address}`;
         if (topbarPhone) topbarPhone.textContent = `📞 ${info.phone_number}`;
 
-        // Also update any element showing "Loading..."
-        document.querySelectorAll('*').forEach(el => {
-            if (el.children.length === 0) {
-                if (el.textContent.includes('Loading...')) {
-                    const classes = el.className;
-                    if (classes.includes('email') || classes.includes('mail')) {
-                        el.textContent = `📧 ${info.email_address}`;
-                    } else if (classes.includes('phone') || classes.includes('tel')) {
-                        el.textContent = `📞 ${info.phone_number}`;
-                    }
-                }
+        // Update any loading placeholders using targeted class selectors
+        document.querySelectorAll('.email, .mail, [class*="email"], [class*="mail"]').forEach(el => {
+            if (el.children.length === 0 && el.textContent.includes('Loading...')) {
+                el.textContent = `📧 ${info.email_address}`;
+            }
+        });
+        document.querySelectorAll('.phone, .tel, [class*="phone"], [class*="tel"]').forEach(el => {
+            if (el.children.length === 0 && el.textContent.includes('Loading...')) {
+                el.textContent = `📞 ${info.phone_number}`;
             }
         });
     }

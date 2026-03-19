@@ -17,15 +17,37 @@ async function loadProductDetails() {
 
         console.log('🔍 Loading product:', productId);
 
-        const products = await getProducts();
-        const product = products.find(p => String(p.id) === String(productId));
+        // Fetch single product by ID — avoids loading the entire catalog
+        const raw = await getProductByIdFromAPI(productId);
 
-        if (!product) {
+        if (!raw) {
             console.error('❌ Product not found:', productId);
             alert('Product not found');
             window.location.href = 'index.html';
             return;
         }
+
+        // Normalize fields to match the shape expected by displayProductDetails
+        const product = {
+            id: raw.id,
+            name_en: raw.name_en,
+            name_ar: raw.name_ar,
+            description_en: raw.description_en,
+            description_ar: raw.description_ar,
+            newPrice: parseFloat(raw.new_price || raw.newPrice || 0),
+            oldPrice: parseFloat(raw.old_price || raw.oldPrice || 0),
+            image: raw.image_url || raw.image,
+            stock: raw.stock || 0,
+            quantity_to_sell: raw.quantity_to_sell || 0,
+            quantityToSell: raw.quantity_to_sell || 0,
+            additional_images: raw.additional_images || [],
+            additionalImages: raw.additional_images || [],
+            video_url: raw.video_url || '',
+            videoUrl: raw.video_url || '',
+            isOffer: !!(raw.is_offer),
+            isNew: !!(raw.is_new),
+            topSeller: !!(raw.is_top_seller)
+        };
 
         console.log('✅ Found product:', product);
         currentProduct = product;
