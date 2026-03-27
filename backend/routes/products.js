@@ -48,16 +48,19 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { name_en, name_ar, description_en, description_ar, category_id, cost_price,
             old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
-            video_url, is_offer, is_top_seller, is_visible } = req.body;
+            video_url, is_offer, is_top_seller, is_visible, quantity_tiers } = req.body;
+        const tiersValue = quantity_tiers
+            ? (typeof quantity_tiers === 'string' ? quantity_tiers : JSON.stringify(quantity_tiers))
+            : null;
         const [result] = await pool.query(
             `INSERT INTO products (name_en, name_ar, description_en, description_ar,
                 category_id, cost_price, old_price, new_price, stock, quantity_to_sell,
-                image_url, additional_images, video_url, is_offer, is_top_seller, is_visible)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                image_url, additional_images, video_url, is_offer, is_top_seller, is_visible, quantity_tiers)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [name_en, name_ar, description_en, description_ar,
                 category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
                 image_url, additional_images, video_url,
-                is_offer || false, is_top_seller || false, is_visible !== false]
+                is_offer || false, is_top_seller || false, is_visible !== false, tiersValue]
         );
         await logAction(req, 'CREATE', 'product', result.insertId, `Created product: ${name_en}`);
         res.status(201).json({ success: true, message: 'Product created', id: result.insertId });
@@ -72,16 +75,20 @@ router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { name_en, name_ar, description_en, description_ar, category_id, cost_price,
             old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
-            video_url, is_offer, is_top_seller, is_visible } = req.body;
+            video_url, is_offer, is_top_seller, is_visible, quantity_tiers } = req.body;
+        const tiersValue = quantity_tiers
+            ? (typeof quantity_tiers === 'string' ? quantity_tiers : JSON.stringify(quantity_tiers))
+            : null;
         await pool.query(
             `UPDATE products SET name_en=?, name_ar=?, description_en=?, description_ar=?,
                 category_id=?, cost_price=?, old_price=?, new_price=?, stock=?, quantity_to_sell=?,
-                image_url=?, additional_images=?, video_url=?, is_offer=?, is_top_seller=?, is_visible=?
+                image_url=?, additional_images=?, video_url=?, is_offer=?, is_top_seller=?, is_visible=?,
+                quantity_tiers=?
              WHERE id=?`,
             [name_en, name_ar, description_en, description_ar,
                 category_id, cost_price || 0, old_price, new_price, stock, quantity_to_sell || 0,
                 image_url, additional_images, video_url,
-                is_offer, is_top_seller, is_visible, req.params.id]
+                is_offer, is_top_seller, is_visible, tiersValue, req.params.id]
         );
         await logAction(req, 'UPDATE', 'product', req.params.id,
             `Updated product ID: ${req.params.id} → ${name_en}`);
