@@ -166,6 +166,25 @@
                             </div>
                         </div>
 
+                        <!-- Quantity Tiers -->
+                        <div class="form-row">
+                            <div class="form-group" style="width:100%">
+                                <label>📦 Quantity Tiers <span style="font-weight:400;color:#666;">(Optional — bundle pricing)</span></label>
+                                <small style="color:#666;display:block;margin-bottom:0.5rem;">
+                                    Example: 1 pc → 3 JOD &nbsp;|&nbsp; 3 pcs → 7 JOD &nbsp;|&nbsp; 5 pcs → 10 JOD
+                                </small>
+                                <div id="tiersContainer"></div>
+                                <button type="button" onclick="addTierRow()"
+                                        style="margin-top:0.5rem;background:#2d5c8f;color:#fff;border:none;padding:0.4rem 0.9rem;cursor:pointer;border-radius:4px;font-size:0.9rem;">
+                                    + Add Tier
+                                </button>
+                                <small style="display:block;margin-top:0.4rem;color:#888;">
+                                    When tiers are set, customers see bundle buttons instead of a quantity input.
+                                    Leave empty to use normal quantity selection.
+                                </small>
+                            </div>
+                        </div>
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Main Image URL</label>

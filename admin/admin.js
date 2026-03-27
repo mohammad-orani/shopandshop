@@ -163,6 +163,7 @@ function showAddProductForm() {
     document.getElementById('productFormElement')?.reset();
     const idEl = document.getElementById('productId');
     if (idEl) idEl.value = '';
+    renderTierRows([]);
     loadCategoryOptions();
     form.scrollIntoView({ behavior: 'smooth' });
 }
@@ -211,6 +212,15 @@ async function editProduct(id) {
         setChecked('productTopSeller', p.topSeller || p.is_top_seller || false);
         setChecked('productOffer', p.isOffer || p.is_offer || false);
         setChecked('productVisible', p.visible !== false && p.is_visible !== false);
+
+        // Load quantity tiers
+        let tiers = [];
+        if (p.quantity_tiers) {
+            try {
+                tiers = typeof p.quantity_tiers === 'string' ? JSON.parse(p.quantity_tiers) : p.quantity_tiers;
+            } catch (e) { tiers = []; }
+        }
+        renderTierRows(Array.isArray(tiers) ? tiers : []);
 
         await loadCategoryOptions();
         setVal('productCategory', p.category || p.category_id || '');
@@ -262,6 +272,10 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
             is_top_seller: document.getElementById('productTopSeller')?.checked || false,
             is_offer: document.getElementById('productOffer')?.checked || false,
             is_visible: document.getElementById('productVisible')?.checked !== false,
+            quantity_tiers: (() => {
+                const tiers = collectTiers();
+                return tiers.length > 0 ? JSON.stringify(tiers) : null;
+            })(),
         };
 
         const result = productId ? await updateProduct(productId, productData) : await createProduct(productData);
@@ -276,6 +290,47 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
         if (submitBtn) { submitBtn.textContent = originalText; submitBtn.disabled = false; }
     }
 });
+
+// ==================== QUANTITY TIERS ====================
+
+function renderTierRows(tiers) {
+    const container = document.getElementById('tiersContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    (tiers || []).forEach(tier => addTierRow(tier.qty, tier.price));
+}
+
+function addTierRow(qty = '', price = '') {
+    const container = document.getElementById('tiersContainer');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'tier-row';
+    row.style.cssText = 'display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;';
+    row.innerHTML = `
+        <input type="number" placeholder="Qty" min="1" value="${qty}"
+               style="width:90px;" class="tier-qty-input">
+        <span style="font-weight:600;">pcs →</span>
+        <input type="number" placeholder="Price (JD)" min="0" step="0.01" value="${price}"
+               style="width:110px;" class="tier-price-input">
+        <span style="font-weight:600;">JOD</span>
+        <button type="button" onclick="this.parentElement.remove()"
+                style="background:#e74c3c;color:#fff;border:none;padding:0.25rem 0.6rem;cursor:pointer;border-radius:4px;">✕</button>
+    `;
+    container.appendChild(row);
+}
+
+function collectTiers() {
+    const rows = document.querySelectorAll('#tiersContainer .tier-row');
+    const tiers = [];
+    rows.forEach(row => {
+        const qty   = parseInt(row.querySelector('.tier-qty-input')?.value);
+        const price = parseFloat(row.querySelector('.tier-price-input')?.value);
+        if (!isNaN(qty) && qty > 0 && !isNaN(price) && price >= 0) {
+            tiers.push({ qty, price });
+        }
+    });
+    return tiers;
+}
 
 // ==================== MEDIA PREVIEW ====================
 

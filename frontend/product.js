@@ -1,6 +1,7 @@
 // ==================== PRODUCT PAGE ====================
 
 let selectedQuantity = 1;
+let selectedTierPrice = null;
 let currentProduct = null;
 
 // ==================== LOAD PRODUCT DETAILS ====================
@@ -46,11 +47,30 @@ async function loadProductDetails() {
             videoUrl: raw.video_url || '',
             isOffer: !!(raw.is_offer),
             isNew: !!(raw.is_new),
-            topSeller: !!(raw.is_top_seller)
+            topSeller: !!(raw.is_top_seller),
+            quantity_tiers: (() => {
+                try {
+                    const t = raw.quantity_tiers;
+                    if (!t) return null;
+                    return typeof t === 'string' ? JSON.parse(t) : t;
+                } catch (e) { return null; }
+            })()
         };
 
         console.log('✅ Found product:', product);
         currentProduct = product;
+
+        // Pre-select first tier if product has tiers
+        const tiers = product.quantity_tiers;
+        if (tiers && Array.isArray(tiers) && tiers.length > 0) {
+            const sorted = [...tiers].sort((a, b) => a.qty - b.qty);
+            selectedQuantity = sorted[0].qty;
+            selectedTierPrice = sorted[0].price;
+        } else {
+            selectedQuantity = 1;
+            selectedTierPrice = null;
+        }
+
         displayProductDetails(product);
 
     } catch (error) {
@@ -157,7 +177,31 @@ function displayProductDetails(product) {
                 ` : ''}
             </div>
 
-            ${(product.quantity_to_sell || product.quantityToSell || 0) > 0 ? `
+            ${(product.quantity_to_sell || product.quantityToSell || 0) > 0 ? (() => {
+                const tiers = product.quantity_tiers;
+                if (tiers && Array.isArray(tiers) && tiers.length > 0) {
+                    // Sort tiers by qty ascending
+                    const sorted = [...tiers].sort((a, b) => a.qty - b.qty);
+                    return `
+                <div class="tier-selector">
+                    <label data-en="Choose your bundle:" data-ar="اختر الكمية:">Choose your bundle:</label>
+                    <div class="tier-options">
+                        ${sorted.map((tier, i) => `
+                            <button class="tier-btn${i === 0 ? ' active' : ''}"
+                                    onclick="selectTier(${tier.qty}, ${tier.price}, this)"
+                                    data-qty="${tier.qty}" data-price="${tier.price}">
+                                <span class="tier-qty" data-en="${tier.qty} pcs" data-ar="${tier.qty} قطع">${tier.qty} pcs</span>
+                                <span class="tier-price">${tier.price} JOD</span>
+                                ${i > 0 ? `<span class="tier-save" data-en="Save ${(sorted[0].price / sorted[0].qty * tier.qty - tier.price).toFixed(2)} JOD" data-ar="وفر ${(sorted[0].price / sorted[0].qty * tier.qty - tier.price).toFixed(2)} JOD">Save ${(sorted[0].price / sorted[0].qty * tier.qty - tier.price).toFixed(2)} JOD</span>` : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <button class="add-to-cart-btn" onclick="addProductToCart()">
+                    <span data-en="Add to Cart" data-ar="أضف للسلة">Add to Cart</span>
+                </button>`;
+                } else {
+                    return `
                 <div class="quantity-selector">
                     <label data-en="Quantity:" data-ar="الكمية:">Quantity:</label>
                     <div class="quantity-controls">
@@ -175,11 +219,11 @@ function displayProductDetails(product) {
                         <span data-en="available" data-ar="متوفر">available</span>
                     </span>
                 </div>
-
                 <button class="add-to-cart-btn" onclick="addProductToCart()">
                     <span data-en="Add to Cart" data-ar="أضف للسلة">Add to Cart</span>
-                </button>
-            ` : `
+                </button>`;
+                }
+            })() : `
                 <div class="out-of-stock">
                     <strong data-en="Out of Stock" data-ar="غير متوفر">Out of Stock</strong>
                 </div>
@@ -256,14 +300,26 @@ function updateQuantity() {
     selectedQuantity = parseInt(input.value);
 }
 
+function selectTier(qty, price, btn) {
+    selectedQuantity = qty;
+    selectedTierPrice = price;
+    document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
 function addProductToCart() {
     if (!currentProduct) return;
 
-    addToCart(currentProduct.id, selectedQuantity);
+    addToCart(currentProduct.id, selectedQuantity, selectedTierPrice);
 
-    const msg = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
-        ? `تمت إضافة ${selectedQuantity} عنصر إلى السلة! 🛒`
-        : `${selectedQuantity} item(s) added to cart! 🛒`;
+    const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+    const msg = selectedTierPrice !== null
+        ? (isAr
+            ? `تمت إضافة ${selectedQuantity} قطعة بسعر ${selectedTierPrice} JOD إلى السلة! 🛒`
+            : `${selectedQuantity} pcs for ${selectedTierPrice} JOD added to cart! 🛒`)
+        : (isAr
+            ? `تمت إضافة ${selectedQuantity} عنصر إلى السلة! 🛒`
+            : `${selectedQuantity} item(s) added to cart! 🛒`);
 
     if (window.ModernAnimations?.showToast) {
         window.ModernAnimations.showToast(msg, 'success');
@@ -271,9 +327,21 @@ function addProductToCart() {
         alert(msg);
     }
 
-    selectedQuantity = 1;
-    const qtyInput = document.getElementById('quantityInput');
-    if (qtyInput) qtyInput.value = 1;
+    // Reset to first tier if tiers exist, otherwise reset qty to 1
+    const tiers = currentProduct.quantity_tiers;
+    if (tiers && Array.isArray(tiers) && tiers.length > 0) {
+        const sorted = [...tiers].sort((a, b) => a.qty - b.qty);
+        selectedQuantity = sorted[0].qty;
+        selectedTierPrice = sorted[0].price;
+        document.querySelectorAll('.tier-btn').forEach((b, i) => {
+            b.classList.toggle('active', i === 0);
+        });
+    } else {
+        selectedQuantity = 1;
+        selectedTierPrice = null;
+        const qtyInput = document.getElementById('quantityInput');
+        if (qtyInput) qtyInput.value = 1;
+    }
 }
 
 // ==================== TOGGLE DESCRIPTION ====================

@@ -303,15 +303,15 @@ async function loadOrderSummary() {
             if (!product) return;
 
             const nameKey = `name_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
-            const price = parseFloat(product.newPrice || product.new_price || 0);
-            const itemTotal = price * item.quantity;
+            const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
+            const itemTotal = isTier ? item.tierPrice : parseFloat(product.newPrice || product.new_price || 0) * item.quantity;
             subtotal += itemTotal;
 
             orderHTML += `
                 <div class="order-item">
                     <div class="order-item-info">
                         <div class="order-item-name">${product[nameKey] || product.name_en}</div>
-                        <div class="order-item-qty">Qty: ${item.quantity}</div>
+                        <div class="order-item-qty">${isTier ? `${item.quantity} pcs (Bundle)` : `Qty: ${item.quantity}`}</div>
                     </div>
                     <div class="order-item-price">${formatPrice(itemTotal)}</div>
                 </div>
@@ -353,15 +353,18 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
         const orderItems = cart.map(item => {
             const product = products.find(p => String(p.id) === String(item.productId));
             if (!product) return null;
-            const price = parseFloat(product.newPrice || product.new_price || 0);
-            const itemTotal = price * item.quantity;
+            const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
+            const unitPrice = isTier
+                ? item.tierPrice / item.quantity
+                : parseFloat(product.newPrice || product.new_price || 0);
+            const itemTotal = isTier ? item.tierPrice : unitPrice * item.quantity;
             subtotal += itemTotal;
             return {
                 productId:      parseInt(product.id) || parseInt(item.productId),
                 productName:    product.name_en  || '',
                 productNameAr:  product.name_ar  || '',
                 quantity:       item.quantity,
-                price:          price,
+                price:          unitPrice,
                 total:          itemTotal
             };
         }).filter(Boolean);

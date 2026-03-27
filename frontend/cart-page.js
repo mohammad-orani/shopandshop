@@ -43,22 +43,29 @@ async function loadCartItems() {
             }
 
             const nameKey = `name_${typeof currentLanguage !== 'undefined' ? currentLanguage : 'en'}`;
+            const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
+            const priceLabel = isTier
+                ? `${item.quantity} pcs — ${item.tierPrice.toFixed(2)} JOD`
+                : `${product.newPrice.toFixed(2)} JOD`;
 
             cartHTML += `
                 <div class="cart-item" data-product-id="${product.id}">
                     <img src="${product.image}" alt="${product[nameKey]}" class="cart-item-image">
                     <div class="cart-item-details">
                         <h3>${product[nameKey]}</h3>
-                        <p class="cart-item-price">${product.newPrice.toFixed(2)} JOD</p>
+                        <p class="cart-item-price">${priceLabel}</p>
+                        ${isTier ? `<span class="tier-tag">Bundle Deal</span>` : ''}
                     </div>
                     <div class="cart-item-quantity">
-                        <button onclick="updateQuantity(${product.id}, ${item.quantity - 1})" class="qty-btn">-</button>
-                        <input type="number" value="${item.quantity}" min="1" readonly>
-                        <button onclick="updateQuantity(${product.id}, ${item.quantity + 1})" class="qty-btn">+</button>
-                         <button onclick="removeItem(${product.id})" class="remove-btn">×</button>
+                        ${isTier ? `
+                            <span class="tier-qty-badge">${item.quantity} pcs</span>
+                        ` : `
+                            <button onclick="updateQuantity(${product.id}, ${item.quantity - 1})" class="qty-btn">-</button>
+                            <input type="number" value="${item.quantity}" min="1" readonly>
+                            <button onclick="updateQuantity(${product.id}, ${item.quantity + 1})" class="qty-btn">+</button>
+                        `}
+                        <button onclick="removeItem(${product.id})" class="remove-btn">×</button>
                     </div>
-                    
-                   
                 </div>
             `;
         });
@@ -90,7 +97,8 @@ async function updateOrderSummary() {
         cart.forEach(item => {
             const product = products.find(p => String(p.id) === String(item.productId));
             if (product) {
-                subtotal += product.newPrice * item.quantity;
+                const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
+                subtotal += isTier ? item.tierPrice : product.newPrice * item.quantity;
             }
         });
 

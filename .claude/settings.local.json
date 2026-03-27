@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub:*)",
+      "Bash(ls -lh frontend/*.css admin/*.css)",
+      "Bash(grep -c ^ frontend/*.js admin/*.js backend/*.js)",
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(grep -o \"router\\\\.\\\\\\(get\\\\|post\\\\|put\\\\|patch\\\\|delete\\\\\\)\" backend/routes/*.js)"
+    ]
+  }
+}

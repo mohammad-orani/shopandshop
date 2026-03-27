@@ -155,16 +155,25 @@ function saveCart(cart) {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-function addToCart(productId, quantity = 1) {
+function addToCart(productId, quantity = 1, tierPrice = null) {
     const cart = getCart();
-    const existingItem = cart.find(item => String(item.productId) === String(productId));
-
-    if (existingItem) {
-        existingItem.quantity += quantity;
+    if (tierPrice !== null) {
+        // Tier item: accumulate on existing entry for this product
+        const existingIndex = cart.findIndex(item => String(item.productId) === String(productId));
+        if (existingIndex >= 0) {
+            cart[existingIndex].quantity += quantity;
+            cart[existingIndex].tierPrice += tierPrice;
+        } else {
+            cart.push({ productId, quantity, tierPrice });
+        }
     } else {
-        cart.push({ productId, quantity });
+        const existingItem = cart.find(item => String(item.productId) === String(productId));
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            cart.push({ productId, quantity });
+        }
     }
-
     saveCart(cart);
     updateCartCount();
     return true;
@@ -255,7 +264,14 @@ async function getProducts() {
             visible: visible,
             isNew: isNew,
             topSeller: topSeller,
-            isOffer: isOffer
+            isOffer: isOffer,
+            quantity_tiers: (() => {
+                try {
+                    const t = p.quantity_tiers;
+                    if (!t) return null;
+                    return typeof t === 'string' ? JSON.parse(t) : t;
+                } catch (e) { return null; }
+            })()
         };
     });
     
