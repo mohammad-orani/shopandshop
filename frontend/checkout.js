@@ -333,6 +333,24 @@ async function loadOrderSummary() {
 document.getElementById('checkoutForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
+    // Phone number validation
+    const rawPhone = document.getElementById('customerPhone')?.value?.trim() || '';
+    if (rawPhone.startsWith('0')) {
+        if (rawPhone.length !== 10) {
+            alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
+                ? 'رقم الهاتف غير صحيح.'
+                : 'Invalid phone number. Must be 10 digits when starting with 0.');
+            return;
+        }
+    } else {
+        if (rawPhone.length !== 9) {
+            alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
+                ? 'رقم الهاتف غير صحيح.'
+                : 'Invalid phone number.');
+            return;
+        }
+    }
+
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn?.textContent;
     if (submitBtn) { submitBtn.textContent = 'Processing...'; submitBtn.disabled = true; }
