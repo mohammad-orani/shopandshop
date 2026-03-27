@@ -107,6 +107,23 @@ async function ensureAdminLogsTable() {
     }
 }
 
+async function ensureProductsQuantityTiersColumn() {
+    try {
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products'`
+        );
+        const existing = cols.map(c => c.COLUMN_NAME);
+        if (!existing.includes('quantity_tiers')) {
+            await pool.query(`ALTER TABLE products ADD COLUMN quantity_tiers JSON DEFAULT NULL`);
+            console.log('Added column: products.quantity_tiers');
+        }
+        console.log('products.quantity_tiers verified');
+    } catch (err) {
+        console.warn('quantity_tiers migration warning:', err.message);
+    }
+}
+
 async function ensureGeneralInfoColumns() {
     try {
         const newCols = [
@@ -149,6 +166,7 @@ async function ensureGeneralInfoColumns() {
     await ensureOrdersColumns();
     await ensureAdminLogsTable();
     await ensureGeneralInfoColumns();
+    await ensureProductsQuantityTiersColumn();
 
     app.listen(PORT, () => {
         console.log(`Primejo API running on port ${PORT}`);
