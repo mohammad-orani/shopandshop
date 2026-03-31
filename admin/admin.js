@@ -634,7 +634,12 @@ async function viewOrderDetails(orderId) {
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
-                const name  = item.productName || item.product_name || item.productNameAr || '—';
+                const nameAr = item.productNameAr || item.product_name_ar || '';
+                const nameEn = item.productName   || item.product_name    || '';
+                const nameDisplay = nameAr
+                    ? `<span style="font-weight:600;line-height:1.3;direction:rtl;unicode-bidi:embed;">${nameAr}</span>`
+                      + (nameEn ? `<br><span style="font-size:0.82em;color:#888;">${nameEn}</span>` : '')
+                    : `<span style="font-weight:500;line-height:1.3;">${nameEn || '—'}</span>`;
                 const qty   = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
@@ -644,7 +649,7 @@ async function viewOrderDetails(orderId) {
                         <td style="padding:10px 12px;">
                             <div style="display:flex;align-items:center;gap:10px;">
                                 ${img ? `<img src="${img}" style="width:44px;height:44px;object-fit:cover;border-radius:4px;border:1px solid #e8e8e8;flex-shrink:0;" onerror="this.style.display='none'">` : ''}
-                                <span style="font-weight:500;line-height:1.3;">${name}</span>
+                                <div>${nameDisplay}</div>
                             </div>
                         </td>
                         <td style="padding:10px 12px;text-align:center;color:#555;">${qty}</td>
@@ -767,7 +772,17 @@ function printOrderModal() {
 
 async function loadReports() {
     try {
-        const orders = await getOrders();
+        let orders = await getOrders();
+
+        const fromDate = document.getElementById('reportFromDate')?.value;
+        const toDate   = document.getElementById('reportToDate')?.value;
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
+        if (toDate)   orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate + 'T23:59:59'));
+
+        const dateLabel = (fromDate || toDate)
+            ? `<p style="margin-bottom:0.75rem;font-size:0.85rem;color:#888;">Showing: ${fromDate || '…'} → ${toDate || '…'}</p>`
+            : '';
+
         const total = orders.reduce((s, o) => s + parseFloat(o.total || 0), 0);
         const delivered = orders.filter(o => (o.order_status || o.status) === 'delivered');
 
@@ -775,16 +790,25 @@ async function loadReports() {
         let totalProfit = 0;
         delivered.forEach(o => {
             const orderTotal     = parseFloat(o.total || 0);
-            const actualDelivery = parseFloat(o.actual_shipping_cost || o.actual_delivery_fee || 0);
+            const actualDelivery = parseFloat(o.actual_shipping_cost || 0);
+             const actualDeliveryFromCustomer = parseFloat(o.displayed_shipping_cost || 0);
             const itemsCost      = (o.items || []).reduce((sum, item) => {
                 return sum + (parseFloat(item.cost_price || 0) * (item.quantity || 1));
             }, 0);
-            totalProfit += orderTotal - itemsCost - actualDelivery;
+            totalProfit += orderTotal - itemsCost - actualDelivery + actualDeliveryFromCustomer;
         });
 
         const deliveredRevenue = delivered.reduce((s, o) => s + parseFloat(o.total || 0), 0);
 
+        // Delivery fee breakdown across ALL orders
+        const totalActualDelivery    = orders.reduce((s, o) => s + parseFloat(o.actual_shipping_cost || 0), 0);
+        const totalCollectedShipping = orders.reduce((s, o) => s + parseFloat(o.displayed_shipping_cost || o.delivery_fee || 0), 0);
+        const deliveryDiff           = totalCollectedShipping - totalActualDelivery;
+        const deliveryDiffColor      = deliveryDiff >= 0 ? '#16a34a' : '#dc2626';
+        const deliveryDiffLabel      = deliveryDiff >= 0 ? 'surplus' : 'deficit';
+
         setEl('reportStats', `
+            ${dateLabel}
             <div class="stats-grid">
                 <div class="stat-card"><h3>Total Orders</h3><p class="stat-number">${orders.length}</p></div>
                 <div class="stat-card"><h3>Delivered Orders</h3><p class="stat-number">${delivered.length}</p></div>
@@ -793,7 +817,25 @@ async function loadReports() {
                 <div class="stat-card" style="border-color:#16a34a;">
                     <h3 style="color:#16a34a;">Net Profit</h3>
                     <p class="stat-number" style="color:#16a34a;">${totalProfit.toFixed(2)}JD</p>
-                    <small style="color:#888;font-size:0.75rem;">Revenue − Cost Price − Actual Delivery</small>
+                    <small style="color:#888;font-size:0.75rem;">Revenue − Cost Price − Actual Delivery + delivery paid by customer</small>
+                </div>
+            </div>
+            <h4 style="margin:1.5rem 0 0.75rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;color:#888;">Delivery Fees Breakdown</h4>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Actual Delivery Cost</h3>
+                    <p class="stat-number">${totalActualDelivery.toFixed(2)}JD</p>
+                    <small style="color:#888;font-size:0.75rem;">Total paid to couriers (actual_shipping_cost)</small>
+                </div>
+                <div class="stat-card">
+                    <h3>Collected from Customers</h3>
+                    <p class="stat-number">${totalCollectedShipping.toFixed(2)}JD</p>
+                    <small style="color:#888;font-size:0.75rem;">Shipping fees charged to customers</small>
+                </div>
+                <div class="stat-card" style="border-color:${deliveryDiffColor};">
+                    <h3 style="color:${deliveryDiffColor};">Delivery Difference</h3>
+                    <p class="stat-number" style="color:${deliveryDiffColor};">${deliveryDiff >= 0 ? '+' : ''}${deliveryDiff.toFixed(2)}JD</p>
+                    <small style="color:#888;font-size:0.75rem;">Collected − Actual (${deliveryDiffLabel})</small>
                 </div>
             </div>`);
     } catch (error) { console.error('Reports error:', error); }
