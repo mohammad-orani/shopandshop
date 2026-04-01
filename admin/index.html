@@ -13,10 +13,14 @@
 
 <body>
     <div class="admin-layout">
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>Primejo ADMIN</h1>
+                <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
             </div>
             <nav class="sidebar-nav">
                 <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard')">
@@ -55,7 +59,16 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-bar">
-                <h2 id="pageTitle">Dashboard</h2>
+                <div class="top-bar-left">
+                    <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="3" y1="6"  x2="21" y2="6"/>
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
                 <div class="user-info">
                     <span id="adminUserName">Admin</span>
                     <button onclick="adminLogout()" class="btn-secondary">Logout</button>
@@ -954,6 +967,25 @@ Add "Banners" to your sidebar nav too:
         </div>
     </div>
 
+
+    <script>
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        // Close sidebar on nav-link click (mobile)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) closeSidebar();
+            });
+        });
+    </script>
 
     <!-- ✅ Load order: auth-check first, then api, then app logic -->
     <script src="auth-check.js"></script>

@@ -9,9 +9,10 @@
     <link rel="stylesheet" href="mobile-nav-fix.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="search-bar.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap"></noscript>
     <style>
         /* ── Hero ───────────────────────────────────────── */
         .contact-hero {
@@ -508,13 +509,12 @@
         </div>
     </footer>
 
-    <script src="header.js"></script>
-    <script src="config.js"></script>
-    <script src="api.js"></script>
-    <script src="app.js"></script>
-    <script src="countries-data.js"></script>
-    <script src="settings.js"></script>
-    <script src="general-info.js"></script>
+    <script src="header.js" defer></script>
+    <script src="config.js" defer></script>
+    <script src="api.js" defer></script>
+    <script src="app.js" defer></script>
+    <script src="settings.js" defer></script>
+    <script src="general-info.js" defer></script>
     <script>
         document.getElementById('contactForm').addEventListener('submit', function (e) {
             e.preventDefault();

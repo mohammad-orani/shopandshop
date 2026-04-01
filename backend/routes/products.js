@@ -30,6 +30,7 @@ router.get('/', async (req, res) => {
         }
 
         const [products] = await pool.query(query, params);
+        res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
         res.json(products);
     } catch (error) { res.status(500).json({ error: error.message }); }
 });

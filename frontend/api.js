@@ -7,15 +7,27 @@ const API_URL = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.rai
 
 // ==================== PRODUCTS ====================
 
+// In-memory cache: survives page JS execution but resets on navigation
+let _productsCache = null;
+let _productsCacheTs = 0;
+const _CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function getProductsFromAPI() {
+    const now = Date.now();
+    if (_productsCache && (now - _productsCacheTs) < _CACHE_TTL) {
+        return _productsCache;
+    }
     try {
         const response = await fetch(`${API_URL}/products`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        const result = Array.isArray(data) ? data : [];
+        _productsCache = result;
+        _productsCacheTs = now;
+        return result;
     } catch (error) {
-        console.error('❌ Error fetching products:', error);
-        return [];
+        console.error('Error fetching products:', error);
+        return _productsCache || [];
     }
 }
 
@@ -235,7 +247,6 @@ async function getGeneralInfoFromAPI() {
 async function getProducts() {
     const products = await getProductsFromAPI();
     
-    console.log('🔄 Processing products from API:', products.length);
     
     const processed = products.map(p => {
         // ✅ Convert MySQL TINYINT (0/1) to JavaScript boolean using !!
@@ -274,10 +285,6 @@ async function getProducts() {
             })()
         };
     });
-    
-    console.log('✅ Processed products:', processed);
-    console.log('📊 Top sellers:', processed.filter(p => p.topSeller).length);
-    console.log('📊 Visible:', processed.filter(p => p.visible).length);
     
     return processed;
 }
