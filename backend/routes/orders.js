@@ -118,6 +118,9 @@ router.post('/', async (req, res) => {
 
         await connection.commit();
         console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${(items || []).length} items`);
+        await logAction(req, 'CREATE', 'order', order_id,
+            `New order from ${customer_name || 'unknown'} (${sanitizedPhone}) | city: ${delivery_city || '—'} | total: ${total || 0} | items: ${(items || []).length}`
+        );
         res.status(201).json({ success: true, message: 'Order created successfully', order_id });
 
     } catch (error) {

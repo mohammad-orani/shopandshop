@@ -35,16 +35,23 @@ app.use(cors({
         'https://adminprimejo.netlify.app',
         'http://127.0.0.1:5500',
         'http://localhost:5500',
-        'http://localhost:3000'
+        'http://localhost:3000',
+        // Mobile app (Expo Go + production builds)
+        /^https?:\/\/localhost(:\d+)?$/,
+        /^exp:\/\//,
     ]
 }));
 app.use(generalLimiter);
+// Stripe webhook needs raw body — must be registered before express.json()
+app.use('/api/payments/webhook', require('./routes/payments'));
 app.use(express.json());
 app.use(express.static('public'));
 
 // ============ ROUTES ============
 
 app.use('/api/auth',         require('./routes/auth'));
+app.use('/api/customers',    require('./routes/customers').router);
+app.use('/api/payments',     require('./routes/payments'));
 app.use('/api/categories',   require('./routes/categories'));
 app.use('/api/products',     require('./routes/products'));
 app.use('/api/orders',       require('./routes/orders'));

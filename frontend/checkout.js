@@ -335,18 +335,25 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
 
     // Phone number validation
     const rawPhone = document.getElementById('customerPhone')?.value?.trim() || '';
-    if (rawPhone.startsWith('0')) {
-        if (rawPhone.length !== 10) {
+    const digitsOnly = rawPhone.replace(/\D/g, ''); // strip spaces, dashes, parens, etc.
+    if (!/^\d+$/.test(digitsOnly) || digitsOnly.length === 0) {
+        alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
+            ? 'رقم الهاتف غير صحيح.'
+            : 'Invalid phone number. Please enter digits only.');
+        return;
+    }
+    if (digitsOnly.startsWith('0')) {
+        if (digitsOnly.length !== 10) {
             alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
                 ? 'رقم الهاتف غير صحيح.'
                 : 'Invalid phone number. Must be 10 digits when starting with 0.');
             return;
         }
     } else {
-        if (rawPhone.length !== 9) {
+        if (digitsOnly.length !== 9) {
             alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
                 ? 'رقم الهاتف غير صحيح.'
-                : 'Invalid phone number.');
+                : 'Invalid phone number. Must be 9 digits.');
             return;
         }
     }
