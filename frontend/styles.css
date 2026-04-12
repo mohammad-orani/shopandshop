@@ -1791,20 +1791,38 @@ select:focus-visible {
 }
 
 @media (max-width: 640px) {
+    .trust-strip {
+        padding: 0.6rem 1rem;
+        overflow-x: auto;          /* scroll horizontally if needed */
+        -webkit-overflow-scrolling: touch;
+    }
     .trust-strip-inner {
-        gap: 0.5rem;
+        flex-wrap: nowrap;         /* single row, no wrapping */
+        gap: 0;
+        justify-content: flex-start;
+        width: max-content;        /* let it be as wide as needed */
+        min-width: 100%;
     }
     .trust-strip-item {
-        padding: 0.4rem 1rem;
-        min-width: 130px;
+        padding: 0.3rem 0.9rem;
+        min-width: unset;
+        flex: 0 0 auto;
+        gap: 0.4rem;
     }
     .trust-strip-divider {
-        display: none;
+        width: 1px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+    .trust-strip-icon {
+        font-size: 1.1rem;
     }
     .trust-strip-title {
-        font-size: 0.78rem;
+        font-size: 0.72rem;
+        white-space: nowrap;
     }
     .trust-strip-sub {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
+        white-space: nowrap;
     }
 }

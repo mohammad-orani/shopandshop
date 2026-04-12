@@ -142,6 +142,24 @@
                     0%,100% { opacity:1; transform:translateY(0); }
                     50%      { opacity:0.85; transform:translateY(-2px); }
                 }
+                @media (max-width: 640px) {
+                    #wa-float-btn {
+                        width:48px !important;
+                        height:48px !important;
+                        bottom:4.5rem !important;
+                        right:1rem !important;
+                    }
+                    #wa-float-btn svg {
+                        width:26px !important;
+                        height:26px !important;
+                    }
+                    #wa-float-label {
+                        font-size:0.72rem !important;
+                        padding:6px 10px !important;
+                        bottom:calc(4.5rem + 6px) !important;
+                        right:calc(1rem + 48px + 8px) !important;
+                    }
+                }
             `;
             document.head.appendChild(s);
         }
