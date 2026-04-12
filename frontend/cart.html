@@ -25,6 +25,8 @@
     <div class="container">
         <h1 class="page-title" data-en="Shopping Cart" data-ar="سلة التسوق">Shopping Cart</h1>
 
+        <div id="freeShippingBanner" style="display:none;"></div>
+
         <div class="cart-layout">
             <div class="cart-items" id="cartItems">
                 <!-- Cart items will be loaded here -->
@@ -36,9 +38,9 @@
                     <span data-en="Subtotal" data-ar="المجموع الفرعي">Subtotal</span>
                     <span id="subtotal">JOD 0</span>
                 </div>
-                <div class="summary-row">
-                    <!-- <span data-en="Shipping" data-ar="الشحن">Shipping</span>
-                    <span id="deliveryFeeDisplay" data-en="Select city" data-ar="اختر المدينة">Select city</span> -->
+                <div class="summary-row savings-row" id="cartSavedRow" style="display:none;">
+                    <span data-en="You saved" data-ar="وفرت">You saved</span>
+                    <span class="savings-amount">0.00 JOD</span>
                 </div>
                 <div class="summary-row total">
                     <span data-en="Total" data-ar="الإجمالي">Total</span>

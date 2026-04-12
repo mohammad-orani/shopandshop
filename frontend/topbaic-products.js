@@ -62,7 +62,7 @@ function createTopBaicProductCard(rawProduct) {
 
                 <!-- Badges -->
                 <div class="product-badges">
-                    ${product.isOffer || discount > 0 ? '<span class="badge badge-sale">SALE</span>' : ''}
+                    ${discount > 0 ? `<span class="badge badge-discount">-${discount}%</span>` : (product.isOffer ? '<span class="badge badge-sale">SALE</span>' : '')}
                     ${product.isTopSeller ? '<span class="badge badge-topseller">TOP SELLER</span>' : ''}
                 </div>
 
@@ -86,7 +86,7 @@ function createTopBaicProductCard(rawProduct) {
 
             <!-- Product Info -->
             <div class="product-info" style="display:flex;flex-direction:column;flex:1;">
-                <div class="product-vendor">PRIMEJO</div>
+             
 
                 <h3 class="product-title">
                     <a href="product.html?id=${product.id}">${productName}</a>
@@ -106,17 +106,14 @@ function createTopBaicProductCard(rawProduct) {
                         <span class="price-original" data-base-price="${product.oldPrice}">
                             ${formatPrice(product.oldPrice)}
                         </span>
-                        <span class="price-save"
-                              data-en="Save ${discount}%"
-                              data-ar="وفر ${discount}%">Save ${discount}%</span>
                     ` : ''}
                 </div>
 
-                <!-- Stock Status -->
+                <!-- Stock Status 
                 <div class="stock-status" style="min-height:22px;">
                     <span class="${stockClass}"></span>
                     <span data-en="${stockText}" data-ar="${stockTextAr}">${stockText}</span>
-                </div>
+                </div> -->
 
                 <!-- Add to Cart Button -->
                 <button class="add-to-cart-btn"

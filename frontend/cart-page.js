@@ -89,24 +89,67 @@ async function updateOrderSummary() {
         const productIds = cart.map(item => item.productId);
         const fetched = await Promise.all(productIds.map(id => getProductByIdFromAPI(id)));
         const products = fetched.filter(Boolean).map(raw => ({
-            id: raw.id,
-            newPrice: parseFloat(raw.new_price || raw.newPrice || 0)
+            id:       raw.id,
+            newPrice: parseFloat(raw.new_price  || raw.newPrice  || 0),
+            oldPrice: parseFloat(raw.old_price  || raw.oldPrice  || 0)
         }));
 
         let subtotal = 0;
+        let savings  = 0;
         cart.forEach(item => {
             const product = products.find(p => String(p.id) === String(item.productId));
-            if (product) {
-                const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
-                subtotal += isTier ? item.tierPrice : product.newPrice * item.quantity;
+            if (!product) return;
+            const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
+            subtotal += isTier ? item.tierPrice : product.newPrice * item.quantity;
+            if (!isTier && product.oldPrice > product.newPrice) {
+                savings += (product.oldPrice - product.newPrice) * item.quantity;
+            }
+            if (isTier && product.oldPrice > 0) {
+                savings += Math.max(0, product.oldPrice * item.quantity - item.tierPrice);
             }
         });
 
-        const subtotalEl = document.getElementById('subtotal');
-        const totalEl = document.getElementById('total');
+        const subtotalEl  = document.getElementById('subtotal');
+        const totalEl     = document.getElementById('total');
+        const savedRowEl  = document.getElementById('cartSavedRow');
 
         if (subtotalEl) subtotalEl.textContent = `${subtotal.toFixed(2)} JOD`;
-        if (totalEl) totalEl.textContent = `${subtotal.toFixed(2)} JOD`;
+        if (totalEl)    totalEl.textContent    = `${subtotal.toFixed(2)} JOD`;
+
+        // Savings row
+        if (savedRowEl) {
+            if (savings > 0) {
+                savedRowEl.querySelector('.savings-amount').textContent = `${savings.toFixed(2)} JOD`;
+                savedRowEl.style.display = '';
+            } else {
+                savedRowEl.style.display = 'none';
+            }
+        }
+
+        // Free shipping banner
+        const info     = await getGeneralInfoFromAPI();
+        const minOrder = parseFloat(info.minimum_order_amount) || 25;
+        const bannerEl = document.getElementById('freeShippingBanner');
+        if (bannerEl) {
+            if (cart.length === 0) {
+                bannerEl.style.display = 'none';
+            } else if (subtotal >= minOrder) {
+                bannerEl.innerHTML    = `<div class="free-shipping-achieved">🎉 <span data-en="You've unlocked free delivery!" data-ar="لقد حصلت على توصيل مجاني!">You've unlocked free delivery!</span></div>`;
+                bannerEl.style.display = '';
+            } else {
+                const remaining = (minOrder - subtotal).toFixed(2);
+                const pct       = Math.min((subtotal / minOrder) * 100, 100).toFixed(1);
+                bannerEl.innerHTML = `
+                    <div class="free-shipping-bar">
+                        <p class="free-shipping-msg">
+                            <span data-en="Add ${remaining} JOD more for free delivery" data-ar="أضف ${remaining} دينار للحصول على توصيل مجاني">Add ${remaining} JOD more for free delivery</span>
+                        </p>
+                        <div class="free-shipping-track"><div class="free-shipping-fill" style="width:${pct}%"></div></div>
+                    </div>`;
+                bannerEl.style.display = '';
+            }
+            if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
+        }
 
     } catch (error) {
         console.error('Error updating summary:', error);

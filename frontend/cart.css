@@ -372,3 +372,55 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+/* ==================== FREE SHIPPING BANNER ==================== */
+
+#freeShippingBanner {
+    margin-bottom: 1rem;
+}
+
+.free-shipping-bar {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.free-shipping-msg {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #7a5f00;
+    margin: 0 0 0.5rem;
+    text-align: center;
+}
+
+.free-shipping-track {
+    height: 6px;
+    background: #ffe082;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.free-shipping-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold), #f0a500);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+
+.free-shipping-achieved {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+/* ==================== SAVINGS ROW ==================== */
+
+.savings-row .savings-amount {
+    color: #22c55e;
+    font-weight: 700;
+}

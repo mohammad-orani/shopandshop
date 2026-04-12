@@ -158,6 +158,21 @@ function displayProductDetails(product) {
                 ` : ''}
             </div>
 
+            <div class="product-trust-badges">
+                <div class="trust-badge">
+                    <span class="trust-stars">★★★★★</span>
+                    <span data-en="Trusted by customers" data-ar="موثوق من العملاء">Trusted by customers</span>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">🚚</span>
+                    <span data-en="Free delivery available" data-ar="توصيل مجاني متاح">Free delivery available</span>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">✅</span>
+                    <span data-en="Secure checkout" data-ar="دفع آمن">Secure checkout</span>
+                </div>
+            </div>
+
             <div class="product-description">
                 <h3 data-en="Product Description" data-ar="وصف المنتج">Product Description</h3>
                 <!--

@@ -323,7 +323,7 @@ function collectTiers() {
     const rows = document.querySelectorAll('#tiersContainer .tier-row');
     const tiers = [];
     rows.forEach(row => {
-        const qty   = parseInt(row.querySelector('.tier-qty-input')?.value);
+        const qty = parseInt(row.querySelector('.tier-qty-input')?.value);
         const price = parseFloat(row.querySelector('.tier-price-input')?.value);
         if (!isNaN(qty) && qty > 0 && !isNaN(price) && price >= 0) {
             tiers.push({ qty, price });
@@ -531,12 +531,12 @@ async function loadOrders(filterStatus = '') {
         orders.forEach(o => { window._ordersMap[o.order_id || o.orderId] = o; });
 
         tbody.innerHTML = orders.map(order => {
-            const id     = order.order_id || order.orderId;
-            const name   = order.customer_name || order.customerName;
-            const phone  = order.customer_phone || order.customerPhone;
+            const id = order.order_id || order.orderId;
+            const name = order.customer_name || order.customerName;
+            const phone = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total  = parseFloat(order.total || 0);
-            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total = parseFloat(order.total || 0);
+            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -555,12 +555,12 @@ async function loadOrders(filterStatus = '') {
                                font-size:0.78rem;font-weight:600;cursor:pointer;background:#fff;display:block;width:100%;">
 
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status==='pending'?'selected':''}>Pending</option>
-                        <option value="processing" ${status==='processing'?'selected':''}>Processing</option>
-                        <option value="shipped"    ${status==='shipped'?'selected':''}>Shipped</option>
-                        <option value="delivered"  ${status==='delivered'?'selected':''}>Delivered</option>
-                        <option value="cancelled"  ${status==='cancelled'?'selected':''}>Cancelled</option>
-                        <option value="refunded"   ${status==='refunded'?'selected':''}>Refunded</option>
+                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        <option value="refunded"   ${status === 'refunded' ? 'selected' : ''}>Refunded</option>
                     </select>
                 </td>
             </tr>`;
@@ -598,7 +598,7 @@ async function viewOrderDetails(orderId) {
         // Try fetching single order with items from dedicated endpoint first
         let order = null;
         try {
-    
+
             const API_URL = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
             const res = await fetch(`${API_URL}/api/orders/${orderId}`, {
                 headers: { 'Authorization': `Bearer ${getAdminToken()}` }
@@ -607,7 +607,7 @@ async function viewOrderDetails(orderId) {
                 const data = await res.json();
                 if (data && data.order_id) order = data;
             }
-        } catch(e) { /* fallback below */ }
+        } catch (e) { /* fallback below */ }
 
         // Fallback: search in already-loaded orders list
         if (!order) {
@@ -617,33 +617,33 @@ async function viewOrderDetails(orderId) {
 
         if (!order) { alert('Order not found'); return; }
 
-        const status  = order.order_status || order.status;
-        const name    = order.customer_name || order.customerName;
-        const phone   = order.customer_phone || order.customerPhone;
-        const city    = order.delivery_city || '';
+        const status = order.order_status || order.status;
+        const name = order.customer_name || order.customerName;
+        const phone = order.customer_phone || order.customerPhone;
+        const city = order.delivery_city || '';
         const country = order.delivery_country || '';
         const address = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-        const notes   = order.order_notes || order.orderNotes || '';
+        const notes = order.order_notes || order.orderNotes || '';
         const payment = order.payment_method || order.paymentMethod || 'N/A';
-        const total   = parseFloat(order.total || 0);
+        const total = parseFloat(order.total || 0);
         const displayedShipping = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0);
         const subtotal = parseFloat(order.subtotal || 0);
-        const date    = new Date(order.created_at || order.orderDate).toLocaleString();
+        const date = new Date(order.created_at || order.orderDate).toLocaleString();
 
         // Build items HTML
         let itemsHTML = '';
         if (order.items && Array.isArray(order.items) && order.items.length > 0) {
             const rows = order.items.map(item => {
                 const nameAr = item.productNameAr || item.product_name_ar || '';
-                const nameEn = item.productName   || item.product_name    || '';
+                const nameEn = item.productName || item.product_name || '';
                 const nameDisplay = nameAr
                     ? `<span style="font-weight:600;line-height:1.3;direction:rtl;unicode-bidi:embed;">${nameAr}</span>`
-                      + (nameEn ? `<br><span style="font-size:0.82em;color:#888;">${nameEn}</span>` : '')
+                    + (nameEn ? `<br><span style="font-size:0.82em;color:#888;">${nameEn}</span>` : '')
                     : `<span style="font-weight:500;line-height:1.3;">${nameEn || '—'}</span>`;
-                const qty   = item.quantity || 0;
+                const qty = item.quantity || 0;
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
-                const img   = item.image_url || '';
+                const img = item.image_url || '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
@@ -705,7 +705,7 @@ async function viewOrderDetails(orderId) {
                     <div><strong>Phone:</strong> ${phone}</div>
                     <div><strong>Location:</strong> ${city}${city && country ? ', ' : ''}${country}</div>
                     ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${notes   ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
+                    ${notes ? `<div><strong>Notes:</strong> <em>${notes}</em></div>` : ''}
                 </div>
 
                 <!-- Order items table -->
@@ -775,9 +775,9 @@ async function loadReports() {
         let orders = await getOrders();
 
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate   = document.getElementById('reportToDate')?.value;
+        const toDate = document.getElementById('reportToDate')?.value;
         if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
-        if (toDate)   orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate + 'T23:59:59'));
+        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate + 'T23:59:59'));
 
         const dateLabel = (fromDate || toDate)
             ? `<p style="margin-bottom:0.75rem;font-size:0.85rem;color:#888;">Showing: ${fromDate || '…'} → ${toDate || '…'}</p>`
@@ -786,26 +786,35 @@ async function loadReports() {
         const total = orders.reduce((s, o) => s + parseFloat(o.total || 0), 0);
         const delivered = orders.filter(o => (o.order_status || o.status) === 'delivered');
 
+        // Delivery fee breakdown across ALL orders
+
+        let totalActualDelivery = 0;
+        let totalCollectedShipping = 0;
+        let deliveryDiff = 0;
+        delivered.forEach(o => {
+            totalActualDelivery += parseFloat(o.actual_shipping_cost || 0);
+            totalCollectedShipping += parseFloat(o.displayed_shipping_cost || o.delivery_fee || 0);
+
+            deliveryDiff += parseFloat(o.displayed_shipping_cost || o.delivery_fee || 0) - parseFloat(o.actual_shipping_cost || 0);
+
+        });
+        const deliveryDiffColor = deliveryDiff >= 0 ? '#16a34a' : '#dc2626';
+        const deliveryDiffLabel = deliveryDiff >= 0 ? 'surplus' : 'deficit';
+
         // Net Profit = order total - cost of items sold - actual delivery fee
         let totalProfit = 0;
         delivered.forEach(o => {
-            const orderTotal     = parseFloat(o.total || 0);
+            const orderTotal = parseFloat(o.total || 0);
             const actualDelivery = parseFloat(o.actual_shipping_cost || 0);
-             const actualDeliveryFromCustomer = parseFloat(o.displayed_shipping_cost || 0);
-            const itemsCost      = (o.items || []).reduce((sum, item) => {
+            //const actualDeliveryFromCustomer = parseFloat(o.displayed_shipping_cost || 0);
+            const itemsCost = (o.items || []).reduce((sum, item) => {
                 return sum + (parseFloat(item.cost_price || 0) * (item.quantity || 1));
             }, 0);
-            totalProfit += orderTotal - itemsCost - actualDelivery + actualDeliveryFromCustomer;
+            totalProfit += orderTotal - itemsCost /*- actualDelivery + actualDeliveryFromCustomer*/;
         });
 
         const deliveredRevenue = delivered.reduce((s, o) => s + parseFloat(o.total || 0), 0);
 
-        // Delivery fee breakdown across ALL orders
-        const totalActualDelivery    = orders.reduce((s, o) => s + parseFloat(o.actual_shipping_cost || 0), 0);
-        const totalCollectedShipping = orders.reduce((s, o) => s + parseFloat(o.displayed_shipping_cost || o.delivery_fee || 0), 0);
-        const deliveryDiff           = totalCollectedShipping - totalActualDelivery;
-        const deliveryDiffColor      = deliveryDiff >= 0 ? '#16a34a' : '#dc2626';
-        const deliveryDiffLabel      = deliveryDiff >= 0 ? 'surplus' : 'deficit';
 
         setEl('reportStats', `
             ${dateLabel}
@@ -817,7 +826,7 @@ async function loadReports() {
                 <div class="stat-card" style="border-color:#16a34a;">
                     <h3 style="color:#16a34a;">Net Profit</h3>
                     <p class="stat-number" style="color:#16a34a;">${totalProfit.toFixed(2)}JD</p>
-                    <small style="color:#888;font-size:0.75rem;">Revenue − Cost Price − Actual Delivery + delivery paid by customer</small>
+                    <small style="color:#888;font-size:0.75rem;">Revenue − Cost Price </small>
                 </div>
             </div>
             <h4 style="margin:1.5rem 0 0.75rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;color:#888;">Delivery Fees Breakdown</h4>
@@ -844,27 +853,27 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate   = document.getElementById('reportToDate')?.value;
+        const toDate = document.getElementById('reportToDate')?.value;
         let orders = await getOrders();
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at||o.orderDate) >= new Date(fromDate));
-        if (toDate)   orders = orders.filter(o => new Date(o.created_at||o.orderDate) <= new Date(toDate));
+        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
+        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
-            const id     = o.order_id || o.orderId;
-            const name   = o.customer_name || o.customerName;
-            const phone  = o.customer_phone || o.customerPhone;
+            const id = o.order_id || o.orderId;
+            const name = o.customer_name || o.customerName;
+            const phone = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
-            const date   = new Date(o.created_at||o.orderDate).toLocaleString();
-            const items  = (o.items||[]).map(i => `${i.productName||''}x${i.quantity}`).join('; ');
-            csv += `"${id}","${name}","${phone}","${o.delivery_city||''}","${o.delivery_country||''}","${o.delivery_address||''}","${items}",${o.subtotal||0},${o.displayed_shipping_cost||0},${o.total},"${status}","${date}"\n`;
+            const date = new Date(o.created_at || o.orderDate).toLocaleString();
+            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
+            csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
         a.download = `primejo_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
@@ -931,17 +940,17 @@ async function loadGeneralInfo() {
     try {
         const info = await getGeneralInfo();
         if (!info) return;
-        setVal('brandName',       info.brand_name      || info.brandName    || '');
-        setVal('phoneNumber',     info.phone_number    || info.phoneNumber  || '');
-        setVal('emailAddress',    info.email_address   || info.email        || '');
-        setVal('whatsappNumber',  info.whatsapp        || '');
-        setVal('instagramUrl',    info.instagram       || '');
-        setVal('facebookUrl',     info.facebook        || '');
-        setVal('snapchatUrl',     info.snapchat        || '');
-        setVal('tiktokUrl',       info.tiktok          || '');
-        setVal('youtubeUrl',      info.youtube         || '');
+        setVal('brandName', info.brand_name || info.brandName || '');
+        setVal('phoneNumber', info.phone_number || info.phoneNumber || '');
+        setVal('emailAddress', info.email_address || info.email || '');
+        setVal('whatsappNumber', info.whatsapp || '');
+        setVal('instagramUrl', info.instagram || '');
+        setVal('facebookUrl', info.facebook || '');
+        setVal('snapchatUrl', info.snapchat || '');
+        setVal('tiktokUrl', info.tiktok || '');
+        setVal('youtubeUrl', info.youtube || '');
         setVal('freeDeliveryMin', info.minimum_order_amount || info.free_delivery_min_amount || '');
-        setVal('deliveryNote',    info.delivery_note   || '');
+        setVal('deliveryNote', info.delivery_note || '');
         console.log('✅ General info loaded');
     } catch (err) {
         console.error('loadGeneralInfo error:', err);
@@ -953,22 +962,22 @@ async function saveGeneralInfo(e) {
     const btn = e.target.querySelector('button[type="submit"]');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
     const data = {
-        brand_name:                document.getElementById('brandName')?.value       || '',
-        phone_number:              document.getElementById('phoneNumber')?.value     || '',
-        email:                     document.getElementById('emailAddress')?.value    || '',
-        whatsapp:                  document.getElementById('whatsappNumber')?.value  || '',
-        instagram:                 document.getElementById('instagramUrl')?.value    || '',
-        facebook:                  document.getElementById('facebookUrl')?.value     || '',
-        snapchat:                  document.getElementById('snapchatUrl')?.value     || '',
-        tiktok:                    document.getElementById('tiktokUrl')?.value       || '',
-        youtube:                   document.getElementById('youtubeUrl')?.value      || '',
-        free_delivery_min_amount:  parseFloat(document.getElementById('freeDeliveryMin')?.value) || 0,
-        delivery_note:             document.getElementById('deliveryNote')?.value    || ''
+        brand_name: document.getElementById('brandName')?.value || '',
+        phone_number: document.getElementById('phoneNumber')?.value || '',
+        email: document.getElementById('emailAddress')?.value || '',
+        whatsapp: document.getElementById('whatsappNumber')?.value || '',
+        instagram: document.getElementById('instagramUrl')?.value || '',
+        facebook: document.getElementById('facebookUrl')?.value || '',
+        snapchat: document.getElementById('snapchatUrl')?.value || '',
+        tiktok: document.getElementById('tiktokUrl')?.value || '',
+        youtube: document.getElementById('youtubeUrl')?.value || '',
+        free_delivery_min_amount: parseFloat(document.getElementById('freeDeliveryMin')?.value) || 0,
+        delivery_note: document.getElementById('deliveryNote')?.value || ''
     };
     try {
         const result = await updateGeneralInfo(data);
         if (result.error) { showToast('❌ Error: ' + result.error); }
-        else               { showToast('✅ General info saved!'); }
+        else { showToast('✅ General info saved!'); }
     } catch (err) {
         showToast('❌ ' + err.message);
     } finally {
@@ -981,10 +990,10 @@ async function saveGeneralInfo(e) {
 async function submitChangePassword(e) {
     e.preventDefault();
     const current = document.getElementById('currentPassword')?.value;
-    const newPass  = document.getElementById('newPassword')?.value;
-    const confirm  = document.getElementById('confirmPassword')?.value;
-    const btn      = e.target.querySelector('button[type="submit"]');
-    const msgEl    = document.getElementById('passwordMsg');
+    const newPass = document.getElementById('newPassword')?.value;
+    const confirm = document.getElementById('confirmPassword')?.value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    const msgEl = document.getElementById('passwordMsg');
 
     if (!current || !newPass || !confirm) {
         if (msgEl) { msgEl.textContent = '⚠️ All fields are required.'; msgEl.style.color = 'red'; }
@@ -1022,7 +1031,7 @@ async function submitChangePassword(e) {
 
 function openRefundModal(orderId) {
     document.getElementById('refundOrderId').value = orderId;
-    document.getElementById('refundReason').value  = '';
+    document.getElementById('refundReason').value = '';
     document.getElementById('refundMsg').textContent = '';
     document.getElementById('refundModal').classList.add('show');
 }
@@ -1034,9 +1043,9 @@ function closeRefundModal() {
 async function submitRefund(e) {
     e.preventDefault();
     const orderId = document.getElementById('refundOrderId').value;
-    const reason  = document.getElementById('refundReason').value.trim();
-    const btn     = e.target.querySelector('button[type="submit"]');
-    const msgEl   = document.getElementById('refundMsg');
+    const reason = document.getElementById('refundReason').value.trim();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const msgEl = document.getElementById('refundMsg');
 
     if (!reason) {
         msgEl.textContent = '⚠️ Please enter a refund reason.';
@@ -1050,10 +1059,10 @@ async function submitRefund(e) {
     try {
 
         const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
-        const res  = await fetch(`${API_BASE}/orders/${orderId}/refund`, {
-            method:  'PATCH',
+        const res = await fetch(`${API_BASE}/orders/${orderId}/refund`, {
+            method: 'PATCH',
             headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ refund_reason: reason })
+            body: JSON.stringify({ refund_reason: reason })
         });
         const data = await res.json();
         if (data.success) {
@@ -1077,15 +1086,15 @@ async function submitRefund(e) {
 
 function openEditOrderModal(order) {
     const id = order.order_id || order.orderId;
-    document.getElementById('editOrderId').value          = id;
-    document.getElementById('editCustomerName').value     = order.customer_name || order.customerName || '';
-    document.getElementById('editCustomerPhone').value    = order.customer_phone || order.customerPhone || '';
-    document.getElementById('editDeliveryCountry').value  = order.delivery_country || '';
-    document.getElementById('editDeliveryCity').value     = order.delivery_city || '';
-    document.getElementById('editDeliveryAddress').value  = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-    document.getElementById('editDeliveryFee').value      = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0).toFixed(2);
-    document.getElementById('editOrderNotes').value       = order.order_notes || order.orderNotes || '';
-    document.getElementById('editOrderMsg').textContent   = '';
+    document.getElementById('editOrderId').value = id;
+    document.getElementById('editCustomerName').value = order.customer_name || order.customerName || '';
+    document.getElementById('editCustomerPhone').value = order.customer_phone || order.customerPhone || '';
+    document.getElementById('editDeliveryCountry').value = order.delivery_country || '';
+    document.getElementById('editDeliveryCity').value = order.delivery_city || '';
+    document.getElementById('editDeliveryAddress').value = order.delivery_address || order.complete_address || order.deliveryAddress || '';
+    document.getElementById('editDeliveryFee').value = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0).toFixed(2);
+    document.getElementById('editOrderNotes').value = order.order_notes || order.orderNotes || '';
+    document.getElementById('editOrderMsg').textContent = '';
     document.getElementById('editOrderModal').classList.add('show');
 }
 
@@ -1096,17 +1105,17 @@ function closeEditOrderModal() {
 async function submitEditOrder(e) {
     e.preventDefault();
     const orderId = document.getElementById('editOrderId').value;
-    const msgEl   = document.getElementById('editOrderMsg');
-    const btn     = e.target.querySelector('button[type="submit"]');
+    const msgEl = document.getElementById('editOrderMsg');
+    const btn = e.target.querySelector('button[type="submit"]');
 
     const body = {
-        customer_name:     document.getElementById('editCustomerName').value.trim(),
-        customer_phone:    document.getElementById('editCustomerPhone').value.trim(),
-        delivery_country:  document.getElementById('editDeliveryCountry').value.trim(),
-        delivery_city:     document.getElementById('editDeliveryCity').value.trim(),
-        delivery_address:  document.getElementById('editDeliveryAddress').value.trim(),
-        delivery_fee:      document.getElementById('editDeliveryFee').value,
-        order_notes:       document.getElementById('editOrderNotes').value.trim(),
+        customer_name: document.getElementById('editCustomerName').value.trim(),
+        customer_phone: document.getElementById('editCustomerPhone').value.trim(),
+        delivery_country: document.getElementById('editDeliveryCountry').value.trim(),
+        delivery_city: document.getElementById('editDeliveryCity').value.trim(),
+        delivery_address: document.getElementById('editDeliveryAddress').value.trim(),
+        delivery_fee: document.getElementById('editDeliveryFee').value,
+        order_notes: document.getElementById('editOrderNotes').value.trim(),
     };
 
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
@@ -1114,10 +1123,10 @@ async function submitEditOrder(e) {
 
     try {
         const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
-        const res  = await fetch(`${API_BASE}/orders/${orderId}`, {
-            method:  'PATCH',
+        const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+            method: 'PATCH',
             headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
-            body:    JSON.stringify(body)
+            body: JSON.stringify(body)
         });
         const data = await res.json();
         if (data.success) {
@@ -1142,7 +1151,7 @@ async function submitEditOrder(e) {
 
 function openCancelModal(orderId) {
     document.getElementById('cancelOrderId').value = orderId;
-    document.getElementById('cancelReason').value  = '';
+    document.getElementById('cancelReason').value = '';
     document.getElementById('cancelMsg').textContent = '';
     document.getElementById('cancelModal').classList.add('show');
 }
@@ -1154,9 +1163,9 @@ function closeCancelModal() {
 async function submitCancel(e) {
     e.preventDefault();
     const orderId = document.getElementById('cancelOrderId').value;
-    const reason  = document.getElementById('cancelReason').value.trim();
-    const btn     = e.target.querySelector('button[type="submit"]');
-    const msgEl   = document.getElementById('cancelMsg');
+    const reason = document.getElementById('cancelReason').value.trim();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const msgEl = document.getElementById('cancelMsg');
 
     if (!reason) {
         msgEl.textContent = '⚠️ Please enter a cancellation reason.';
@@ -1169,10 +1178,10 @@ async function submitCancel(e) {
 
     try {
         const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
-        const res  = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
-            method:  'PATCH',
+        const res = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+            method: 'PATCH',
             headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ cancel_reason: reason })
+            body: JSON.stringify({ cancel_reason: reason })
         });
         const data = await res.json();
         if (data.success) {
@@ -1195,14 +1204,14 @@ async function submitCancel(e) {
 // ==================== ACTIVITY LOG ====================
 
 const LOG_ACTION_COLORS = {
-    LOGIN:          { bg: '#dbeafe', color: '#1d4ed8', label: '🔐 Login' },
-    PASSWORD_CHANGE:{ bg: '#ede9fe', color: '#6d28d9', label: '🔑 Password' },
-    CREATE:         { bg: '#dcfce7', color: '#15803d', label: '➕ Create' },
-    UPDATE:         { bg: '#fef9c3', color: '#a16207', label: '✏️ Update' },
-    DELETE:         { bg: '#fee2e2', color: '#b91c1c', label: '🗑️ Delete' },
-    STATUS_CHANGE:  { bg: '#e0f2fe', color: '#0369a1', label: '🔄 Status' },
-    REFUND:         { bg: '#f3e8ff', color: '#7c3aed', label: '💸 Refund' },
-    CANCEL:         { bg: '#fee2e2', color: '#dc2626', label: '🚫 Cancel' },
+    LOGIN: { bg: '#dbeafe', color: '#1d4ed8', label: '🔐 Login' },
+    PASSWORD_CHANGE: { bg: '#ede9fe', color: '#6d28d9', label: '🔑 Password' },
+    CREATE: { bg: '#dcfce7', color: '#15803d', label: '➕ Create' },
+    UPDATE: { bg: '#fef9c3', color: '#a16207', label: '✏️ Update' },
+    DELETE: { bg: '#fee2e2', color: '#b91c1c', label: '🗑️ Delete' },
+    STATUS_CHANGE: { bg: '#e0f2fe', color: '#0369a1', label: '🔄 Status' },
+    REFUND: { bg: '#f3e8ff', color: '#7c3aed', label: '💸 Refund' },
+    CANCEL: { bg: '#fee2e2', color: '#dc2626', label: '🚫 Cancel' },
 };
 
 async function loadLogs(filterAction = '', filterUser = '') {
@@ -1217,14 +1226,14 @@ async function loadLogs(filterAction = '', filterUser = '') {
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
                 <span style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;">Filter:</span>
                 ${['', 'LOGIN', 'CREATE', 'UPDATE', 'DELETE', 'STATUS_CHANGE', 'REFUND', 'PASSWORD_CHANGE'].map(a => {
-                    const meta = LOG_ACTION_COLORS[a] || { bg:'#f0f0f0', color:'#333', label:'All' };
-                    return `<button onclick="loadLogs('${a}', document.getElementById('logsUserSearch')?.value || '')"
+            const meta = LOG_ACTION_COLORS[a] || { bg: '#f0f0f0', color: '#333', label: 'All' };
+            return `<button onclick="loadLogs('${a}', document.getElementById('logsUserSearch')?.value || '')"
                         id="logFilterBtn_${a || 'all'}"
                         style="padding:5px 14px;border:2px solid ${meta.bg};background:#fff;color:${meta.color};
                                font-size:0.8rem;font-weight:700;cursor:pointer;border-radius:3px;transition:all 0.15s;">
                         ${meta.label || 'All'}
                     </button>`;
-                }).join('')}
+        }).join('')}
             </div>
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:1.2rem;">
                 <input id="logsUserSearch" type="text" placeholder="🔍 Filter by username..."
@@ -1262,7 +1271,7 @@ async function loadLogs(filterAction = '', filterUser = '') {
         const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
         const params = new URLSearchParams({ limit: 300 });
         if (filterAction) params.append('action', filterAction);
-        if (filterUser)   params.append('user', filterUser);
+        if (filterUser) params.append('user', filterUser);
 
         const res = await fetch(`${API_BASE}/admin-logs?${params}`, {
             headers: { 'Authorization': `Bearer ${getAdminToken()}` }
@@ -1282,8 +1291,8 @@ async function loadLogs(filterAction = '', filterUser = '') {
         container.innerHTML = data.logs.map(log => {
             const meta = LOG_ACTION_COLORS[log.action] || { bg: '#f0f0f0', color: '#333', label: log.action };
             const date = new Date(log.created_at).toLocaleString('en-GB', {
-                day:'2-digit', month:'short', year:'numeric',
-                hour:'2-digit', minute:'2-digit', second:'2-digit'
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
             });
             const entityLabel = log.entity_type ? `<span style="color:#888;font-size:0.78rem;">${log.entity_type}${log.entity_id ? ' #' + log.entity_id : ''}</span>` : '—';
             return `
@@ -1413,17 +1422,17 @@ async function saveBanner(e) {
     e.preventDefault();
     const id = document.getElementById('bannerEditId').value;
     const payload = {
-        title_en:     document.getElementById('bannerTitleEn').value,
-        title_ar:     document.getElementById('bannerTitleAr').value,
-        subtitle_en:  document.getElementById('bannerSubtitleEn').value,
-        subtitle_ar:  document.getElementById('bannerSubtitleAr').value,
-        btn_text_en:  document.getElementById('bannerBtnEn').value,
-        btn_text_ar:  document.getElementById('bannerBtnAr').value,
-        btn_link:     document.getElementById('bannerBtnLink').value,
-        image_url:    document.getElementById('bannerImageUrl').value,
-        bg_color:     document.getElementById('bannerBgColor').value,
-        sort_order:   parseInt(document.getElementById('bannerSortOrder').value) || 0,
-        is_active:    document.getElementById('bannerIsActive').checked
+        title_en: document.getElementById('bannerTitleEn').value,
+        title_ar: document.getElementById('bannerTitleAr').value,
+        subtitle_en: document.getElementById('bannerSubtitleEn').value,
+        subtitle_ar: document.getElementById('bannerSubtitleAr').value,
+        btn_text_en: document.getElementById('bannerBtnEn').value,
+        btn_text_ar: document.getElementById('bannerBtnAr').value,
+        btn_link: document.getElementById('bannerBtnLink').value,
+        image_url: document.getElementById('bannerImageUrl').value,
+        bg_color: document.getElementById('bannerBgColor').value,
+        sort_order: parseInt(document.getElementById('bannerSortOrder').value) || 0,
+        is_active: document.getElementById('bannerIsActive').checked
     };
 
     const url = id ? `${API_URL}/banners/${id}` : `${API_URL}/banners`;
