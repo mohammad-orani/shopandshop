@@ -1792,37 +1792,39 @@ select:focus-visible {
 
 @media (max-width: 640px) {
     .trust-strip {
-        padding: 0.6rem 1rem;
-        overflow-x: auto;          /* scroll horizontally if needed */
-        -webkit-overflow-scrolling: touch;
+        padding: 0.5rem 0.75rem;
     }
     .trust-strip-inner {
-        flex-wrap: nowrap;         /* single row, no wrapping */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 0;
-        justify-content: flex-start;
-        width: max-content;        /* let it be as wide as needed */
-        min-width: 100%;
-    }
-    .trust-strip-item {
-        padding: 0.3rem 0.9rem;
-        min-width: unset;
-        flex: 0 0 auto;
-        gap: 0.4rem;
+        flex-wrap: unset;
+        width: 100%;
     }
     .trust-strip-divider {
-        width: 1px;
-        height: 24px;
-        flex-shrink: 0;
+        display: none;
+    }
+    .trust-strip-item {
+        padding: 0.3rem 0.4rem;
+        min-width: unset;
+        flex: unset;
+        gap: 0.3rem;
+        justify-content: center;
+        border-right: 1px solid var(--border-light);
+    }
+    .trust-strip-item:last-child {
+        border-right: none;
+        border-left: none;
     }
     .trust-strip-icon {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     .trust-strip-title {
-        font-size: 0.72rem;
-        white-space: nowrap;
+        font-size: 0.68rem;
+        line-height: 1.2;
     }
     .trust-strip-sub {
-        font-size: 0.65rem;
-        white-space: nowrap;
+        font-size: 0.6rem;
+        line-height: 1.2;
     }
 }
