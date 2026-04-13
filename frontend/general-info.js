@@ -64,10 +64,15 @@
         const currentLang = localStorage.getItem('selectedLanguage') || 'en';
 
         document.querySelectorAll('.delivery-banner-subtitle').forEach(el => {
+            const arTemplate = el.getAttribute('data-ar-template');
+            const enTemplate = el.getAttribute('data-en-template');
+            // Replace {amount} and write back into data-en/data-ar so switchLanguage() uses the correct text
+            if (enTemplate) el.setAttribute('data-en', enTemplate.replace('{amount}', minAmount));
+            if (arTemplate) el.setAttribute('data-ar', arTemplate.replace('{amount}', minAmount));
+            // Also set current visible text immediately
             const template = currentLang === 'ar'
-                ? el.getAttribute('data-ar-template')
-                : el.getAttribute('data-en-template');
-
+                ? (arTemplate || enTemplate)
+                : (enTemplate || arTemplate);
             if (template) {
                 el.textContent = template.replace('{amount}', minAmount);
             }
@@ -123,13 +128,18 @@
         if (document.getElementById('wa-float-wrapper')) return;
 
         let waLink = info.whatsapp || '';
+
+        function toWaMe(raw) {
+            let digits = raw.replace(/\D/g, '');
+            if (digits.startsWith('00')) digits = digits.slice(2); // 00962... → 962...
+            if (digits.startsWith('0'))  digits = digits.slice(1); // 0791... → 791...
+            return `https://wa.me/${digits}`;
+        }
+
         if (waLink && !waLink.startsWith('http')) {
-            // Field contains a raw number, not a full URL — build wa.me link
-            const digits = waLink.replace(/\D/g, '');
-            waLink = `https://wa.me/${digits}`;
+            waLink = toWaMe(waLink);
         } else if (!waLink && info.phone_number) {
-            const digits = info.phone_number.replace(/\D/g, '');
-            waLink = `https://wa.me/${digits}`;
+            waLink = toWaMe(info.phone_number);
         }
         if (!waLink) return;
 
@@ -144,9 +154,9 @@
                 }
                 @media (max-width: 640px) {
                     #wa-float-btn {
-                        width:48px !important;
-                        height:48px !important;
-                        bottom:4.5rem !important;
+                        width:50px !important;
+                        height:50px !important;
+                        bottom:5.5rem !important;
                         right:1rem !important;
                     }
                     #wa-float-btn svg {
@@ -156,8 +166,8 @@
                     #wa-float-label {
                         font-size:0.72rem !important;
                         padding:6px 10px !important;
-                        bottom:calc(4.5rem + 6px) !important;
-                        right:calc(1rem + 48px + 8px) !important;
+                        bottom:calc(5.5rem + 7px) !important;
+                        right:calc(1rem + 50px + 8px) !important;
                     }
                 }
             `;

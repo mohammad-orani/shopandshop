@@ -598,15 +598,6 @@ body {
     background: #e74c3c;
 }
 
-.badge-discount {
-    background: #e74c3c;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 0;
-    padding: 5px 8px;
-    border-radius: 8px;
-}
-
 .badge-topseller {
     background: linear-gradient(135deg, #f39c12, #e67e22);
 }
@@ -1307,20 +1298,20 @@ body[dir="rtl"] .social-link:hover {
 
 /* Remove space between search bar and slider */
 #site-header+* {
-    margin-top: 0.5 !important;
-    margin-bottom: 0.5 !important;
+    margin-top: 0.1 !important;
+    margin-bottom: 0.1 !important;
 }
 
 .hero-slider {
-    margin-top: 0.5 !important;
-    padding-top: 0.5 !important;
-    margin-bottom: 0.5 !important;
-    padding-bottom: 0.5 !important;
+    margin-top: 0.1 !important;
+    padding-top: 0.1 !important;
+    margin-bottom: 0.1 !important;
+    padding-bottom: 0.1 !important;
 }
 
 .primejo-search-bar+.hero-slider {
-    margin-top: 0.5 !important;
-    margin-bottom: 0.5 !important;
+    margin-top: 0.1 !important;
+    margin-bottom: 0.1 !important;
 }
 
 /* ============================================
@@ -1376,104 +1367,5 @@ body[dir="rtl"] .social-link:hover {
         margin-left: auto;
         position: relative;
         z-index: 2;
-    }
-}
-/* ==================== COMPACT SQUARE CARDS — MOBILE ==================== */
-
-@media (max-width: 768px) {
-    /* Tighter card info */
-    .topbaic-product-card .product-info,
-    .product-card .product-info {
-        padding: 10px;
-        gap: 5px;
-    }
-
-    /* Hide vendor label — not needed on small screens */
-    .topbaic-product-card .product-vendor,
-    .product-card .product-vendor {
-        display: none;
-    }
-
-    /* 1-line title to keep card compact */
-    .topbaic-product-card .product-title,
-    .product-card .product-title,
-    .topbaic-product-card .product-name,
-    .product-card .product-name {
-        font-size: 0.8rem;
-        -webkit-line-clamp: 1;
-        line-height: 1.3;
-    }
-
-    /* Smaller price */
-    .topbaic-product-card .price-current,
-    .product-card .price-current {
-        font-size: 1rem;
-    }
-
-    .topbaic-product-card .price-original,
-    .product-card .price-original {
-        font-size: 0.75rem;
-    }
-
-    /* Compact stock indicator — hide label, keep dot */
-    .topbaic-product-card .stock-status span:last-child,
-    .product-card .stock-status span:last-child {
-        display: none;
-    }
-
-    /* Always show quick actions on touch screens */
-    .topbaic-product-card .quick-actions,
-    .product-card .quick-actions {
-        opacity: 1;
-        transform: none;
-    }
-
-    .quick-action-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-    }
-
-    /* Compact add-to-cart button */
-    .topbaic-product-card .add-to-cart-btn,
-    .product-card .add-to-cart-btn {
-        padding: 7px 8px;
-        font-size: 0.72rem;
-        letter-spacing: 0.5px;
-    }
-
-    /* No lift on touch */
-    .topbaic-product-card:hover,
-    .product-card:hover {
-        transform: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .products-grid {
-        gap: 8px;
-    }
-
-    .topbaic-product-card .product-info,
-    .product-card .product-info {
-        padding: 8px;
-        gap: 4px;
-    }
-
-    .topbaic-product-card .price-current,
-    .product-card .price-current {
-        font-size: 0.92rem;
-    }
-
-    /* Hide save% badge on very small screens */
-    .topbaic-product-card .price-save,
-    .product-card .price-save {
-        display: none;
-    }
-
-    .topbaic-product-card .add-to-cart-btn,
-    .product-card .add-to-cart-btn {
-        padding: 6px 6px;
-        font-size: 0.68rem;
     }
 }

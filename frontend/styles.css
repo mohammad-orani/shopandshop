@@ -1722,10 +1722,16 @@ select:focus-visible {
     color: #f5a623;
     font-size: 0.8rem;
     letter-spacing: 1px;
+    display: inline-block;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .trust-icon {
     font-size: 0.9rem;
+    display: inline-block;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 /* ==================== TRUST STRIP (HOMEPAGE) ==================== */
@@ -1768,6 +1774,9 @@ select:focus-visible {
     line-height: 1;
     color: var(--accent-gold);
     flex-shrink: 0;
+    display: inline-block;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .trust-strip-title {
@@ -1791,40 +1800,20 @@ select:focus-visible {
 }
 
 @media (max-width: 640px) {
-    .trust-strip {
-        padding: 0.5rem 0.75rem;
-    }
     .trust-strip-inner {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0;
-        flex-wrap: unset;
-        width: 100%;
+        gap: 0.5rem;
+    }
+    .trust-strip-item {
+        padding: 0.4rem 1rem;
+        min-width: 130px;
     }
     .trust-strip-divider {
         display: none;
     }
-    .trust-strip-item {
-        padding: 0.3rem 0.4rem;
-        min-width: unset;
-        flex: unset;
-        gap: 0.3rem;
-        justify-content: center;
-        border-right: 1px solid var(--border-light);
-    }
-    .trust-strip-item:last-child {
-        border-right: none;
-        border-left: none;
-    }
-    .trust-strip-icon {
-        font-size: 1rem;
-    }
     .trust-strip-title {
-        font-size: 0.68rem;
-        line-height: 1.2;
+        font-size: 0.78rem;
     }
     .trust-strip-sub {
-        font-size: 0.6rem;
-        line-height: 1.2;
+        font-size: 0.7rem;
     }
 }
