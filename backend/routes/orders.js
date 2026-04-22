@@ -121,6 +121,36 @@ router.post('/', async (req, res) => {
         await logAction(req, 'CREATE', 'order', order_id,
             `New order from ${customer_name || 'unknown'} (${sanitizedPhone}) | city: ${delivery_city || '—'} | total: ${total || 0} | items: ${(items || []).length}`
         );
+
+        // Auto-save customer phone to whatsapp_contacts
+        // Normalise: strip non-digits, remove leading 00 or 0
+        try {
+            let waPhone = (sanitizedPhone || '').replace(/\D/g, '');
+            if (waPhone.startsWith('00')) waPhone = waPhone.slice(2);
+            else if (waPhone.startsWith('0')) waPhone = waPhone.slice(1);
+
+            if (waPhone.length >= 7) {
+                // Check how many orders this phone has placed (excluding current)
+                const [[{ orderCount }]] = await pool.query(
+                    `SELECT COUNT(*) AS orderCount FROM orders WHERE customer_phone = ?`,
+                    [sanitizedPhone]
+                );
+                // 1st order → 'New', 2+ orders → 'Normal', upgrade VIP/Inactive only if not already set
+                const newCategory = orderCount <= 1 ? 'New' : 'Normal';
+
+                await pool.query(
+                    `INSERT INTO whatsapp_contacts (name, phone, category)
+                     VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE
+                         name     = IF(name = '' OR name IS NULL, VALUES(name), name),
+                         category = IF(category IN ('New'), ?, category)`,
+                    [customer_name || '', waPhone, newCategory, newCategory]
+                );
+            }
+        } catch (waErr) {
+            console.warn('WA contact auto-save warning:', waErr.message);
+        }
+
         res.status(201).json({ success: true, message: 'Order created successfully', order_id });
 
     } catch (error) {
