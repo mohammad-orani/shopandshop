@@ -1,5 +1,7 @@
 // ==================== ADMIN.JS - DATABASE CONNECTED ====================
 
+const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+
 // ==================== NAVIGATION ====================
 
 function showSection(sectionId) {
@@ -13,27 +15,31 @@ function showSection(sectionId) {
     if (link) link.classList.add('active');
 
     const titles = {
-        'dashboard': 'Dashboard',
-        'products': 'Product Management',
-        'categories': 'Category Management',
-        'orders': 'Order Management',
-        'delivery': 'Delivery Management',
-        'reports': 'Reports & Export',
-        'banners': 'Banner Management'
+        'dashboard':           'Dashboard',
+        'products':            'Product Management',
+        'categories':          'Category Management',
+        'orders':              'Order Management',
+        'delivery':            'Delivery Management',
+        'reports':             'Reports & Export',
+        'banners':             'Banner Management',
+        'wa-contacts':         'WhatsApp Contacts',
+        'wa-broadcast':        'WhatsApp Broadcast'
     };
 
     const titleEl = document.getElementById('pageTitle');
     if (titleEl) titleEl.textContent = titles[sectionId] || sectionId;
 
-    if (sectionId === 'dashboard') loadDashboard();
-    if (sectionId === 'products') loadProducts();
-    if (sectionId === 'categories') loadCategories();
-    if (sectionId === 'orders') loadOrders();
-    if (sectionId === 'delivery') loadDelivery();
-    if (sectionId === 'reports') loadReports();
-    if (sectionId === 'banners') loadBanners();
+    if (sectionId === 'dashboard')            loadDashboard();
+    if (sectionId === 'products')             loadProducts();
+    if (sectionId === 'categories')           loadCategories();
+    if (sectionId === 'orders')               loadOrders();
+    if (sectionId === 'delivery')             loadDelivery();
+    if (sectionId === 'reports')              loadReports();
+    if (sectionId === 'banners')              loadBanners();
     if (sectionId === 'general-info-section') loadGeneralInfo();
-    if (sectionId === 'logs') loadLogs();
+    if (sectionId === 'logs')                 loadLogs();
+    if (sectionId === 'wa-contacts')          loadWaContacts();
+    if (sectionId === 'wa-broadcast')         loadWaBroadcastCount();
 }
 
 // ==================== DASHBOARD ====================

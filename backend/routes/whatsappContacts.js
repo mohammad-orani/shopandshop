@@ -79,21 +79,44 @@ router.post('/import', authenticateToken, isAdmin, upload.single('file'), async 
 
         if (!rows.length) return res.status(400).json({ success: false, error: 'Excel file is empty' });
 
-        // Normalise header names (case-insensitive)
-        const normaliseRow = (row) => {
-            const out = {};
-            for (const [k, v] of Object.entries(row)) {
-                out[k.toLowerCase().trim()] = String(v).trim();
+        // DEBUG: return first row keys so we can see exact header strings
+        const debugKeys = Object.keys(rows[0]);
+        if (req.query.debug === '1') {
+            return res.json({ success: false, debug: true, keys: debugKeys, firstRow: rows[0] });
+        }
+
+        // Auto-detect columns by header keywords, then fall back to value-pattern scanning
+        const allHeaders = Object.keys(rows[0]);
+
+        const findHeader = (...keywords) => {
+            for (const kw of keywords) {
+                const match = allHeaders.find(h => h.includes(kw));
+                if (match) return match;
             }
-            return out;
+            return null;
         };
+
+        // Detect phone column: header keyword match first, then value-pattern scan
+        let phoneCol = findHeader('هاتف', 'phone', 'رقم', 'mobile', 'tel');
+        if (!phoneCol) {
+            // Scan ALL data rows and pick the column where most values look like mobile numbers
+            // (Jordanian mobiles: 10 digits starting with 07, or 9 digits after stripping leading 0)
+            const isPhone = v => {
+                const d = String(v || '').replace(/\D/g, '');
+                return (d.length === 10 && d.startsWith('07')) ||
+                       (d.length === 9  && /^[5-9]/.test(d))  ||
+                       (d.length === 12 && d.startsWith('962'));
+            };
+            phoneCol = allHeaders.find(h => rows.slice(0, 5).filter(r => isPhone(r[h])).length >= 3);
+        }
+
+        let nameCol = findHeader('name', 'اسم', 'الاسم', 'Name', 'NAME');
 
         let inserted = 0, skipped = 0, errors = [];
 
         for (const rawRow of rows) {
-            const row   = normaliseRow(rawRow);
-            const name  = row['name'] || row['اسم'] || '';
-            let   phone = row['phone'] || row['هاتف'] || row['رقم'] || '';
+            const name  = nameCol ? String(rawRow[nameCol] || '').trim() : '';
+            let   phone = phoneCol ? String(rawRow[phoneCol] || '').trim() : '';
 
             if (!phone) { skipped++; continue; }
 

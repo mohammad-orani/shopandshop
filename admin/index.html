@@ -53,6 +53,12 @@
                 <a href="#logs" class="nav-link" onclick="showSection('logs')">
                     <span>📋</span> Activity Log
                 </a>
+                <a href="#wa-contacts" class="nav-link" onclick="showSection('wa-contacts')">
+                    <span>📇</span> WA Contacts
+                </a>
+                <a href="#wa-broadcast" class="nav-link" onclick="showSection('wa-broadcast')">
+                    <span>📢</span> WA Broadcast
+                </a>
             </nav>
         </aside>
 
@@ -805,6 +811,148 @@ Add "Banners" to your sidebar nav too:
                 </div>
             </section>
 
+            <!-- ══════════════════════════════════════════
+                 WhatsApp Contacts Section
+            ══════════════════════════════════════════ -->
+            <section id="wa-contacts" class="content-section">
+                <div class="section-header">
+                    <div>
+                        <h3>📇 WhatsApp Contact Lists</h3>
+                        <span style="font-size:0.82rem;color:#888;">Import and manage contact lists for broadcast</span>
+                    </div>
+                </div>
+
+                <!-- Import Card -->
+                <div class="card" style="margin-bottom:1.5rem;padding:1.25rem;">
+                    <h4 style="margin-bottom:1rem;font-size:0.95rem;">Import from Excel (.xlsx)</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;">
+                        <div class="form-group" style="margin:0;min-width:160px;">
+                            <label>Category</label>
+                            <select id="waImportCategory" onchange="toggleWaCustomCategory()">
+                                <option value="Normal">Normal</option>
+                                <option value="VIP">VIP</option>
+                                <option value="New">New</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Custom">Custom…</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="waCustomCategoryGroup" style="margin:0;min-width:160px;display:none;">
+                            <label>Custom Category Name</label>
+                            <input type="text" id="waCustomCategoryInput" placeholder="e.g. VIP Jordan">
+                        </div>
+                        <div class="form-group" style="margin:0;min-width:200px;">
+                            <label>Excel File (name + phone columns)</label>
+                            <input type="file" id="waImportFile" accept=".xlsx,.xls">
+                        </div>
+                        <button class="btn-primary" onclick="importWaContacts()" style="height:38px;">
+                            ⬆️ Import Contacts
+                        </button>
+                    </div>
+                    <div id="waImportResult" style="margin-top:0.75rem;font-size:0.85rem;"></div>
+                </div>
+
+                <!-- Filter + Table -->
+                <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+                    <label style="font-size:0.85rem;font-weight:600;">Filter by category:</label>
+                    <select id="waContactsFilter" onchange="loadWaContacts()" style="min-width:150px;">
+                        <option value="">All</option>
+                        <option value="VIP">VIP</option>
+                        <option value="Normal">Normal</option>
+                        <option value="New">New</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                    <span id="waContactsCount" style="font-size:0.82rem;color:#888;"></span>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" style="font-size:0.88rem;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Category</th>
+                                <th>Added</th>
+                                <th style="width:80px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="waContactsTableBody">
+                            <tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════
+                 WhatsApp Broadcast Section
+            ══════════════════════════════════════════ -->
+            <section id="wa-broadcast" class="content-section">
+                <div class="section-header">
+                    <div>
+                        <h3>📢 WhatsApp Broadcast</h3>
+                        <span style="font-size:0.82rem;color:#888;">Send messages to a contact category via Meta Cloud API</span>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex-wrap:wrap;">
+                    <!-- Compose -->
+                    <div class="card" style="padding:1.25rem;">
+                        <h4 style="margin-bottom:1rem;font-size:0.95rem;">Compose Message</h4>
+
+                        <div class="form-group">
+                            <label>Target Category</label>
+                            <select id="waBroadcastCategory" onchange="loadWaBroadcastCount()">
+                                <option value="Normal">Normal</option>
+                                <option value="VIP">VIP</option>
+                                <option value="New">New</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <p id="waBroadcastCountLabel" style="font-size:0.82rem;color:#888;margin:-0.5rem 0 0.75rem;"></p>
+
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:0.5rem;">
+                                <input type="checkbox" id="waBroadcastTemplateToggle" onchange="toggleWaBroadcastTemplate()">
+                                Use Approved Template (for cold outreach)
+                            </label>
+                        </div>
+
+                        <div id="waBroadcastTextGroup" class="form-group">
+                            <label>Message Body</label>
+                            <textarea id="waBroadcastMessage" rows="5" placeholder="Type your message here…" style="width:100%;resize:vertical;"></textarea>
+                        </div>
+
+                        <div id="waBroadcastTemplateGroup" class="form-group" style="display:none;">
+                            <label>Template Name</label>
+                            <input type="text" id="waBroadcastTemplateName" placeholder="e.g. hello_world">
+                            <label style="margin-top:0.5rem;">Language Code</label>
+                            <input type="text" id="waBroadcastLangCode" value="ar" placeholder="ar / en">
+                        </div>
+
+                        <button class="btn-primary" onclick="sendWaBroadcast()" id="waBroadcastBtn" style="width:100%;margin-top:0.5rem;">
+                            📤 Send Broadcast
+                        </button>
+
+                        <!-- Progress -->
+                        <div id="waBroadcastProgress" style="display:none;margin-top:1rem;">
+                            <div style="height:6px;background:#eee;border-radius:4px;overflow:hidden;">
+                                <div id="waBroadcastBar" style="height:100%;background:var(--color-primary,#25d366);width:0%;transition:width 0.3s;border-radius:4px;"></div>
+                            </div>
+                            <p id="waBroadcastProgressLabel" style="font-size:0.8rem;color:#888;margin-top:0.4rem;text-align:center;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Result -->
+                    <div class="card" style="padding:1.25rem;">
+                        <h4 style="margin-bottom:1rem;font-size:0.95rem;">Last Broadcast Result</h4>
+                        <div id="waBroadcastResult" style="font-size:0.88rem;color:#888;">
+                            No broadcast sent yet in this session.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -993,6 +1141,7 @@ Add "Banners" to your sidebar nav too:
     <script src="admin-api.js"></script>
     <script src="admin.js"></script>
     <script src="admin-delivery.js"></script>
+    <script src="wa-admin.js"></script>
 </body>
 
 </html>
