@@ -173,19 +173,24 @@ async function sendWaBroadcast() {
         if (progressLabel) progressLabel.textContent = 'Done!';
 
         if (data.success) {
-            var errorLines = (data.errors || []).slice(0, 5).map(function(e) {
+            var r = data.results || data; // support both {results:{sent,failed}} and flat {sent,failed}
+            var sent   = r.sent   !== undefined ? r.sent   : data.sent;
+            var failed = r.failed !== undefined ? r.failed : data.failed;
+            var total  = (sent || 0) + (failed || 0);
+            var errs   = r.errors || data.errors || [];
+            var errorLines = errs.slice(0, 5).map(function(e) {
                 return '<li style="color:#e74c3c;font-size:0.8rem;">' + e.phone + ': ' + e.error + '</li>';
             }).join('');
             if (resultEl) resultEl.innerHTML =
                 '<div style="margin-bottom:0.75rem;">' +
-                '<span style="color:#27ae60;font-size:1.1rem;font-weight:700;">Sent: ' + data.sent + '</span>' +
+                '<span style="color:#27ae60;font-size:1.1rem;font-weight:700;">Sent: ' + sent + '</span>' +
                 '&nbsp;&nbsp;' +
-                '<span style="color:#e74c3c;font-size:1.1rem;font-weight:700;">Failed: ' + data.failed + '</span>' +
+                '<span style="color:#e74c3c;font-size:1.1rem;font-weight:700;">Failed: ' + failed + '</span>' +
                 '&nbsp;&nbsp;' +
-                '<span style="color:#888;font-size:0.85rem;">Total: ' + data.total + '</span>' +
+                '<span style="color:#888;font-size:0.85rem;">Total: ' + total + '</span>' +
                 '</div>' +
                 (errorLines ? '<ul style="list-style:none;padding:0;margin:0;">' + errorLines + '</ul>' : '') +
-                (data.errors && data.errors.length > 5 ? '<p style="color:#888;font-size:0.78rem;">...and ' + (data.errors.length - 5) + ' more errors</p>' : '');
+                (errs.length > 5 ? '<p style="color:#888;font-size:0.78rem;">...and ' + (errs.length - 5) + ' more errors</p>' : '');
         } else {
             if (resultEl) resultEl.innerHTML = '<span style="color:#e74c3c;">Error: ' + data.error + '</span>';
         }
