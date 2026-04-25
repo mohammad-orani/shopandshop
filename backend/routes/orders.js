@@ -4,6 +4,7 @@ const express  = require('express');
 const pool     = require('../db');
 const { notifyOrderStatusChange } = require('../notifications');
 const { authenticateToken, isAdmin, logAction } = require('../middleware');
+const { sendOrderConfirmation, notifyAdmin } = require('../utils/whatsapp');
 
 const router = express.Router();
 
@@ -121,6 +122,15 @@ router.post('/', async (req, res) => {
         await logAction(req, 'CREATE', 'order', order_id,
             `New order from ${customer_name || 'unknown'} (${sanitizedPhone}) | city: ${delivery_city || '—'} | total: ${total || 0} | items: ${(items || []).length}`
         );
+
+        // WhatsApp notifications (fire-and-forget — never block the response)
+        const waPhone = sanitizedPhone || customer_phone || '';
+        if (waPhone) {
+            sendOrderConfirmation(waPhone, customer_name || 'عزيزي العميل', order_id, total || 0)
+                .catch(e => console.warn('WA confirmation failed:', e.message));
+        }
+        notifyAdmin(order_id, customer_name || 'Unknown', total || 0, waPhone)
+            .catch(e => console.warn('WA admin notify failed:', e.message));
 
         // Auto-save customer phone to whatsapp_contacts
         // Normalise: strip non-digits, remove leading 00 or 0
