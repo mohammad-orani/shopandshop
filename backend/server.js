@@ -161,6 +161,40 @@ async function ensureGeneralInfoColumns() {
     }
 }
 
+async function ensureProductColorVariantsColumn() {
+    try {
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products'`
+        );
+        const existing = cols.map(c => c.COLUMN_NAME);
+        if (!existing.includes('color_variants')) {
+            await pool.query(`ALTER TABLE products ADD COLUMN color_variants JSON DEFAULT NULL`);
+            console.log('Added column: products.color_variants');
+        }
+        console.log('products.color_variants verified');
+    } catch (err) {
+        console.warn('color_variants migration warning:', err.message);
+    }
+}
+
+async function ensureOrderItemsVariantColumn() {
+    try {
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'order_items'`
+        );
+        const existing = cols.map(c => c.COLUMN_NAME);
+        if (!existing.includes('selected_variant')) {
+            await pool.query(`ALTER TABLE order_items ADD COLUMN selected_variant VARCHAR(100) DEFAULT NULL`);
+            console.log('Added column: order_items.selected_variant');
+        }
+        console.log('order_items.selected_variant verified');
+    } catch (err) {
+        console.warn('selected_variant migration warning:', err.message);
+    }
+}
+
 async function ensureWhatsAppTables() {
     try {
         await pool.query(`
@@ -209,6 +243,8 @@ async function ensureWhatsAppTables() {
     await ensureAdminLogsTable();
     await ensureGeneralInfoColumns();
     await ensureProductsQuantityTiersColumn();
+    await ensureProductColorVariantsColumn();
+    await ensureOrderItemsVariantColumn();
 
     app.listen(PORT, () => {
         console.log(`Primejo API running on port ${PORT}`);

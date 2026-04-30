@@ -167,23 +167,27 @@ function saveCart(cart) {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-function addToCart(productId, quantity = 1, tierPrice = null) {
+function addToCart(productId, quantity = 1, tierPrice = null, selectedColor = null) {
     const cart = getCart();
+    // Items with different colors are kept as separate cart entries
+    const sameVariant = item =>
+        String(item.productId) === String(productId) &&
+        (item.selectedColor || null) === (selectedColor || null);
+
     if (tierPrice !== null) {
-        // Tier item: accumulate on existing entry for this product
-        const existingIndex = cart.findIndex(item => String(item.productId) === String(productId));
+        const existingIndex = cart.findIndex(sameVariant);
         if (existingIndex >= 0) {
-            cart[existingIndex].quantity += quantity;
+            cart[existingIndex].quantity  += quantity;
             cart[existingIndex].tierPrice += tierPrice;
         } else {
-            cart.push({ productId, quantity, tierPrice });
+            cart.push({ productId, quantity, tierPrice, selectedColor: selectedColor || null });
         }
     } else {
-        const existingItem = cart.find(item => String(item.productId) === String(productId));
+        const existingItem = cart.find(sameVariant);
         if (existingItem) {
             existingItem.quantity += quantity;
         } else {
-            cart.push({ productId, quantity });
+            cart.push({ productId, quantity, selectedColor: selectedColor || null });
         }
     }
     saveCart(cart);

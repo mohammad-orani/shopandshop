@@ -2,6 +2,7 @@
 
 let selectedQuantity = 1;
 let selectedTierPrice = null;
+let selectedColor = null;
 let currentProduct = null;
 
 // ==================== LOAD PRODUCT DETAILS ====================
@@ -54,11 +55,26 @@ async function loadProductDetails() {
                     if (!t) return null;
                     return typeof t === 'string' ? JSON.parse(t) : t;
                 } catch (e) { return null; }
+            })(),
+            color_variants: (() => {
+                try {
+                    const c = raw.color_variants;
+                    if (!c) return null;
+                    return typeof c === 'string' ? JSON.parse(c) : c;
+                } catch (e) { return null; }
             })()
         };
 
         console.log('✅ Found product:', product);
         currentProduct = product;
+
+        // Pre-select first color if product has color variants
+        const colors = product.color_variants;
+        if (colors && Array.isArray(colors) && colors.length > 0) {
+            selectedColor = colors[0].name;
+        } else {
+            selectedColor = null;
+        }
 
         // Pre-select first tier if product has tiers
         const tiers = product.quantity_tiers;
@@ -192,6 +208,30 @@ function displayProductDetails(product) {
                 ` : ''}
             </div>
 
+            ${(() => {
+                const colors = product.color_variants;
+                if (!colors || !Array.isArray(colors) || !colors.length) return '';
+                return `
+                <div class="color-selector">
+                    <label class="color-selector-label">
+                        <span data-en="Color:" data-ar="اللون:">Color:</span>
+                        <span id="selectedColorLabel" style="font-weight:700;margin-inline-start:0.4rem;">${colors[0].name}</span>
+                    </label>
+                    <div class="color-options">
+                        ${colors.map((c, i) => `
+                            <button class="color-swatch${i === 0 ? ' active' : ''}"
+                                    onclick="selectColor('${c.name}', '${c.name_ar || c.name}', this)"
+                                    title="${c.name}"
+                                    data-name="${c.name}"
+                                    data-name-ar="${c.name_ar || c.name}"
+                                    style="${c.hex ? `background:${c.hex};` : ''}">
+                                ${!c.hex ? `<span class="color-swatch-label">${c.name}</span>` : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>`;
+            })()}
+
             ${(product.quantity_to_sell || product.quantityToSell || 0) > 0 ? (() => {
                 const tiers = product.quantity_tiers;
                 if (tiers && Array.isArray(tiers) && tiers.length > 0) {
@@ -315,6 +355,15 @@ function updateQuantity() {
     selectedQuantity = parseInt(input.value);
 }
 
+function selectColor(name, nameAr, btn) {
+    selectedColor = name;
+    const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+    const label = document.getElementById('selectedColorLabel');
+    if (label) label.textContent = isAr ? nameAr : name;
+    document.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
 function selectTier(qty, price, btn) {
     selectedQuantity = qty;
     selectedTierPrice = price;
@@ -325,16 +374,25 @@ function selectTier(qty, price, btn) {
 function addProductToCart() {
     if (!currentProduct) return;
 
-    addToCart(currentProduct.id, selectedQuantity, selectedTierPrice);
+    // Require color selection if product has variants
+    const colors = currentProduct.color_variants;
+    if (colors && Array.isArray(colors) && colors.length > 0 && !selectedColor) {
+        const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+        alert(isAr ? 'يرجى اختيار اللون أولاً' : 'Please select a color first');
+        return;
+    }
+
+    addToCart(currentProduct.id, selectedQuantity, selectedTierPrice, selectedColor);
 
     const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+    const colorSuffix = selectedColor ? (isAr ? ` — ${selectedColor}` : ` — ${selectedColor}`) : '';
     const msg = selectedTierPrice !== null
         ? (isAr
-            ? `تمت إضافة ${selectedQuantity} قطعة بسعر ${selectedTierPrice} JOD إلى السلة! 🛒`
-            : `${selectedQuantity} pcs for ${selectedTierPrice} JOD added to cart! 🛒`)
+            ? `تمت إضافة ${selectedQuantity} قطعة بسعر ${selectedTierPrice} JOD إلى السلة!${colorSuffix} 🛒`
+            : `${selectedQuantity} pcs for ${selectedTierPrice} JOD added to cart!${colorSuffix} 🛒`)
         : (isAr
-            ? `تمت إضافة ${selectedQuantity} عنصر إلى السلة! 🛒`
-            : `${selectedQuantity} item(s) added to cart! 🛒`);
+            ? `تمت إضافة ${selectedQuantity} عنصر إلى السلة!${colorSuffix} 🛒`
+            : `${selectedQuantity} item(s) added to cart!${colorSuffix} 🛒`);
 
     if (window.ModernAnimations?.showToast) {
         window.ModernAnimations.showToast(msg, 'success');

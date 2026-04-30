@@ -170,6 +170,7 @@ function showAddProductForm() {
     const idEl = document.getElementById('productId');
     if (idEl) idEl.value = '';
     renderTierRows([]);
+    renderColorRows([]);
     loadCategoryOptions();
     form.scrollIntoView({ behavior: 'smooth' });
 }
@@ -228,6 +229,15 @@ async function editProduct(id) {
         }
         renderTierRows(Array.isArray(tiers) ? tiers : []);
 
+        // Load color variants
+        let colors = [];
+        if (p.color_variants) {
+            try {
+                colors = typeof p.color_variants === 'string' ? JSON.parse(p.color_variants) : p.color_variants;
+            } catch (e) { colors = []; }
+        }
+        renderColorRows(Array.isArray(colors) ? colors : []);
+
         await loadCategoryOptions();
         setVal('productCategory', p.category || p.category_id || '');
         form.scrollIntoView({ behavior: 'smooth' });
@@ -281,6 +291,10 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
             quantity_tiers: (() => {
                 const tiers = collectTiers();
                 return tiers.length > 0 ? JSON.stringify(tiers) : null;
+            })(),
+            color_variants: (() => {
+                const colors = collectColors();
+                return colors.length > 0 ? JSON.stringify(colors) : null;
             })(),
         };
 
@@ -336,6 +350,47 @@ function collectTiers() {
         }
     });
     return tiers;
+}
+
+// ==================== COLOR VARIANTS ====================
+
+function renderColorRows(colors) {
+    const container = document.getElementById('colorsContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    (colors || []).forEach(c => addColorRow(c.name, c.name_ar || '', c.hex || ''));
+}
+
+function addColorRow(name = '', nameAr = '', hex = '') {
+    const container = document.getElementById('colorsContainer');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'color-row';
+    row.style.cssText = 'display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem;flex-wrap:wrap;';
+    row.innerHTML = `
+        <input type="text" placeholder="Name (EN)" value="${name}"
+               style="width:110px;" class="color-name-input" required>
+        <input type="text" placeholder="Name (AR)" value="${nameAr}"
+               style="width:110px;" class="color-name-ar-input">
+        <input type="color" value="${hex || '#000000'}" title="Pick color"
+               style="width:42px;height:34px;padding:2px;cursor:pointer;border:1px solid #ccc;border-radius:4px;" class="color-hex-input">
+        <span style="font-size:0.8rem;color:#888;">or leave blank</span>
+        <button type="button" onclick="this.parentElement.remove()"
+                style="background:#e74c3c;color:#fff;border:none;padding:0.25rem 0.6rem;cursor:pointer;border-radius:4px;">✕</button>
+    `;
+    container.appendChild(row);
+}
+
+function collectColors() {
+    const rows = document.querySelectorAll('#colorsContainer .color-row');
+    const colors = [];
+    rows.forEach(row => {
+        const name   = row.querySelector('.color-name-input')?.value?.trim();
+        const nameAr = row.querySelector('.color-name-ar-input')?.value?.trim() || '';
+        const hex    = row.querySelector('.color-hex-input')?.value?.trim() || '';
+        if (name) colors.push({ name, name_ar: nameAr, hex });
+    });
+    return colors;
 }
 
 // ==================== MEDIA PREVIEW ====================

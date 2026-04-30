@@ -98,10 +98,11 @@ router.post('/', async (req, res) => {
 
         for (const item of (items || [])) {
             await connection.query(
-                `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, total)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, total, selected_variant)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [dbOrderId, parseInt(item.productId), item.productName || '',
-                    item.productNameAr || '', item.quantity, item.price, item.total]
+                    item.productNameAr || '', item.quantity, item.price, item.total,
+                    item.selectedColor || null]
             );
         }
 
