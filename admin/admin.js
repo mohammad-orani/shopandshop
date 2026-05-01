@@ -707,12 +707,16 @@ async function viewOrderDetails(orderId) {
                 const price = parseFloat(item.price || 0).toFixed(2);
                 const total = parseFloat(item.total || 0).toFixed(2);
                 const img = item.image_url || '';
+                const variant = item.selected_variant || item.selectedColor || '';
+                const variantBadge = variant
+                    ? `<span style="display:inline-block;margin-top:4px;background:#f0f4ff;color:#2d5c8f;border:1px solid #c5d5f0;border-radius:12px;padding:2px 10px;font-size:0.75rem;font-weight:600;">🎨 ${variant}</span>`
+                    : '';
                 return `
                     <tr style="border-bottom:1px solid #f0f0f0;">
                         <td style="padding:10px 12px;">
                             <div style="display:flex;align-items:center;gap:10px;">
                                 ${img ? `<img src="${img}" style="width:44px;height:44px;object-fit:cover;border-radius:4px;border:1px solid #e8e8e8;flex-shrink:0;" onerror="this.style.display='none'">` : ''}
-                                <div>${nameDisplay}</div>
+                                <div>${nameDisplay}${variantBadge ? '<br>' + variantBadge : ''}</div>
                             </div>
                         </td>
                         <td style="padding:10px 12px;text-align:center;color:#555;">${qty}</td>
@@ -929,7 +933,10 @@ async function exportOrders() {
             const phone = o.customer_phone || o.customerPhone;
             const status = o.order_status || o.status;
             const date = new Date(o.created_at || o.orderDate).toLocaleString();
-            const items = (o.items || []).map(i => `${i.productName || ''}x${i.quantity}`).join('; ');
+            const items = (o.items || []).map(i => {
+                const v = i.selected_variant || i.selectedColor || '';
+                return `${i.productName || ''}${v ? ' (' + v + ')' : ''} x${i.quantity}`;
+            }).join('; ');
             csv += `"${id}","${name}","${phone}","${o.delivery_city || ''}","${o.delivery_country || ''}","${o.delivery_address || ''}","${items}",${o.subtotal || 0},${o.displayed_shipping_cost || 0},${o.total},"${status}","${date}"\n`;
         });
 

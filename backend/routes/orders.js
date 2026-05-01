@@ -16,6 +16,7 @@ async function fetchOrderItems(dbId) {
             oi.quantity,
             oi.price,
             oi.total,
+            oi.selected_variant,
             COALESCE(p.name_en, oi.product_name_en, 'Unknown Product') AS product_name_en,
             COALESCE(p.name_ar, oi.product_name_ar, 'منتج غير معروف')  AS product_name_ar,
             p.image_url,
@@ -26,13 +27,14 @@ async function fetchOrderItems(dbId) {
         [dbId]
     );
     return rows.map(r => ({
-        product_id:    r.product_id,
-        productId:     r.product_id,
-        productName:   r.product_name_en,
-        productNameAr: r.product_name_ar,
-        image_url:     r.image_url || '',
-        quantity:      r.quantity,
-        price:         parseFloat(r.price    || 0),
+        product_id:       r.product_id,
+        productId:        r.product_id,
+        productName:      r.product_name_en,
+        productNameAr:    r.product_name_ar,
+        image_url:        r.image_url || '',
+        selected_variant: r.selected_variant || null,
+        quantity:         r.quantity,
+        price:            parseFloat(r.price    || 0),
         total:         parseFloat(r.total    || 0),
         cost_price:    parseFloat(r.cost_price || 0)
     }));
