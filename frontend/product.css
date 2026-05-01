@@ -504,7 +504,7 @@
     transform: scale(1.05);
 }
 
-/* Text-only swatch (no image, no hex) */
+/* Label swatch (no image — shows color name, hex background optional) */
 .color-swatch-label {
     font-size: 0.75rem;
     font-weight: 600;
@@ -523,12 +523,6 @@
     font-size: 0.85rem;
 }
 
-/* Hex-only swatches (small circle) */
-.color-swatch:not([style*="background-image"]):not(:has(.color-swatch-label)) {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-}
 
 @media (max-width: 480px) {
     .color-swatch {

@@ -72,10 +72,11 @@ async function loadProductDetails() {
         // No color pre-selected by default
         selectedColor = null;
 
-        // If product has no main image but color variants have images, use first color's image as display fallback
+        // If product has no main image, use the first color that actually has an image
         const colors = product.color_variants;
-        if (!product.image && colors && Array.isArray(colors) && colors.length > 0 && colors[0].image) {
-            product.image = colors[0].image;
+        if (!product.image && colors && Array.isArray(colors)) {
+            const firstWithImage = colors.find(c => (c.image || '').trim());
+            if (firstWithImage) product.image = firstWithImage.image.trim();
         }
 
         // Pre-select first tier if product has tiers
@@ -228,11 +229,21 @@ function displayProductDetails(product) {
                             const bgStyle = img
                                 ? `background-image:url('${img}');background-size:cover;background-position:center;`
                                 : (c.hex ? `background:${c.hex};` : 'background:#eee;');
+                            const label = c.name_ar || c.name;
+                            // Pick white or dark text based on hex brightness
+                            let labelStyle = '';
+                            if (!img && c.hex) {
+                                const h = c.hex.replace('#', '');
+                                if (h.length >= 6) {
+                                    const brightness = (parseInt(h.slice(0,2),16) * 299 + parseInt(h.slice(2,4),16) * 587 + parseInt(h.slice(4,6),16) * 114) / 1000;
+                                    if (brightness < 140) labelStyle = 'color:#fff;';
+                                }
+                            }
                             return `<button class="color-swatch"
                                         onclick="selectColor('${c.name}', '${c.name_ar || c.name}', '${img}', this)"
                                         title="${c.name}"
                                         style="${bgStyle}">
-                                        ${(!img && !c.hex) ? `<span class="color-swatch-label">${c.name}</span>` : ''}
+                                        ${!img ? `<span class="color-swatch-label" style="${labelStyle}">${label}</span>` : ''}
                                     </button>`;
                         }).join('')}
                     </div>
