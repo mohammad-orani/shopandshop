@@ -1298,20 +1298,20 @@ body[dir="rtl"] .social-link:hover {
 
 /* Remove space between search bar and slider */
 #site-header+* {
-    margin-top: 0.1 !important;
-    margin-bottom: 0.1 !important;
+    margin-top: 0.5 !important;
+    margin-bottom: 0.5 !important;
 }
 
 .hero-slider {
-    margin-top: 0.1 !important;
-    padding-top: 0.1 !important;
-    margin-bottom: 0.1 !important;
-    padding-bottom: 0.1 !important;
+    margin-top: 0.5 !important;
+    padding-top: 0.5 !important;
+    margin-bottom: 0.5 !important;
+    padding-bottom: 0.5 !important;
 }
 
 .primejo-search-bar+.hero-slider {
-    margin-top: 0.1 !important;
-    margin-bottom: 0.1 !important;
+    margin-top: 0.5 !important;
+    margin-bottom: 0.5 !important;
 }
 
 /* ============================================

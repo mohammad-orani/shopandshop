@@ -8,7 +8,11 @@
       "Bash(grep -o \"router\\\\.\\\\\\(get\\\\|post\\\\|put\\\\|patch\\\\|delete\\\\\\)\" backend/routes/*.js)",
       "Bash(ls -lh /d/PrimeJo_Source_Code/primejo-ready/frontend/*.js)",
       "Bash(find /d/PrimeJo_Source_Code/primejo-ready/backend/routes -name *.js -type f)",
-      "Bash(find /d/PrimeJo_Source_Code/primejo-ready/backend -name *.sql -o -name *schema* -o -name *migration*)"
+      "Bash(find /d/PrimeJo_Source_Code/primejo-ready/backend -name *.sql -o -name *schema* -o -name *migration*)",
+      "Bash(npm install:*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

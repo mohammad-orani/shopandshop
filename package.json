@@ -2,6 +2,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "expo": "~54.0.0",
-    "mysql2": "^3.17.1"
+    "mysql2": "^3.17.1",
+    "twilio": "^6.0.0"
   }
 }
