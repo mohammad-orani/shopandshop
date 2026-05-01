@@ -390,7 +390,8 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
                 productNameAr:  product.name_ar  || '',
                 quantity:       item.quantity,
                 price:          unitPrice,
-                total:          itemTotal
+                total:          itemTotal,
+                selectedColor:  item.selectedColor || null
             };
         }).filter(Boolean);
 
