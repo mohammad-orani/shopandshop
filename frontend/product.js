@@ -69,8 +69,14 @@ async function loadProductDetails() {
         console.log('✅ Found product:', product);
         currentProduct = product;
 
-        // No color pre-selected — show main product image first
+        // No color pre-selected by default
         selectedColor = null;
+
+        // If product has no main image but color variants have images, use first color's image as display fallback
+        const colors = product.color_variants;
+        if (!product.image && colors && Array.isArray(colors) && colors.length > 0 && colors[0].image) {
+            product.image = colors[0].image;
+        }
 
         // Pre-select first tier if product has tiers
         const tiers = product.quantity_tiers;
@@ -218,14 +224,15 @@ function displayProductDetails(product) {
                     </div>
                     <div class="color-options">
                         ${colors.map((c) => {
-                            const bgStyle = c.image
-                                ? `background-image:url('${c.image}');background-size:cover;background-position:center;`
+                            const img = (c.image || '').trim();
+                            const bgStyle = img
+                                ? `background-image:url('${img}');background-size:cover;background-position:center;`
                                 : (c.hex ? `background:${c.hex};` : 'background:#eee;');
                             return `<button class="color-swatch"
-                                        onclick="selectColor('${c.name}', '${c.name_ar || c.name}', '${c.image || ''}', this)"
+                                        onclick="selectColor('${c.name}', '${c.name_ar || c.name}', '${img}', this)"
                                         title="${c.name}"
                                         style="${bgStyle}">
-                                        ${(!c.image && !c.hex) ? `<span class="color-swatch-label">${c.name}</span>` : ''}
+                                        ${(!img && !c.hex) ? `<span class="color-swatch-label">${c.name}</span>` : ''}
                                     </button>`;
                         }).join('')}
                     </div>
