@@ -72,6 +72,8 @@ async function loadProductDetails() {
         const colors = product.color_variants;
         if (colors && Array.isArray(colors) && colors.length > 0) {
             selectedColor = colors[0].name;
+            // Use first color's image as the main displayed image
+            if (colors[0].image) product.image = colors[0].image;
         } else {
             selectedColor = null;
         }
@@ -211,23 +213,28 @@ function displayProductDetails(product) {
             ${(() => {
                 const colors = product.color_variants;
                 if (!colors || !Array.isArray(colors) || !colors.length) return '';
+                const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+                const firstLabel = isAr ? (colors[0].name_ar || colors[0].name) : colors[0].name;
                 return `
                 <div class="color-selector">
-                    <label class="color-selector-label">
+                    <div class="color-selector-label">
                         <span data-en="Color:" data-ar="اللون:">Color:</span>
-                        <span id="selectedColorLabel" style="font-weight:700;margin-inline-start:0.4rem;">${colors[0].name}</span>
-                    </label>
+                        <span id="selectedColorLabel" style="font-weight:700;margin-inline-start:0.4rem;">${firstLabel}</span>
+                    </div>
                     <div class="color-options">
-                        ${colors.map((c, i) => `
-                            <button class="color-swatch${i === 0 ? ' active' : ''}"
-                                    onclick="selectColor('${c.name}', '${c.name_ar || c.name}', this)"
-                                    title="${c.name}"
-                                    data-name="${c.name}"
-                                    data-name-ar="${c.name_ar || c.name}"
-                                    style="${c.hex ? `background:${c.hex};` : ''}">
-                                ${!c.hex ? `<span class="color-swatch-label">${c.name}</span>` : ''}
-                            </button>
-                        `).join('')}
+                        ${colors.map((c, i) => {
+                            const imgAttr  = c.image ? `data-img="${c.image}"` : '';
+                            const bgStyle  = c.image
+                                ? `background-image:url('${c.image}');background-size:cover;background-position:center;`
+                                : (c.hex ? `background:${c.hex};` : 'background:#eee;');
+                            return `<button class="color-swatch${i === 0 ? ' active' : ''}"
+                                        onclick="selectColor('${c.name}', '${c.name_ar || c.name}', '${c.image || ''}', this)"
+                                        title="${c.name}"
+                                        ${imgAttr}
+                                        style="${bgStyle}">
+                                        ${(!c.image && !c.hex) ? `<span class="color-swatch-label">${c.name}</span>` : ''}
+                                    </button>`;
+                        }).join('')}
                     </div>
                 </div>`;
             })()}
@@ -355,11 +362,36 @@ function updateQuantity() {
     selectedQuantity = parseInt(input.value);
 }
 
-function selectColor(name, nameAr, btn) {
+function selectColor(name, nameAr, image, btn) {
     selectedColor = name;
     const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+
+    // Update label
     const label = document.getElementById('selectedColorLabel');
     if (label) label.textContent = isAr ? nameAr : name;
+
+    // Swap main product image if this color has one
+    if (image) {
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg) {
+            mainImg.style.opacity = '0.5';
+            mainImg.src = image;
+            mainImg.onload = () => { mainImg.style.opacity = '1'; };
+        }
+        // Highlight matching thumbnail if it exists, else deactivate all thumbnails
+        let matched = false;
+        document.querySelectorAll('.thumbnail').forEach(t => {
+            const tImg = t.querySelector('img');
+            if (tImg && tImg.src && tImg.src.includes(image.split('/').pop())) {
+                t.classList.add('active');
+                matched = true;
+            } else {
+                t.classList.remove('active');
+            }
+        });
+    }
+
+    // Highlight active swatch
     document.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 }

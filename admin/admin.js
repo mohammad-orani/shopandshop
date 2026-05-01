@@ -358,25 +358,26 @@ function renderColorRows(colors) {
     const container = document.getElementById('colorsContainer');
     if (!container) return;
     container.innerHTML = '';
-    (colors || []).forEach(c => addColorRow(c.name, c.name_ar || '', c.hex || ''));
+    (colors || []).forEach(c => addColorRow(c.name, c.name_ar || '', c.image || '', c.hex || ''));
 }
 
-function addColorRow(name = '', nameAr = '', hex = '') {
+function addColorRow(name = '', nameAr = '', image = '', hex = '') {
     const container = document.getElementById('colorsContainer');
     if (!container) return;
     const row = document.createElement('div');
     row.className = 'color-row';
-    row.style.cssText = 'display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem;flex-wrap:wrap;';
+    row.style.cssText = 'display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;background:#f9f9f9;padding:0.5rem;border-radius:6px;border:1px solid #eee;';
     row.innerHTML = `
-        <input type="text" placeholder="Name (EN)" value="${name}"
-               style="width:110px;" class="color-name-input" required>
-        <input type="text" placeholder="Name (AR)" value="${nameAr}"
-               style="width:110px;" class="color-name-ar-input">
-        <input type="color" value="${hex || '#000000'}" title="Pick color"
-               style="width:42px;height:34px;padding:2px;cursor:pointer;border:1px solid #ccc;border-radius:4px;" class="color-hex-input">
-        <span style="font-size:0.8rem;color:#888;">or leave blank</span>
+        <input type="text" placeholder="Name EN (e.g. Black)" value="${name}"
+               style="width:120px;" class="color-name-input">
+        <input type="text" placeholder="اسم اللون (AR)" value="${nameAr}"
+               style="width:120px;" class="color-name-ar-input">
+        <input type="text" placeholder="Image URL for this color" value="${image}"
+               style="flex:1;min-width:200px;" class="color-image-input">
+        <input type="color" value="${hex || '#cccccc'}" title="Swatch color (optional)"
+               style="width:36px;height:32px;padding:2px;cursor:pointer;border:1px solid #ccc;border-radius:4px;" class="color-hex-input">
         <button type="button" onclick="this.parentElement.remove()"
-                style="background:#e74c3c;color:#fff;border:none;padding:0.25rem 0.6rem;cursor:pointer;border-radius:4px;">✕</button>
+                style="background:#e74c3c;color:#fff;border:none;padding:0.3rem 0.7rem;cursor:pointer;border-radius:4px;">✕</button>
     `;
     container.appendChild(row);
 }
@@ -387,8 +388,9 @@ function collectColors() {
     rows.forEach(row => {
         const name   = row.querySelector('.color-name-input')?.value?.trim();
         const nameAr = row.querySelector('.color-name-ar-input')?.value?.trim() || '';
+        const image  = row.querySelector('.color-image-input')?.value?.trim() || '';
         const hex    = row.querySelector('.color-hex-input')?.value?.trim() || '';
-        if (name) colors.push({ name, name_ar: nameAr, hex });
+        if (name) colors.push({ name, name_ar: nameAr, image, hex });
     });
     return colors;
 }
