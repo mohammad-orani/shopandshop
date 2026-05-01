@@ -218,6 +218,7 @@ async function editProduct(id) {
         setChecked('productNew', p.isNew || p.is_new || false);
         setChecked('productTopSeller', p.topSeller || p.is_top_seller || false);
         setChecked('productOffer', p.isOffer || p.is_offer || false);
+        setChecked('productFreeDelivery', !!(p.is_free_delivery));
         setChecked('productVisible', p.visible !== false && p.is_visible !== false);
 
         // Load quantity tiers
@@ -287,6 +288,7 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
             is_new: document.getElementById('productNew')?.checked || false,
             is_top_seller: document.getElementById('productTopSeller')?.checked || false,
             is_offer: document.getElementById('productOffer')?.checked || false,
+            is_free_delivery: document.getElementById('productFreeDelivery')?.checked || false,
             is_visible: document.getElementById('productVisible')?.checked !== false,
             quantity_tiers: (() => {
                 const tiers = collectTiers();

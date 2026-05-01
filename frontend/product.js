@@ -49,6 +49,7 @@ async function loadProductDetails() {
             isOffer: !!(raw.is_offer),
             isNew: !!(raw.is_new),
             topSeller: !!(raw.is_top_seller),
+            isFreeDelivery: !!(raw.is_free_delivery),
             quantity_tiers: (() => {
                 try {
                     const t = raw.quantity_tiers;
@@ -154,9 +155,10 @@ function displayProductDetails(product) {
 
         <div class="product-info-section">
             <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-                ${product.isOffer  ? '<div class="product-badge sale-badge">SALE</div>' : ''}
-                ${product.isNew    ? '<div class="product-badge new-badge">NEW</div>'  : ''}
-                ${product.topSeller ? '<div class="product-badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;">⭐ TOP SELLER</div>' : ''}
+                ${product.isOffer       ? '<div class="product-badge sale-badge">SALE</div>' : ''}
+                ${product.isNew        ? '<div class="product-badge new-badge">NEW</div>'  : ''}
+                ${product.topSeller    ? '<div class="product-badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;">⭐ TOP SELLER</div>' : ''}
+                ${product.isFreeDelivery ? '<div class="product-badge" style="background:#27ae60;color:#fff;">🚚 توصيل مجاني</div>' : ''}
             </div>
 
             <h1 class="product-title">${product[nameKey] || product.name_en}</h1>

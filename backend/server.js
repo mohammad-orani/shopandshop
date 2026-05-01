@@ -161,6 +161,22 @@ async function ensureGeneralInfoColumns() {
     }
 }
 
+async function ensureProductFreeDeliveryColumn() {
+    try {
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products'`
+        );
+        if (!cols.map(c => c.COLUMN_NAME).includes('is_free_delivery')) {
+            await pool.query(`ALTER TABLE products ADD COLUMN is_free_delivery BOOLEAN DEFAULT FALSE`);
+            console.log('Added column: products.is_free_delivery');
+        }
+        console.log('products.is_free_delivery verified');
+    } catch (err) {
+        console.warn('is_free_delivery migration warning:', err.message);
+    }
+}
+
 async function ensureProductColorVariantsColumn() {
     try {
         const [cols] = await pool.query(
@@ -243,6 +259,7 @@ async function ensureWhatsAppTables() {
     await ensureAdminLogsTable();
     await ensureGeneralInfoColumns();
     await ensureProductsQuantityTiersColumn();
+    await ensureProductFreeDeliveryColumn();
     await ensureProductColorVariantsColumn();
     await ensureOrderItemsVariantColumn();
 

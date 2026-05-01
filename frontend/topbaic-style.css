@@ -602,6 +602,10 @@ body {
     background: linear-gradient(135deg, #f39c12, #e67e22);
 }
 
+.badge-free-delivery {
+    background: #27ae60;
+}
+
 .badge-limited {
     background: var(--accent-gold);
 }

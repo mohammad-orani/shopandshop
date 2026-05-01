@@ -16,6 +16,7 @@ function normalizeProduct(p) {
         isNew: !!(p.isNew || p.is_offer == 1),
         isTopSeller: !!(p.topSeller || p.is_top_seller == 1),
         isOffer: !!(p.isOffer || p.is_offer == 1),
+        isFreeDelivery: !!(p.isFreeDelivery || p.is_free_delivery == 1),
         isVisible: !!(p.visible || p.is_visible == 1),
         // Stock
         quantityToSell: parseInt(p.quantity_to_sell ?? p.quantityToSell ?? 0),
@@ -64,6 +65,7 @@ function createTopBaicProductCard(rawProduct) {
                 <div class="product-badges">
                     ${discount > 0 ? `<span class="badge badge-discount">-${discount}%</span>` : (product.isOffer ? '<span class="badge badge-sale">SALE</span>' : '')}
                     ${product.isTopSeller ? '<span class="badge badge-topseller">TOP SELLER</span>' : ''}
+                    ${product.isFreeDelivery ? '<span class="badge badge-free-delivery">🚚 توصيل مجاني</span>' : ''}
                 </div>
 
                 <!-- Quick Actions -->
