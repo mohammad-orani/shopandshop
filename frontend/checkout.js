@@ -215,8 +215,14 @@ async function updateDeliveryFee() {
     const products = await getProducts();
     const cartTotal = cart.reduce((total, item) => {
         const product = products.find(p => String(p.id) === String(item.productId));
-        return product ? total + (parseFloat(product.newPrice || 0) * item.quantity) : total;
+        return product ? total + (parseFloat(product.new_price || product.newPrice || 0) * item.quantity) : total;
     }, 0);
+
+    // Free if any cart item has the free-delivery flag
+    const hasFreeDeliveryProduct = cart.some(item => {
+        const product = products.find(p => String(p.id) === String(item.productId));
+        return product && !!(product.is_free_delivery || product.isFreeDelivery);
+    });
 
     try {
         const info = await getGeneralInfoFromAPI();
@@ -225,16 +231,21 @@ async function updateDeliveryFee() {
         minimumOrderAmount = 15;
     }
 
-    const isFree = cartTotal >= minimumOrderAmount && minimumOrderAmount > 0;
+    const isFreeByTotal = cartTotal >= minimumOrderAmount && minimumOrderAmount > 0;
+    const isFree        = isFreeByTotal || hasFreeDeliveryProduct;
 
     if (isFree) {
         selectedDeliveryFee = 0;
-        selectedActualFee   = 0; // server will look up actual_fee from DB — free delivery means 0 cost to customer
+        selectedActualFee   = 0;
 
-        const freeText = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
-            ? 'مجاناً ✓' : 'FREE ✓';
+        const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
+        const freeText = isAr ? 'مجاناً ✓' : 'FREE ✓';
+        const reasonText = hasFreeDeliveryProduct && !isFreeByTotal
+            ? (isAr ? 'هذا المنتج يشمل توصيل مجاني' : 'Free delivery included with this product')
+            : '';
         document.getElementById('deliveryFeeDisplay').innerHTML =
-            `<span style="color:#10b981;font-weight:700;">${freeText}</span>`;
+            `<span style="color:#10b981;font-weight:700;">${freeText}</span>` +
+            (reasonText ? `<span style="display:block;font-size:0.75rem;color:#10b981;margin-top:2px;">${reasonText}</span>` : '');
     } else {
         selectedDeliveryFee = cityDisplayedFee;
         selectedActualFee   = cityActualFee;
