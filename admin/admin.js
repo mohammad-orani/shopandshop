@@ -1156,18 +1156,85 @@ async function submitRefund(e) {
 
 // ==================== EDIT ORDER ====================
 
-function openEditOrderModal(order) {
-    const id = order.order_id || order.orderId;
+async function openEditOrderModal(rawOrder) {
+    const id = rawOrder.order_id || rawOrder.orderId;
+
+    // Populate fields immediately so the modal feels responsive
     document.getElementById('editOrderId').value = id;
-    document.getElementById('editCustomerName').value = order.customer_name || order.customerName || '';
-    document.getElementById('editCustomerPhone').value = order.customer_phone || order.customerPhone || '';
-    document.getElementById('editDeliveryCountry').value = order.delivery_country || '';
-    document.getElementById('editDeliveryCity').value = order.delivery_city || '';
-    document.getElementById('editDeliveryAddress').value = order.delivery_address || order.complete_address || order.deliveryAddress || '';
-    document.getElementById('editDeliveryFee').value = parseFloat(order.displayed_shipping_cost || order.delivery_fee || 0).toFixed(2);
-    document.getElementById('editOrderNotes').value = order.order_notes || order.orderNotes || '';
+    document.getElementById('editCustomerName').value = rawOrder.customer_name || rawOrder.customerName || '';
+    document.getElementById('editCustomerPhone').value = rawOrder.customer_phone || rawOrder.customerPhone || '';
+    document.getElementById('editDeliveryCountry').value = rawOrder.delivery_country || '';
+    document.getElementById('editDeliveryCity').value = rawOrder.delivery_city || '';
+    document.getElementById('editDeliveryAddress').value = rawOrder.delivery_address || rawOrder.complete_address || rawOrder.deliveryAddress || '';
+    document.getElementById('editDeliveryFee').value = parseFloat(rawOrder.displayed_shipping_cost || rawOrder.delivery_fee || 0).toFixed(2);
+    document.getElementById('editOrderNotes').value = rawOrder.order_notes || rawOrder.orderNotes || '';
     document.getElementById('editOrderMsg').textContent = '';
+    document.getElementById('editOrderItemsList').innerHTML = '<p style="color:#999;font-size:0.85rem;">Loading items…</p>';
     document.getElementById('editOrderModal').classList.add('show');
+
+    // Fetch full order to get item row IDs (needed for the update endpoint)
+    try {
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const res = await fetch(`${API_BASE}/orders/${id}`, {
+            headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+        });
+        if (res.ok) {
+            const order = await res.json();
+            renderEditableItems(order.items || []);
+        } else {
+            renderEditableItems(rawOrder.items || []);
+        }
+    } catch (e) {
+        renderEditableItems(rawOrder.items || []);
+    }
+}
+
+function renderEditableItems(items) {
+    const itemsList = document.getElementById('editOrderItemsList');
+    if (!itemsList) return;
+    if (!items.length) {
+        itemsList.innerHTML = '<p style="color:#999;font-size:0.85rem;">No items found.</p>';
+        return;
+    }
+    itemsList.innerHTML = items.map((item, i) => {
+        const name = item.productNameAr || item.productName || '—';
+        return `
+            <div style="display:grid;grid-template-columns:1fr 70px 90px;gap:0.5rem;align-items:center;
+                        padding:0.5rem 0.6rem;background:#f9f9f9;border-radius:6px;border:1px solid #eee;margin-bottom:0.35rem;">
+                <div style="font-size:0.83rem;font-weight:600;direction:rtl;text-align:right;line-height:1.3;">${name}</div>
+                <div>
+                    <label style="font-size:0.68rem;color:#888;display:block;margin-bottom:2px;">Qty</label>
+                    <input type="number" min="1" step="1" value="${item.quantity || 1}"
+                           data-item-id="${item.id || ''}" data-index="${i}" data-field="quantity"
+                           class="edit-item-field"
+                           style="width:100%;padding:0.35rem 0.4rem;border:1.5px solid #e0e0e0;border-radius:4px;font-size:0.88rem;font-family:inherit;"
+                           onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#e0e0e0'"
+                           oninput="recalcEditTotal()">
+                </div>
+                <div>
+                    <label style="font-size:0.68rem;color:#888;display:block;margin-bottom:2px;">Price (JD)</label>
+                    <input type="number" min="0" step="0.01" value="${parseFloat(item.price || 0).toFixed(2)}"
+                           data-item-id="${item.id || ''}" data-index="${i}" data-field="price"
+                           class="edit-item-field"
+                           style="width:100%;padding:0.35rem 0.4rem;border:1.5px solid #e0e0e0;border-radius:4px;font-size:0.88rem;font-family:inherit;"
+                           onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#e0e0e0'"
+                           oninput="recalcEditTotal()">
+                </div>
+            </div>`;
+    }).join('');
+    recalcEditTotal();
+}
+
+function recalcEditTotal() {
+    let subtotal = 0;
+    document.querySelectorAll('#editOrderItemsList > div').forEach(row => {
+        const qty   = parseFloat(row.querySelector('[data-field="quantity"]')?.value) || 0;
+        const price = parseFloat(row.querySelector('[data-field="price"]')?.value)    || 0;
+        subtotal += qty * price;
+    });
+    const fee     = parseFloat(document.getElementById('editDeliveryFee')?.value) || 0;
+    const totalEl = document.getElementById('editOrderTotalDisplay');
+    if (totalEl) totalEl.textContent = `Subtotal: ${subtotal.toFixed(2)} JD  |  Total: ${(subtotal + fee).toFixed(2)} JD`;
 }
 
 function closeEditOrderModal() {
@@ -1177,40 +1244,68 @@ function closeEditOrderModal() {
 async function submitEditOrder(e) {
     e.preventDefault();
     const orderId = document.getElementById('editOrderId').value;
-    const msgEl = document.getElementById('editOrderMsg');
-    const btn = e.target.querySelector('button[type="submit"]');
+    const msgEl   = document.getElementById('editOrderMsg');
+    const btn     = e.target.querySelector('button[type="submit"]');
 
     const body = {
-        customer_name: document.getElementById('editCustomerName').value.trim(),
-        customer_phone: document.getElementById('editCustomerPhone').value.trim(),
+        customer_name:    document.getElementById('editCustomerName').value.trim(),
+        customer_phone:   document.getElementById('editCustomerPhone').value.trim(),
         delivery_country: document.getElementById('editDeliveryCountry').value.trim(),
-        delivery_city: document.getElementById('editDeliveryCity').value.trim(),
+        delivery_city:    document.getElementById('editDeliveryCity').value.trim(),
         delivery_address: document.getElementById('editDeliveryAddress').value.trim(),
-        delivery_fee: document.getElementById('editDeliveryFee').value,
-        order_notes: document.getElementById('editOrderNotes').value.trim(),
+        delivery_fee:     document.getElementById('editDeliveryFee').value,
+        order_notes:      document.getElementById('editOrderNotes').value.trim(),
     };
 
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    // Collect item edits (only rows that have a valid item id)
+    const updatedItems = Array.from(document.querySelectorAll('#editOrderItemsList > div'))
+        .map(row => ({
+            id:       row.querySelector('[data-field="quantity"]')?.dataset.itemId || '',
+            quantity: parseFloat(row.querySelector('[data-field="quantity"]')?.value) || 1,
+            price:    parseFloat(row.querySelector('[data-field="price"]')?.value)    || 0,
+        }))
+        .filter(item => item.id);
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
     msgEl.textContent = '';
 
     try {
         const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
-        const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+
+        // 1. Update order header fields
+        const res  = await fetch(`${API_BASE}/orders/${orderId}`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
         const data = await res.json();
-        if (data.success) {
-            closeEditOrderModal();
-            closeOrderModal();
-            showToast('✅ Order updated successfully!');
-            loadOrders();
-            loadDashboard();
-        } else {
+        if (!data.success) {
             msgEl.textContent = '❌ ' + (data.error || 'Failed to update order');
             msgEl.style.color = '#dc2626';
+            return;
         }
+
+        // 2. Update item quantities / prices if any items were loaded
+        if (updatedItems.length > 0) {
+            const itemsRes = await fetch(`${API_BASE}/orders/${orderId}/items`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: updatedItems })
+            });
+            if (!itemsRes.ok) {
+                const itemsData = await itemsRes.json().catch(() => ({}));
+                msgEl.textContent = '⚠️ Order info saved but items update failed: ' + (itemsData.error || itemsRes.status);
+                msgEl.style.color = '#d97706';
+                loadOrders();
+                return;
+            }
+        }
+
+        closeEditOrderModal();
+        closeOrderModal();
+        showToast('✅ Order updated successfully!');
+        loadOrders();
+        loadDashboard();
     } catch (err) {
         msgEl.textContent = '❌ ' + err.message;
         msgEl.style.color = '#dc2626';

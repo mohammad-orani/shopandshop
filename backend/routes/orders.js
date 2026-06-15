@@ -12,6 +12,7 @@ const router = express.Router();
 async function fetchOrderItems(dbId) {
     const [rows] = await pool.query(
         `SELECT
+            oi.id,
             oi.product_id,
             oi.quantity,
             oi.price,
@@ -27,6 +28,7 @@ async function fetchOrderItems(dbId) {
         [dbId]
     );
     return rows.map(r => ({
+        id:               r.id,
         product_id:       r.product_id,
         productId:        r.product_id,
         productName:      r.product_name_en,
@@ -34,9 +36,9 @@ async function fetchOrderItems(dbId) {
         image_url:        r.image_url || '',
         selected_variant: r.selected_variant || null,
         quantity:         r.quantity,
-        price:            parseFloat(r.price    || 0),
-        total:         parseFloat(r.total    || 0),
-        cost_price:    parseFloat(r.cost_price || 0)
+        price:            parseFloat(r.price      || 0),
+        total:            parseFloat(r.total      || 0),
+        cost_price:       parseFloat(r.cost_price || 0)
     }));
 }
 
@@ -350,6 +352,64 @@ router.patch('/:id/refund', authenticateToken, isAdmin, async (req, res) => {
         await logAction(req, 'REFUND', 'order', param, `Order ${param} refunded — reason: ${refund_reason.trim()}`);
         res.json({ success: true, message: 'Order marked as refunded' });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// PATCH /api/orders/:id/items — update quantities and prices of order items
+router.patch('/:id/items', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const param = req.params.id;
+        const { items } = req.body;
+
+        if (!items || !Array.isArray(items) || items.length === 0)
+            return res.status(400).json({ success: false, error: 'items array required' });
+
+        // Resolve to numeric DB id
+        let orders;
+        if (/^\d+$/.test(param)) {
+            [orders] = await pool.query(
+                'SELECT id, displayed_shipping_cost FROM orders WHERE id = ? OR order_id = ? LIMIT 1',
+                [parseInt(param, 10), param]
+            );
+        } else {
+            [orders] = await pool.query(
+                'SELECT id, displayed_shipping_cost FROM orders WHERE order_id = ? LIMIT 1', [param]
+            );
+        }
+        if (!orders.length) return res.status(404).json({ success: false, error: 'Order not found' });
+        const { id: dbOrderId, displayed_shipping_cost } = orders[0];
+
+        for (const item of items) {
+            const qty   = Math.max(1, parseInt(item.quantity, 10) || 1);
+            const price = parseFloat(item.price) || 0;
+            const total = parseFloat((qty * price).toFixed(2));
+            if (item.id) {
+                await pool.query(
+                    'UPDATE order_items SET quantity = ?, price = ?, total = ? WHERE id = ? AND order_id = ?',
+                    [qty, price, total, parseInt(item.id, 10), dbOrderId]
+                );
+            }
+        }
+
+        // Recalculate order subtotal and total from updated rows
+        const [[{ newSubtotal }]] = await pool.query(
+            'SELECT COALESCE(SUM(total), 0) AS newSubtotal FROM order_items WHERE order_id = ?',
+            [dbOrderId]
+        );
+        const shipping = parseFloat(displayed_shipping_cost || 0);
+        const newTotal = parseFloat((newSubtotal + shipping).toFixed(2));
+
+        await pool.query(
+            'UPDATE orders SET subtotal = ?, total = ? WHERE id = ?',
+            [newSubtotal, newTotal, dbOrderId]
+        );
+
+        await logAction(req, 'UPDATE', 'order', param,
+            `Updated item quantities/prices for order ${param} — new total: ${newTotal}`);
+        res.json({ success: true, subtotal: newSubtotal, total: newTotal });
+    } catch (error) {
+        console.error('Update order items error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
