@@ -258,7 +258,8 @@ async function getProducts() {
         const isNew = !!(p.isNew || p.is_new);
         const topSeller = !!(p.topSeller || p.is_top_seller);
         const isOffer = !!(p.isOffer || p.is_offer);
-        
+        const isFreeDelivery = !!(p.isFreeDelivery || p.is_free_delivery);
+
         return {
             id: p.id,
             name_en: p.name_en,
@@ -272,14 +273,16 @@ async function getProducts() {
             stock: p.stock || 0,
             quantity_to_sell: p.quantity_to_sell || p.quantityToSell || 0,
             quantityToSell: p.quantity_to_sell || p.quantityToSell || 0,
-            additional_images: p.additional_images || p.additionalImages || [], // ✅ Database field
-            additionalImages: p.additional_images || p.additionalImages || [],   // ✅ Frontend field
+            additional_images: p.additional_images || p.additionalImages || [],
+            additionalImages: p.additional_images || p.additionalImages || [],
             video_url: p.video_url || p.videoUrl || '',
             videoUrl: p.video_url || p.videoUrl || '',
             visible: visible,
             isNew: isNew,
             topSeller: topSeller,
             isOffer: isOffer,
+            isFreeDelivery: isFreeDelivery,
+            is_free_delivery: isFreeDelivery,
             quantity_tiers: (() => {
                 try {
                     const t = p.quantity_tiers;
