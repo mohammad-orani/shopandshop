@@ -393,12 +393,13 @@ router.patch('/:id/items', authenticateToken, isAdmin, async (req, res) => {
         }
 
         // Recalculate order subtotal and total from updated rows
-        const [[{ newSubtotal }]] = await pool.query(
+        const [[subtotalRow]] = await pool.query(
             'SELECT COALESCE(SUM(total), 0) AS newSubtotal FROM order_items WHERE order_id = ?',
             [dbOrderId]
         );
-        const shipping = parseFloat(displayed_shipping_cost || 0);
-        const newTotal = parseFloat((newSubtotal + shipping).toFixed(2));
+        const newSubtotal = parseFloat(subtotalRow.newSubtotal || 0);
+        const shipping    = parseFloat(displayed_shipping_cost || 0);
+        const newTotal    = parseFloat((newSubtotal + shipping).toFixed(2));
 
         await pool.query(
             'UPDATE orders SET subtotal = ?, total = ? WHERE id = ?',
