@@ -408,8 +408,11 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
 
         const orderId        = 'ORD-' + Date.now();
         const phonePrefix    = document.getElementById('phonePrefix')?.value  || '';
-        const phoneNumber    = document.getElementById('customerPhone')?.value || '';
-        const fullPhone      = phonePrefix + phoneNumber;
+        const rawLocalPhone  = document.getElementById('customerPhone')?.value || '';
+        // Strip leading 0 from local number before combining with country prefix
+        // e.g. prefix=+962, local=0786215023 → +962786215023 (not +9620786215023)
+        const localPhone     = rawLocalPhone.replace(/^0/, '');
+        const fullPhone      = phonePrefix + localPhone;
         const completeAddress = document.getElementById('deliveryAddress')?.value || '';
 
         const orderData = {

@@ -60,7 +60,10 @@ router.post('/', async (req, res) => {
         } = req.body;
 
         const order_id = clientOrderId || ('ORD-' + Date.now());
-        const sanitizedPhone = (customer_phone || '').replace(/^(\+\d+?)0(\d)/, '$1$2');
+        // Strip trunk 0 only when it appears immediately after the country code (1-4 digits).
+        // Using greedy {1,4} prevents the lazy +? from scanning into the subscriber number
+        // and accidentally removing an internal 0 (e.g. +962786215023 must stay unchanged).
+        const sanitizedPhone = (customer_phone || '').replace(/^(\+\d{1,4})0(\d)/, '$1$2');
         const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
 
         let actualFee = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
