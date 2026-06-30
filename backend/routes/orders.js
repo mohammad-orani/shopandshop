@@ -124,8 +124,9 @@ router.post('/', async (req, res) => {
 
         await connection.commit();
         console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${(items || []).length} items`);
+        const phoneChanged = customer_phone !== sanitizedPhone;
         await logAction(req, 'CREATE', 'order', order_id,
-            `New order from ${customer_name || 'unknown'} (${sanitizedPhone}) | city: ${delivery_city || '—'} | total: ${total || 0} | items: ${(items || []).length}`
+            `New order from ${customer_name || 'unknown'} | phone_raw: ${customer_phone || '—'}${phoneChanged ? ` → phone_saved: ${sanitizedPhone}` : ''} | city: ${delivery_city || '—'} | total: ${total || 0} | items: ${(items || []).length}`
         );
 
         // WhatsApp notifications (fire-and-forget — never block the response)
