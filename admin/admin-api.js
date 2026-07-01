@@ -174,6 +174,21 @@ async function getOrders(filters = {}) {
     }
 }
 
+async function getOrdersPaginated(filters = {}) {
+    try {
+        const params = new URLSearchParams(filters);
+        const response = await fetch(`${API_URL}/orders?${params}`, {
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        if (Array.isArray(data)) return { total: data.length, orders: data };
+        return { total: data.total || 0, orders: data.orders || [] };
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        return { total: 0, orders: [] };
+    }
+}
+
 async function updateOrderStatus(id, status) {
     try {
         const response = await fetch(`${API_URL}/orders/${id}/status`, {

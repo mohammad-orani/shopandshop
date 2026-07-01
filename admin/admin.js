@@ -32,7 +32,7 @@ function showSection(sectionId) {
     if (sectionId === 'dashboard')            loadDashboard();
     if (sectionId === 'products')             loadProducts();
     if (sectionId === 'categories')           loadCategories();
-    if (sectionId === 'orders')               loadOrders();
+    if (sectionId === 'orders')               loadOrders(_ordersFilter || '', _ordersPage || 1);
     if (sectionId === 'delivery')             loadDelivery();
     if (sectionId === 'reports')              loadReports();
     if (sectionId === 'banners')              loadBanners();
@@ -546,7 +546,15 @@ document.getElementById('categoryFormElement')?.addEventListener('submit', async
 
 // ==================== ORDERS ====================
 
-async function loadOrders(filterStatus = '') {
+let _ordersPage       = 1;
+let _ordersPageSize   = 20;
+let _ordersFilter     = '';
+let _ordersTotalCount = 0;
+
+async function loadOrders(filterStatus = '', page = 1) {
+    _ordersFilter = filterStatus;
+    _ordersPage   = page;
+
     const tbody = document.getElementById('ordersTableBody');
     if (!tbody) return;
 
@@ -558,7 +566,7 @@ async function loadOrders(filterStatus = '') {
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;">
                 <span style="font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">Filter:</span>
                 ${['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'].map(s => `
-                    <button onclick="loadOrders('${s}')"
+                    <button onclick="loadOrders('${s}', 1)"
                             id="filterBtn_${s || 'all'}"
                             style="padding:6px 16px;border:2px solid #e0e0e0;background:#fff;
                                    font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;
@@ -573,35 +581,40 @@ async function loadOrders(filterStatus = '') {
         const btn = document.getElementById('filterBtn_' + (s || 'all'));
         if (btn) {
             const isActive = s === filterStatus;
-            btn.style.background = isActive ? '#1a1a1a' : '#fff';
-            btn.style.color = isActive ? '#fff' : '#1a1a1a';
-            btn.style.borderColor = isActive ? '#1a1a1a' : '#e0e0e0';
+            btn.style.background   = isActive ? '#1a1a1a' : '#fff';
+            btn.style.color        = isActive ? '#fff'    : '#1a1a1a';
+            btn.style.borderColor  = isActive ? '#1a1a1a' : '#e0e0e0';
         }
     });
 
     try {
         showLoading('ordersTableBody', 'Loading orders...', 8);
-        const allOrders = await getOrders();
-        const orders = filterStatus ? allOrders.filter(o => (o.order_status || o.status) === filterStatus) : allOrders;
+
+        const filters = { limit: _ordersPageSize, offset: (page - 1) * _ordersPageSize };
+        if (filterStatus) filters.status = filterStatus;
+
+        const { total, orders } = await getOrdersPaginated(filters);
+        _ordersTotalCount = total;
 
         if (orders.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#888;">
                 ${filterStatus ? `No ${filterStatus} orders found` : 'No orders yet'}
             </td></tr>`;
+            renderOrdersPagination();
             return;
         }
 
-        // Store orders map for edit button lookup
+        // Store orders map for edit/view button lookup
         window._ordersMap = {};
         orders.forEach(o => { window._ordersMap[o.order_id || o.orderId] = o; });
 
         tbody.innerHTML = orders.map(order => {
-            const id = order.order_id || order.orderId;
-            const name = order.customer_name || order.customerName;
-            const phone = order.customer_phone || order.customerPhone;
+            const id     = order.order_id || order.orderId;
+            const name   = order.customer_name || order.customerName;
+            const phone  = order.customer_phone || order.customerPhone;
             const status = order.order_status || order.status;
-            const total = parseFloat(order.total || 0);
-            const date = new Date(order.created_at || order.orderDate).toLocaleDateString();
+            const total  = parseFloat(order.total || 0);
+            const date   = new Date(order.created_at || order.orderDate).toLocaleDateString();
 
             return `
             <tr>
@@ -618,22 +631,73 @@ async function loadOrders(filterStatus = '') {
                     <select onchange="changeOrderStatus('${id}', this.value)"
                         style="margin-top:4px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:5px;
                                font-size:0.78rem;font-weight:600;cursor:pointer;background:#fff;display:block;width:100%;">
-
                         <option value="">Change Status</option>
-                        <option value="pending"    ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="pending"    ${status === 'pending'    ? 'selected' : ''}>Pending</option>
                         <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
-                        <option value="shipped"    ${status === 'shipped' ? 'selected' : ''}>Shipped</option>
-                        <option value="delivered"  ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
-                        <option value="cancelled"  ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                        <option value="refunded"   ${status === 'refunded' ? 'selected' : ''}>Refunded</option>
+                        <option value="shipped"    ${status === 'shipped'    ? 'selected' : ''}>Shipped</option>
+                        <option value="delivered"  ${status === 'delivered'  ? 'selected' : ''}>Delivered</option>
+                        <option value="cancelled"  ${status === 'cancelled'  ? 'selected' : ''}>Cancelled</option>
+                        <option value="refunded"   ${status === 'refunded'   ? 'selected' : ''}>Refunded</option>
                     </select>
                 </td>
             </tr>`;
         }).join('');
 
+        renderOrdersPagination();
+
     } catch (error) {
         tbody.innerHTML = `<tr><td colspan="8" style="color:red;text-align:center;">Error: ${error.message}</td></tr>`;
     }
+}
+
+function renderOrdersPagination() {
+    const el = document.getElementById('ordersPagination');
+    if (!el) return;
+
+    const totalPages = Math.ceil(_ordersTotalCount / _ordersPageSize);
+    const start      = (_ordersPage - 1) * _ordersPageSize + 1;
+    const end        = Math.min(_ordersPage * _ordersPageSize, _ordersTotalCount);
+
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+    const btnStyle = (disabled) =>
+        `padding:6px 14px;border:1.5px solid #e0e0e0;background:#fff;font-size:0.82rem;font-weight:700;
+         border-radius:4px;cursor:${disabled ? 'default' : 'pointer'};color:${disabled ? '#ccc' : '#1a1a1a'};
+         transition:all 0.15s;`;
+
+    // Build page number buttons (show up to 5 around current page)
+    const pageNums = [];
+    const delta = 2;
+    for (let p = Math.max(1, _ordersPage - delta); p <= Math.min(totalPages, _ordersPage + delta); p++) {
+        pageNums.push(p);
+    }
+
+    el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center;padding:1rem 0;flex-wrap:wrap;">
+            <button style="${btnStyle(_ordersPage === 1)}"
+                    onclick="loadOrders('${_ordersFilter}', 1)"
+                    ${_ordersPage === 1 ? 'disabled' : ''}>«</button>
+            <button style="${btnStyle(_ordersPage === 1)}"
+                    onclick="loadOrders('${_ordersFilter}', ${_ordersPage - 1})"
+                    ${_ordersPage === 1 ? 'disabled' : ''}">‹ Prev</button>
+
+            ${pageNums.map(p => `
+                <button onclick="loadOrders('${_ordersFilter}', ${p})"
+                        style="${btnStyle(false)}${p === _ordersPage ? 'background:#1a1a1a;color:#fff;border-color:#1a1a1a;' : ''}">
+                    ${p}
+                </button>`).join('')}
+
+            <button style="${btnStyle(_ordersPage === totalPages)}"
+                    onclick="loadOrders('${_ordersFilter}', ${_ordersPage + 1})"
+                    ${_ordersPage === totalPages ? 'disabled' : ''}>Next ›</button>
+            <button style="${btnStyle(_ordersPage === totalPages)}"
+                    onclick="loadOrders('${_ordersFilter}', ${totalPages})"
+                    ${_ordersPage === totalPages ? 'disabled' : ''}>»</button>
+
+            <span style="font-size:0.82rem;color:#888;margin-left:8px;">
+                ${start}–${end} of ${_ordersTotalCount} orders
+            </span>
+        </div>`;
 }
 
 async function changeOrderStatus(orderId, newStatus) {
@@ -653,7 +717,7 @@ async function changeOrderStatus(orderId, newStatus) {
         const result = await updateOrderStatus(orderId, newStatus);
         if (result.error) { alert('Error: ' + result.error); return; }
         showToast('✅ Order status updated!');
-        loadOrders();
+        loadOrders(_ordersFilter, _ordersPage);
         loadDashboard();
     } catch (error) { alert('Error: ' + error.message); }
 }
@@ -1146,7 +1210,7 @@ async function submitRefund(e) {
         if (data.success) {
             closeRefundModal();
             showToast('💸 Order marked as refunded!');
-            loadOrders();
+            loadOrders(_ordersFilter, _ordersPage);
             loadDashboard();
         } else {
             msgEl.textContent = '❌ ' + (data.error || 'Failed to process refund');
@@ -1302,7 +1366,7 @@ async function submitEditOrder(e) {
                 const itemsData = await itemsRes.json().catch(() => ({}));
                 msgEl.textContent = '⚠️ Order info saved but items update failed: ' + (itemsData.error || itemsRes.status);
                 msgEl.style.color = '#d97706';
-                loadOrders();
+                loadOrders(_ordersFilter, _ordersPage);
                 return;
             }
         }
@@ -1310,7 +1374,7 @@ async function submitEditOrder(e) {
         closeEditOrderModal();
         closeOrderModal();
         showToast('✅ Order updated successfully!');
-        loadOrders();
+        loadOrders(_ordersFilter, _ordersPage);
         loadDashboard();
     } catch (err) {
         msgEl.textContent = '❌ ' + err.message;
@@ -1360,7 +1424,7 @@ async function submitCancel(e) {
         if (data.success) {
             closeCancelModal();
             showToast('🚫 Order cancelled!');
-            loadOrders();
+            loadOrders(_ordersFilter, _ordersPage);
             loadDashboard();
         } else {
             msgEl.textContent = '❌ ' + (data.error || 'Failed to cancel order');
