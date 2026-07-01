@@ -48,21 +48,22 @@ async function loadDashboard() {
     try {
         showLoading('recentOrdersList', 'Loading dashboard...');
 
-        const [products, orders] = await Promise.all([getProducts(), getOrders()]);
+        // Stats come from a dedicated SQL COUNT/SUM endpoint — accurate regardless of order volume
+        // Recent orders list uses the default paginated fetch (returns latest 100, we show 5)
+        const [stats, recentData] = await Promise.all([
+            getStats(),
+            getOrdersPaginated({ limit: 5 })
+        ]);
 
-        const pendingOrders = orders.filter(o => (o.order_status || o.status) === 'pending');
-        const deliveredOrders = orders.filter(o => (o.order_status || o.status) === 'delivered');
-        const totalRevenue = deliveredOrders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+        setEl('totalProducts', stats.total_products ?? '—');
+        setEl('totalOrders',   stats.total_orders   ?? '—');
+        setEl('pendingOrders', stats.pending_orders  ?? '—');
+        setEl('totalRevenue',  `${parseFloat(stats.total_revenue || 0).toFixed(2)}JD`);
 
-        setEl('totalProducts', products.length);
-        setEl('totalOrders', orders.length);
-        setEl('pendingOrders', pendingOrders.length);
-        setEl('totalRevenue', `${totalRevenue.toFixed(2)}JD`);
-
-        const recentOrders = orders.slice(0, 5);
+        const recentOrders = recentData.orders || [];
         const recentHTML = recentOrders.map(order => {
-            const id = order.order_id || order.orderId;
-            const name = order.customer_name || order.customerName;
+            const id     = order.order_id || order.orderId;
+            const name   = order.customer_name || order.customerName;
             const status = order.order_status || order.status;
             return `
                 <div class="order-item">
