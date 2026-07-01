@@ -724,12 +724,10 @@ async function changeOrderStatus(orderId, newStatus) {
 
 async function viewOrderDetails(orderId) {
     try {
-        // Try fetching single order with items from dedicated endpoint first
+        // Fetch order directly from API (includes full item list with IDs)
         let order = null;
         try {
-
-            const API_URL = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
-            const res = await fetch(`${API_URL}/api/orders/${orderId}`, {
+            const res = await fetch(`${API_BASE}/orders/${orderId}`, {
                 headers: { 'Authorization': `Bearer ${getAdminToken()}` }
             });
             if (res.ok) {
@@ -738,10 +736,9 @@ async function viewOrderDetails(orderId) {
             }
         } catch (e) { /* fallback below */ }
 
-        // Fallback: search in already-loaded orders list
+        // Fallback: search in the current page's already-loaded orders map
         if (!order) {
-            const orders = await getOrders();
-            order = orders.find(o => (o.order_id || o.orderId) == orderId);
+            order = window._ordersMap?.[orderId] || null;
         }
 
         if (!order) { alert('Order not found'); return; }
