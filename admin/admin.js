@@ -841,12 +841,16 @@ function printOrderModal() {
 
 async function loadReports() {
     try {
-        let orders = await getOrders();
-
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate = document.getElementById('reportToDate')?.value;
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
-        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate + 'T23:59:59'));
+        const toDate   = document.getElementById('reportToDate')?.value;
+
+        // Pass date range + high limit to backend so SQL filters — avoids the
+        // default 100-order cap that caused older orders to be invisible in reports
+        const filters = { limit: 10000 };
+        if (fromDate) filters.from_date = fromDate;
+        if (toDate)   filters.to_date   = toDate;
+
+        let orders = await getOrders(filters);
 
         const dateLabel = (fromDate || toDate)
             ? `<p style="margin-bottom:0.75rem;font-size:0.85rem;color:#888;">Showing: ${fromDate || '…'} → ${toDate || '…'}</p>`
@@ -922,11 +926,13 @@ async function loadReports() {
 async function exportOrders() {
     try {
         const fromDate = document.getElementById('reportFromDate')?.value;
-        const toDate = document.getElementById('reportToDate')?.value;
-        let orders = await getOrders();
+        const toDate   = document.getElementById('reportToDate')?.value;
 
-        if (fromDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) >= new Date(fromDate));
-        if (toDate) orders = orders.filter(o => new Date(o.created_at || o.orderDate) <= new Date(toDate));
+        const filters = { limit: 10000 };
+        if (fromDate) filters.from_date = fromDate;
+        if (toDate)   filters.to_date   = toDate;
+
+        let orders = await getOrders(filters);
 
         let csv = 'Order ID,Customer,Phone,City,Country,Address,Items,Subtotal,Shipping,Total,Status,Date\n';
         orders.forEach(o => {
