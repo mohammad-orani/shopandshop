@@ -936,16 +936,15 @@ async function loadReports() {
         const deliveryDiffColor = deliveryDiff >= 0 ? '#16a34a' : '#dc2626';
         const deliveryDiffLabel = deliveryDiff >= 0 ? 'surplus' : 'deficit';
 
-        // Net Profit = order total - cost of items sold - actual delivery fee
+        // Net Profit = total collected − actual delivery cost − cost price of items sold
         let totalProfit = 0;
         delivered.forEach(o => {
-            const orderTotal = parseFloat(o.total || 0);
+            const orderTotal     = parseFloat(o.total || 0);
             const actualDelivery = parseFloat(o.actual_shipping_cost || 0);
-            //const actualDeliveryFromCustomer = parseFloat(o.displayed_shipping_cost || 0);
             const itemsCost = (o.items || []).reduce((sum, item) => {
                 return sum + (parseFloat(item.cost_price || 0) * (item.quantity || 1));
             }, 0);
-            totalProfit += orderTotal - itemsCost /*- actualDelivery + actualDeliveryFromCustomer*/;
+            totalProfit += orderTotal - actualDelivery - itemsCost;
         });
 
         const deliveredRevenue = delivered.reduce((s, o) => s + parseFloat(o.total || 0), 0);
@@ -961,7 +960,7 @@ async function loadReports() {
                 <div class="stat-card" style="border-color:#16a34a;">
                     <h3 style="color:#16a34a;">Net Profit</h3>
                     <p class="stat-number" style="color:#16a34a;">${totalProfit.toFixed(2)}JD</p>
-                    <small style="color:#888;font-size:0.75rem;">Revenue − Cost Price </small>
+                    <small style="color:#888;font-size:0.75rem;">Revenue − Actual Delivery − Cost Price</small>
                 </div>
             </div>
             <h4 style="margin:1.5rem 0 0.75rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;color:#888;">Delivery Fees Breakdown</h4>

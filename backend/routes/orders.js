@@ -188,9 +188,9 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
 
         let query = 'SELECT * FROM orders WHERE 1=1';
         const params = [];
-        if (status)    { query += ' AND order_status = ?'; params.push(status); }
-        if (from_date) { query += ' AND created_at >= ?';  params.push(from_date); }
-        if (to_date)   { query += ' AND created_at <= ?';  params.push(to_date); }
+        if (status)    { query += ' AND order_status = ?';        params.push(status); }
+        if (from_date) { query += ' AND created_at >= ?';         params.push(from_date); }
+        if (to_date)   { query += ' AND created_at <= ?';         params.push(to_date + ' 23:59:59'); }
         query += ' ORDER BY created_at DESC';
 
         const pageLimit  = limit  ? parseInt(limit,  10) : 100;
@@ -198,12 +198,13 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
         query += ' LIMIT ? OFFSET ?';
         params.push(pageLimit, pageOffset);
 
+        const countParams = [status, from_date, to_date ? to_date + ' 23:59:59' : undefined].filter(Boolean);
         const [[{ total }]] = await pool.query(
             'SELECT COUNT(*) as total FROM orders WHERE 1=1' +
             (status    ? ' AND order_status = ?' : '') +
             (from_date ? ' AND created_at >= ?'  : '') +
             (to_date   ? ' AND created_at <= ?'  : ''),
-            [status, from_date, to_date].filter(Boolean)
+            countParams
         );
 
         const [orders] = await pool.query(query, params);
