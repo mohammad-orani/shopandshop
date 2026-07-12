@@ -7,13 +7,17 @@
 
 (function () {
 
+    var brand = window.BRAND || {};
+    var logoSrc = brand.logo || 'assets/brand/logo.png';
+    var brandName = brand.name || 'Store';
+
     var headerHTML = '<header class="topbaic-header">' +
         '<div class="header-main">' +
         '<div class="header-main-inner">' +
         '<a href="index.html" style="display:inline-block;line-height:0;">' +
-        '<img src="Prime_Jo_Logo.png" alt="PrimeJo" loading="eager" style="height:80px;width:auto;object-fit:contain;display:block;">' +
+        '<img src="' + logoSrc + '" alt="' + brandName + '" loading="eager" style="height:80px;width:auto;object-fit:contain;display:block;">' +
         '</a>' +
-        '<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open menu">&#9776;</button>' +
+        '<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open menu" aria-expanded="false">&#9776;</button>' +
         '<nav class="topbaic-nav" id="mobileNav">' +
         '<a href="index.html" data-en="Home" data-ar="\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629">Home</a>' +
         '<div class="nav-item" id="navCategories">' +
@@ -24,8 +28,8 @@
         '<a href="contact.html" data-en="Contact" data-ar="\u0627\u062a\u0635\u0644 \u0628\u0646\u0627">Contact</a>' +
         '</nav>' +
         '<div class="header-icons">' +
-        '<button class="icon-btn" onclick="window.location.href=\'favorites.html\'" title="Favorites">\u2764\ufe0f</button>' +
-        '<button class="icon-btn" onclick="window.location.href=\'cart.html\'" title="Cart">' +
+        '<button class="icon-btn" onclick="window.location.href=\'favorites.html\'" title="Favorites" aria-label="Favorites">\u2764\ufe0f</button>' +
+        '<button class="icon-btn" onclick="window.location.href=\'cart.html\'" title="Cart" aria-label="Cart">' +
         '\uD83D\uDED2<span class="icon-badge" id="cartCount">0</span>' +
         '</button>' +
         '</div>' +
@@ -41,8 +45,9 @@
                     '<span class="search-icon">&#128269;</span>' +
                     '<input type="text" id="primejoSearchInput" ' +
                            'placeholder="\u0627\u0628\u062d\u062b \u0639\u0646 \u0645\u0646\u062a\u062c... / Search products..." ' +
+                           'aria-label="Search products" ' +
                            'autocomplete="off" />' +
-                    '<button class="search-clear" id="searchClear" style="display:none;">&#10005;</button>' +
+                    '<button class="search-clear" id="searchClear" aria-label="Clear search" style="display:none;">&#10005;</button>' +
                 '</div>' +
                 '<div class="search-dropdown" id="searchDropdown"></div>' +
             '</div>' +
@@ -71,6 +76,8 @@
         nav.classList.add('active');
         if (overlay) overlay.classList.add('active');
         toggle.innerHTML = '&#10005;';
+        toggle.setAttribute('aria-label', 'Close menu');
+        toggle.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
     }
 
@@ -78,6 +85,8 @@
         nav.classList.remove('active');
         if (overlay) overlay.classList.remove('active');
         toggle.innerHTML = '&#9776;';
+        toggle.setAttribute('aria-label', 'Open menu');
+        toggle.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
     }
 
@@ -177,8 +186,11 @@
                 new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'),
                 '<mark>$1</mark>'
             );
-            return '<div class="search-result-item" onclick="window.location.href=\'product.html?id=' + p.id + '\'">' +
-                '<img class="search-result-img" src="' + img + '" alt="' + name + '" ' +
+            var safeName = name.replace(/"/g, '&quot;');
+            return '<div class="search-result-item" role="button" tabindex="0" aria-label="' + safeName + '" ' +
+                'onclick="window.location.href=\'product.html?id=' + p.id + '\'" ' +
+                'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window.location.href=\'product.html?id=' + p.id + '\';}">' +
+                '<img class="search-result-img" src="' + img + '" alt="' + name + '" loading="lazy" ' +
                      'onerror="this.src=\'https://placehold.co/52x52?text=?\'">' +
                 '<div class="search-result-info">' +
                     '<div class="search-result-name">' + highlighted + '</div>' +
@@ -191,8 +203,11 @@
             ? '\u0639\u0631\u0636 \u0643\u0644 \u0627\u0644\u0646\u062a\u0627\u0626\u062c \u0644\u0640 "' + query + '" \u2190'
             : 'View all results for &quot;' + query + '&quot; &rarr;';
 
-        var viewAll = '<div class="search-view-all" onclick="goToProductsPage(\'' +
-            query.replace(/'/g, "\\'") + '\')">' + viewAllLabel + '</div>';
+        var viewAllQuery = query.replace(/'/g, "\\'");
+        var viewAll = '<div class="search-view-all" role="button" tabindex="0" ' +
+            'onclick="goToProductsPage(\'' + viewAllQuery + '\')" ' +
+            'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();goToProductsPage(\'' + viewAllQuery + '\');}">' +
+            viewAllLabel + '</div>';
 
         dropdown.innerHTML = items + viewAll;
         dropdown.classList.add('visible');

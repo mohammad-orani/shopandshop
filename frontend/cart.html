@@ -4,17 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Cart - Primejo</title>
-    <link rel="stylesheet" href="topbaic-style.css">
-    <link rel="stylesheet" href="mobile-nav-fix.css">
-    <!-- <link rel="stylesheet" href="modern-animations.css"> -->
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="cart.css">
-    <link rel="stylesheet" href="search-bar.css">
+    <title>Shopping Cart - {{BRAND_NAME}}</title>
+    <meta name="description" content="Review your cart at {{BRAND_NAME}} before checkout.">
+    <meta name="robots" content="noindex, follow">
+    <link rel="canonical" href="{{SITE_URL}}/cart.html">
+    <meta property="og:title" content="Shopping Cart - {{BRAND_NAME}}">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="dist/css/topbaic-style.min.css">
+    <link rel="stylesheet" href="dist/css/mobile-nav-fix.min.css">
+    <link rel="stylesheet" href="dist/css/styles.min.css">
+    <link rel="stylesheet" href="dist/css/cart.min.css">
+    <link rel="stylesheet" href="dist/css/search-bar.min.css">
+    <link rel="stylesheet" href="dist/css/design-system.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap"></noscript>
+    <link rel="preconnect" href="https://primejo-ecommerce-backend-demo.up.railway.app">
+    <link rel="preconnect" href="https://primejo.store">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"></noscript>
 </head>
 
 <body>
@@ -30,6 +37,14 @@
         <div class="cart-layout">
             <div class="cart-items" id="cartItems">
                 <!-- Cart items will be loaded here -->
+            </div>
+
+            <div class="empty-cart-message" id="emptyCart" style="display:none;">
+                <div class="empty-cart-icon" aria-hidden="true">🛒</div>
+                <h2 data-en="Your cart is empty" data-ar="سلتك فارغة">Your cart is empty</h2>
+                <p data-en="Looks like you haven't added anything yet." data-ar="يبدو أنك لم تضف أي شيء بعد.">
+                    Looks like you haven't added anything yet.</p>
+                <a href="index.html" class="empty-cart-cta" data-en="Start Shopping" data-ar="ابدأ التسوق">Start Shopping</a>
             </div>
 
             <div class="cart-summary">
@@ -57,7 +72,7 @@
     <div class="filter-bar">
         <div class="filter-content">
             <div class="filter-left">
-                <button class="filter-btn" onclick="filterProducts('topseller', this)" data-en="Top Sellers"
+                <button class="filter-btn" onclick="CartPage.filterProducts('topseller', this)" data-en="Top Sellers"
                     data-ar="الأكثر مبيعاً">
                     Top Sellers
                 </button>
@@ -76,19 +91,19 @@
     <div id="site-footer"></div>
 
     <!-- Scripts -->
-    <script src="header.js" defer></script>
-    <script src="footer.js" defer></script>
+    <script src="dist/js/config.min.js" defer></script>
+    <script src="dist/js/header.min.js" defer></script>
+    <script src="dist/js/footer.min.js" defer></script>
     <!-- <script src="mobile-menu.js" defer></script> -->
-    <script src="config.js" defer></script>
-    <script src="api.js" defer></script>
-    <script src="app.js" defer></script>
-    <script src="topbaic-products.js" defer></script>
-    <script src="settings.js" defer></script>
-    <script src="cart-page.js" defer></script>
-    <script src="modern-animations.js" defer></script>
+    <script src="dist/js/api.min.js" defer></script>
+    <script src="dist/js/app.min.js" defer></script>
+    <script src="dist/js/topbaic-products.min.js" defer></script>
+    <script src="dist/js/settings.min.js" defer></script>
+    <script src="dist/js/cart-page.min.js" defer></script>
+    <script src="dist/js/modern-animations.min.js" defer></script>
 
     <!-- Add this script at the end of body -->
-    <script src="general-info.js" defer></script>
+    <script src="dist/js/general-info.min.js" defer></script>
 </body>
 
 </html>

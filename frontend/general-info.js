@@ -2,42 +2,13 @@
 // Note: API_URL is defined in api.js - don't redeclare it here
 
 (function () {
-    // Use the global API_URL set in config.js
-    const GENERAL_INFO_API = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
-
-    // Cache
-    let generalInfoCache = null;
-
-    // Load general info from API
+    // Fetching + caching is centralized in api.js's getGeneralInfoFromAPI() —
+    // this used to be a second, independent fetch+cache of the exact same
+    // endpoint. Delegating here means one network request and one cache,
+    // shared with cart-page.js (which also calls getGeneralInfoFromAPI()
+    // directly) instead of two disagreeing copies of the same data.
     async function loadGeneralInfo() {
-        if (generalInfoCache) return generalInfoCache;
-
-        try {
-            // ✅ Make sure it's using the API, not the .js file!
-            const response = await fetch(`${GENERAL_INFO_API}/general-info`);
-            const data = await response.json();
-
-            if (data.success && data.info) {
-                generalInfoCache = data.info;
-                return data.info;
-            } else {
-                console.warn('General info not found, using defaults');
-                return getDefaultInfo();
-            }
-        } catch (error) {
-            console.error('Error loading general info:', error);
-            return getDefaultInfo();
-        }
-    }
-
-    // Default fallback
-    function getDefaultInfo() {
-        return {
-            brand_name: 'PrimeJo',
-            phone_number: '+962788888888',
-            email_address: 'Info@primejo.store',
-            minimum_order_amount: 15
-        };
+        return await getGeneralInfoFromAPI();
     }
 
     // Update page elements

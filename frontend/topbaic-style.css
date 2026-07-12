@@ -178,6 +178,12 @@ body {
     border-color: rgba(255, 255, 255, 0.3);
 }
 
+.currency-wrapper:focus-within {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.35);
+}
+
 .currency-select {
     background: transparent;
     border: none;
@@ -367,7 +373,7 @@ body {
     top: -6px;
     right: -6px;
     background: var(--accent-gold);
-    color: white;
+    color: var(--color-text);
     font-size: 10px;
     font-weight: 700;
     padding: 2px 5px;
@@ -471,6 +477,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: var(--spacing-md);
 }
 
 .filter-left {
@@ -490,18 +497,83 @@ body {
     transition: all var(--transition-fast);
     font-weight: 600;
     letter-spacing: 0.3px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .filter-btn:hover {
     border-color: var(--accent-gold);
     color: var(--accent-gold);
-    background: rgba(201, 169, 97, 0.05);
+    background: rgba(var(--color-accent-rgb), 0.05);
 }
 
 .filter-btn.active {
     background: var(--accent-gold);
     border-color: var(--accent-gold);
-    color: white;
+    color: var(--color-text);
+}
+
+.filter-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-shrink: 0;
+}
+
+.sort-select {
+    padding: 8px 16px;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-white);
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+}
+
+.sort-select:hover,
+.sort-select:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+
+/* Mobile: filter pills scroll horizontally instead of wrapping/overflowing */
+@media (max-width: 768px) {
+    .filter-content {
+        flex-wrap: nowrap;
+    }
+
+    .filter-left {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding-bottom: 2px;
+    }
+
+    .filter-left::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-right {
+        flex-shrink: 0;
+    }
+
+    .sort-select {
+        font-size: 12px;
+        padding: 7px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-content {
+        gap: var(--spacing-sm);
+    }
+
+    .filter-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
 }
 
 /* ============================================
@@ -516,8 +588,8 @@ body {
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
 }
 
 /* ── Card ── */
@@ -595,30 +667,32 @@ body {
 }
 
 .badge-sale {
-    background: #e74c3c;
+    background: var(--color-error);
 }
 
 .badge-topseller {
-    background: linear-gradient(135deg, #f39c12, #e67e22);
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
+    color: var(--color-text);
 }
 
 .badge-free-delivery {
-    background: #27ae60;
+    background: var(--color-success);
 }
 
 .badge-limited {
     background: var(--accent-gold);
+    color: var(--color-text);
 }
 
 .badge-free-shipping {
-    background: #27ae60;
+    background: var(--color-success);
 }
 
 .product-badge {
     position: absolute;
     top: 12px;
     left: 12px;
-    background: #111;
+    background: var(--color-secondary);
     z-index: 3;
 }
 
@@ -662,6 +736,13 @@ body {
     border-color: var(--accent-gold);
     color: white;
     transform: scale(1.1);
+}
+
+/* Wishlist heart — filled state once a product is favorited */
+.quick-action-btn.active {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
 }
 
 /* ── Product Info ── */
@@ -726,16 +807,16 @@ body {
 .price-original,
 .price-old {
     font-size: 0.85rem;
-    color: #bbb;
+    color: var(--text-light);
     text-decoration: line-through;
     font-weight: 500;
 }
 
 .price-save {
     font-size: 0.75rem;
-    color: #e74c3c;
+    color: var(--color-error);
     font-weight: 700;
-    background: rgba(231, 76, 60, 0.08);
+    background: rgba(var(--color-error-rgb), 0.08);
     padding: 2px 6px;
     border-radius: 4px;
 }
@@ -776,15 +857,15 @@ body {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #27ae60;
+    background: var(--color-success);
 }
 
 .stock-dot.low {
-    background: #f39c12;
+    background: var(--color-accent-dark);
 }
 
 .stock-dot.out {
-    background: #e74c3c;
+    background: var(--color-error);
 }
 
 /* ── Action Buttons ── */
@@ -872,9 +953,9 @@ body {
 
 .btn-fav:hover,
 .btn-fav.active {
-    background: #fff0f0;
-    border-color: #e74c3c;
-    color: #e74c3c;
+    background: rgba(178, 59, 46, 0.08);
+    border-color: var(--color-error);
+    color: var(--color-error);
 }
 
 /* ── Rating ── */
@@ -980,7 +1061,7 @@ body {
 .footer-section p {
     font-size: 14px;
     line-height: 1.8;
-    color: #cccccc;
+    color: rgba(var(--color-surface-rgb), 0.75);
     margin-bottom: 20px;
 }
 
@@ -993,7 +1074,7 @@ body {
 }
 
 .footer-section ul li a {
-    color: #cccccc;
+    color: rgba(var(--color-surface-rgb), 0.75);
     text-decoration: none;
     font-size: 14px;
     transition: all var(--transition-fast);
@@ -1016,10 +1097,10 @@ body {
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--color-surface-rgb), 0.05);
+    border: 1px solid rgba(var(--color-surface-rgb), 0.1);
     border-radius: var(--radius-sm);
-    color: #cccccc;
+    color: rgba(var(--color-surface-rgb), 0.75);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -1027,7 +1108,7 @@ body {
 }
 
 .social-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--color-surface-rgb), 0.1);
     border-color: var(--accent-gold);
     color: var(--accent-gold);
     transform: translateX(5px);
@@ -1074,14 +1155,102 @@ body {
     color: white;
 }
 
+/* ── Footer trust badges (brand column) ── */
+.footer-trust-badges {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.footer-trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(var(--color-surface-rgb), 0.75);
+}
+
+.footer-trust-badge__icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--color-surface-rgb), 0.06);
+    border-radius: 50%;
+    font-size: 14px;
+}
+
+/* ── Footer contact column ── */
+.footer-contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.footer-contact-info .contact-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: rgba(var(--color-surface-rgb), 0.75);
+}
+
+/* ── Footer newsletter ── */
+.footer-newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-newsletter-form input[type="email"] {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(var(--color-surface-rgb), 0.15);
+    background: rgba(var(--color-surface-rgb), 0.06);
+    color: white;
+    font-family: var(--font-body);
+    font-size: 13px;
+}
+
+.footer-newsletter-form input[type="email"]::placeholder {
+    color: rgba(var(--color-surface-rgb), 0.4);
+}
+
+.footer-newsletter-form input[type="email"]:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    background: rgba(var(--color-surface-rgb), 0.1);
+}
+
+.footer-newsletter-form button {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent-gold);
+    color: var(--primary-black);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.footer-newsletter-form button:hover {
+    background: var(--accent-gold-dark);
+}
+
 .footer-bottom {
     max-width: 1400px;
     margin: 0 auto;
     padding: 30px 20px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(var(--color-surface-rgb), 0.1);
     text-align: center;
     font-size: 13px;
-    color: #999999;
+    color: rgba(var(--color-surface-rgb), 0.5);
 }
 
 /* ============================================

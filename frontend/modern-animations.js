@@ -243,7 +243,7 @@ function animateAddToCart(button) {
     // Success feedback
     const originalText = button.textContent;
     button.textContent = '✓ Added!';
-    button.style.background = '#10b981';
+    button.style.background = 'var(--color-success)';
     
     setTimeout(() => {
         button.textContent = originalText;
@@ -275,8 +275,10 @@ function showToast(message, type = 'success') {
     // Create toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
     toast.style.cssText = `
-        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        background: ${type === 'success' ? 'var(--color-success)' : 'var(--color-error)'};
         color: white;
         padding: 16px 24px;
         border-radius: 12px;

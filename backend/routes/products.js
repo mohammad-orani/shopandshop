@@ -6,11 +6,23 @@ const { authenticateToken, isAdmin, logAction } = require('../middleware');
 
 const router = express.Router();
 
+// Public product columns — cost_price is internal-only (margin/reporting data)
+// and must never reach the storefront API; admin routes still use SELECT *.
+// `stock` is kept (product.js falls back to it when quantity_to_sell is unset)
+// even though the schema calls it customer-hidden — removing it would change
+// displayed availability for any product missing quantity_to_sell.
+const PUBLIC_PRODUCT_COLUMNS = `
+    id, name_en, name_ar, description_en, description_ar, category_id,
+    old_price, new_price, stock, quantity_to_sell, image_url, additional_images,
+    video_url, is_offer, is_top_seller, is_visible, is_free_delivery,
+    quantity_tiers, color_variants, created_at, updated_at
+`;
+
 // GET /api/products
 router.get('/', async (req, res) => {
     try {
         const { category, offer, topSeller, visible, search, limit, offset } = req.query;
-        let query = 'SELECT * FROM products WHERE 1=1';
+        let query = `SELECT ${PUBLIC_PRODUCT_COLUMNS} FROM products WHERE 1=1`;
         const params = [];
         if (category)         { query += ' AND category_id = ?'; params.push(category); }
         if (offer === 'true')   query += ' AND is_offer = TRUE';
@@ -32,16 +44,16 @@ router.get('/', async (req, res) => {
         const [products] = await pool.query(query, params);
         res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
         res.json(products);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
 // GET /api/products/:id
 router.get('/:id', async (req, res) => {
     try {
-        const [products] = await pool.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
-        if (products.length === 0) return res.status(404).json({ error: 'Product not found' });
+        const [products] = await pool.query(`SELECT ${PUBLIC_PRODUCT_COLUMNS} FROM products WHERE id = ?`, [req.params.id]);
+        if (products.length === 0) return res.status(404).json({ success: false, error: 'Product not found' });
         res.json(products[0]);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
 const toJson = v => v ? (typeof v === 'string' ? v : JSON.stringify(v)) : null;

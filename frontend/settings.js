@@ -4,16 +4,19 @@
 // ==================== GET GENERAL SETTINGS ====================
 
 async function getGeneralSettings() {
+    const brand = window.BRAND || {};
+    const contact = brand.contact || {};
+
     // Try to get from API first (via general-info.js or api.js)
     if (typeof window.loadGeneralInfo === 'function') {
         try {
             const info = await window.loadGeneralInfo();
             if (info) {
                 return {
-                    brandName: info.brand_name || 'PRIMEJO',
-                    brandNameAr: info.brand_name_ar || 'بريميجو',
-                    contactPhone: info.phone_number || '+962777777777',
-                    contactEmail: info.email_address || 'Info@primejo.store',
+                    brandName: info.brand_name || brand.name || 'Store',
+                    brandNameAr: info.brand_name_ar || brand.nameAr || brand.name || 'Store',
+                    contactPhone: info.phone_number || contact.phone || '+962777777777',
+                    contactEmail: info.email_address || contact.email || 'info@example.com',
                     copyrightYear: new Date().getFullYear().toString(),
                     location: 'Amman, Jordan',
                     locationAr: 'عمان، الأردن',
@@ -31,12 +34,12 @@ async function getGeneralSettings() {
         return JSON.parse(settingsData);
     }
 
-    // Ultimate fallback: Default settings
+    // Ultimate fallback: mirrors window.BRAND (frontend/config.js)
     return {
-        brandName: 'PRIMEJO',
-        brandNameAr: 'بريميجو',
-        contactPhone: '+962777777777',
-        contactEmail: 'Info@primejo.store',
+        brandName: brand.name || 'Store',
+        brandNameAr: brand.nameAr || brand.name || 'Store',
+        contactPhone: contact.phone || '+962777777777',
+        contactEmail: contact.email || 'info@example.com',
         copyrightYear: new Date().getFullYear().toString(),
         location: 'Amman, Jordan',
         locationAr: 'عمان، الأردن',

@@ -1,6 +1,6 @@
 // ==================== ADMIN API CONFIGURATION ====================
 // API_URL is defined in config.js — loaded before this script in every HTML page
-const API_URL = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+const API_URL = window.API_URL;
 
 // ==================== AUTH ====================
 

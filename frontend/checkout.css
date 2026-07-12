@@ -1,22 +1,35 @@
-/* ==================== CHECKOUT PAGE — matches cart.css style ==================== */
+/* ================================================================
+   CHECKOUT PAGE — Premium houseware redesign
+   Built entirely on design-system.css tokens — no hardcoded colors.
+   Previously 100% hardcoded hex/rgb values throughout; none remain.
+
+   Every id referenced by checkout.js (#checkoutForm, #deliveryCountry,
+   #deliveryCity, #deliveryAddress, #orderNotes, #customerName,
+   #customerPhone, #phonePrefix, #orderItems, #orderSubtotal,
+   #deliveryFeeDisplay, #orderTotal, #successModal, #orderIdDisplay, and
+   the new #deliveryStreet/#deliveryBuilding/#deliveryFloor/#customerEmail/
+   #modalOrderItems/#modalSubtotal/#modalDelivery/#modalTotal/
+   #modalCustomerName it already reads but previously had no markup for)
+   is preserved; only presentation changed.
+   ================================================================ */
 
 .page-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: #1a1a1a;
-    padding: 2rem 0 0.5rem;
-    border-bottom: 3px solid #d4af37;
-    margin-bottom: 2rem;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text);
+    padding: var(--spacing-lg) 0 var(--spacing-sm);
+    border-bottom: 3px solid var(--color-accent);
+    margin-bottom: var(--spacing-lg);
     display: inline-block;
 }
 
 .checkout-layout {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
-    gap: 2.5rem;
+    gap: var(--spacing-xl);
     align-items: start;
-    padding-bottom: 4rem;
+    padding-bottom: var(--spacing-xl);
 }
 
 @media (max-width: 900px) {
@@ -26,33 +39,67 @@
 
 .checkout-form h2,
 .order-summary h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: #1a1a1a;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #1a1a1a;
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-text);
 }
 
 .checkout-form h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 2rem 0 1rem;
-    color: #1a1a1a;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: var(--spacing-lg) 0 var(--spacing-md);
+    color: var(--color-text);
 }
 
-.form-group { margin-bottom: 1.4rem; }
+.form-section-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    margin: -0.5rem 0 var(--spacing-md);
+}
+
+/* ================================================================
+   FORM FIELDS
+   ================================================================ */
+.form-group { margin-bottom: var(--spacing-lg); }
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 560px) {
+    .form-row { grid-template-columns: 1fr; }
+}
 
 .form-group label {
     display: block;
-    font-size: 0.8rem;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #555;
-    margin-bottom: 6px;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xs);
+}
+
+.phone-input-row {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.phone-input-row #phonePrefix {
+    width: 130px;
+    flex-shrink: 0;
+}
+
+.phone-input-row #customerPhone {
+    flex: 1;
 }
 
 .form-group input,
@@ -60,14 +107,14 @@
 .form-group select {
     width: 100%;
     padding: 0.85rem 1rem;
-    border: 1.5px solid #e0e0e0;
-    background: #fff;
-    font-family: 'Work Sans', sans-serif;
+    border: 1.5px solid var(--color-text-light);
+    border-radius: var(--radius-small);
+    background: var(--color-surface);
+    font-family: var(--font-body);
     font-size: 0.95rem;
-    color: #1a1a1a;
-    transition: border-color 0.25s;
+    color: var(--color-text);
+    transition: var(--transition-fast);
     box-sizing: border-box;
-    border-radius: 0;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -76,106 +123,149 @@
 .form-group textarea:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #d4af37;
-    box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.15);
+}
+
+/* Validation state — checkout.js toggles this class; the actual validation
+   rules (phone format, required fields) are unchanged, this only adds a
+   visible cue instead of relying on an alert() alone. */
+.form-group input.is-invalid,
+.form-group textarea.is-invalid,
+.form-group select.is-invalid {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 3px rgba(var(--color-error-rgb), 0.12);
+}
+
+.form-error-message {
+    display: none;
+    margin-top: var(--spacing-xs);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-error);
+}
+
+.form-group.has-error .form-error-message {
+    display: block;
 }
 
 .form-group textarea { resize: vertical; min-height: 100px; }
 
 .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237C6F63' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 36px;
+    cursor: pointer;
 }
 
-.form-group small { display: block; margin-top: 5px; font-size: 0.8rem; color: #888; }
+.form-group small {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+}
 
-/* ── Payment ─────────────────────────────────────── */
+/* ================================================================
+   PAYMENT METHOD
+   ================================================================ */
 .payment-method {
-    margin: 2rem 0 1.5rem;
-    padding: 1.5rem;
-    border: 1.5px solid #e0e0e0;
-    background: #fafafa;
+    margin: var(--spacing-lg) 0;
+    padding: var(--spacing-lg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-background);
 }
 
 .payment-method h3 {
-    margin: 0 0 1rem;
-    font-size: 0.85rem;
+    margin: 0 0 var(--spacing-md);
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    color: var(--color-text-light);
 }
 
 .payment-option {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0.8rem 1rem;
-    margin-bottom: 0.6rem;
-    border: 1.5px solid #e0e0e0;
-    background: #fff;
+    gap: var(--spacing-sm);
+    padding: 0.85rem 1rem;
+    margin-bottom: var(--spacing-sm);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-small);
+    background: var(--color-surface);
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: var(--transition-fast);
+    font-family: var(--font-body);
     font-size: 0.95rem;
     font-weight: 500;
 }
 
 .payment-option:has(input:checked) {
-    border-color: #d4af37;
-    background: #fffdf0;
+    border-color: var(--color-accent);
+    background: rgba(var(--color-accent-rgb), 0.08);
 }
 
 .payment-option.disabled { opacity: 0.5; cursor: not-allowed; }
 
 .payment-option input[type="radio"] {
     width: 18px; height: 18px;
-    accent-color: #d4af37;
+    accent-color: var(--color-accent);
     flex-shrink: 0;
 }
 
-/* ── Submit Button ───────────────────────────────── */
+/* ================================================================
+   SUBMIT — primary action, clearly the most prominent control on the page
+   ================================================================ */
 .submit-order-btn {
     width: 100%;
     padding: 1.1rem;
-    background: #1a1a1a;
-    color: #fff;
+    background: var(--color-primary);
+    color: var(--color-surface);
     border: none;
-    font-family: 'Work Sans', sans-serif;
-    font-size: 0.9rem;
+    border-radius: var(--radius-medium);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 0.5rem;
+    transition: var(--transition-normal);
+    margin-top: var(--spacing-sm);
 }
 
 .submit-order-btn:hover {
-    background: #d4af37;
-    color: #1a1a1a;
+    background: var(--color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(212,175,55,0.3);
+    box-shadow: var(--shadow-medium);
 }
 
 .submit-order-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-/* ── Order Summary ───────────────────────────────── */
+/* ================================================================
+   ORDER SUMMARY (sidebar)
+   ================================================================ */
 .order-summary {
-    border: 2px solid #d4af37;
-    padding: 1.8rem;
-    position: relative;
-    top: auto;
-    background: #fff;
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-lg);
+    background: var(--color-surface);
+    position: sticky;
+    top: 90px;
+}
+
+@media (max-width: 900px) {
+    .order-summary { position: static; }
 }
 
 .order-item {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 0.9rem 0;
-    border-bottom: 1px solid #f0f0f0;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .order-item:last-child { border-bottom: none; }
@@ -184,24 +274,24 @@
 .order-item-name {
     font-weight: 600;
     font-size: 0.9rem;
-    color: #1a1a1a;
+    color: var(--color-text);
     margin-bottom: 3px;
     line-height: 1.4;
 }
 
-.order-item-qty { font-size: 0.8rem; color: #888; }
+.order-item-qty { font-size: 0.8rem; color: var(--color-text-light); }
 
 .order-item-price {
     font-weight: 700;
     font-size: 0.95rem;
-    color: #d4af37;
+    color: var(--color-primary);
     white-space: nowrap;
 }
 
 .summary-totals {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 2px solid #1a1a1a;
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 2px solid var(--color-text);
 }
 
 .summary-row {
@@ -210,44 +300,67 @@
     align-items: center;
     padding: 0.5rem 0;
     font-size: 0.95rem;
-    color: #555;
+    color: var(--color-text-light);
 }
 
 .summary-row.total {
-    padding-top: 0.8rem;
-    margin-top: 0.5rem;
-    border-top: 1.5px solid #e0e0e0;
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: #1a1a1a;
+    padding-top: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+    border-top: 1.5px solid var(--color-border);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
 }
 
 .summary-row.total span:last-child {
-    color: #d4af37;
+    color: var(--color-primary);
     font-size: 1.3rem;
+    font-family: var(--font-heading);
 }
 
-/* ── Success Modal ───────────────────────────────── */
+/* Delivery note callout (info banner set from admin general-info settings) */
+#delivery-note-box {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(var(--color-accent-rgb), 0.12);
+    border-left: 4px solid var(--color-accent-dark);
+    border-radius: var(--radius-small);
+    font-size: 0.85rem;
+    color: var(--color-text);
+}
+
+[dir="rtl"] #delivery-note-box {
+    border-left: none;
+    border-right: 4px solid var(--color-accent-dark);
+}
+
+/* ================================================================
+   SUCCESS MODAL — now shows a real itemized receipt
+   ================================================================ */
 .modal {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(var(--color-text-rgb), 0.6);
     z-index: 9999;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(4px);
+    padding: var(--spacing-md);
 }
 
 .modal.show { display: flex; }
 
 .modal-content {
-    background: #fff;
-    padding: 3rem 2.5rem;
+    background: var(--color-surface);
+    padding: var(--spacing-xl) var(--spacing-lg);
     max-width: 480px;
-    width: 90%;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
     text-align: center;
-    border-top: 4px solid #d4af37;
+    border-top: 4px solid var(--color-accent);
+    border-radius: var(--radius-medium);
     animation: modalIn 0.35s ease;
 }
 
@@ -258,45 +371,51 @@
 
 .success-icon {
     width: 64px; height: 64px;
-    background: #1a1a1a;
-    color: #d4af37;
+    background: var(--color-text);
+    color: var(--color-accent);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
     font-weight: 900;
-    margin: 0 auto 1.5rem;
+    margin: 0 auto var(--spacing-md);
 }
 
 .modal-content h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    font-weight: 900;
-    margin-bottom: 0.8rem;
-    color: #1a1a1a;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text);
 }
 
-.modal-content p { font-size: 0.95rem; color: #666; margin-bottom: 0.5rem; }
+.modal-content p { font-size: 0.95rem; color: var(--color-text-light); margin-bottom: var(--spacing-xs); }
+
+.modal-order-items {
+    margin: var(--spacing-md) 0;
+    text-align: left;
+}
+
+[dir="rtl"] .modal-order-items { text-align: right; }
 
 .modal-item-row {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--spacing-md);
     padding: 0.5rem 0;
     font-size: 0.9rem;
-    border-bottom: 1px solid #f0f0f0;
-    text-align: left;
+    border-bottom: 1px solid var(--color-border);
 }
 
-.modal-item-name { flex: 1; font-weight: 500; color: #1a1a1a; }
-.modal-item-qty  { color: #888; }
-.modal-item-price { font-weight: 700; color: #d4af37; }
+.modal-item-name { flex: 1; font-weight: 500; color: var(--color-text); }
+.modal-item-qty  { color: var(--color-text-light); }
+.modal-item-price { font-weight: 700; color: var(--color-primary); white-space: nowrap; }
 
 .modal-totals {
-    margin-top: 0.8rem;
-    padding-top: 0.8rem;
-    border-top: 2px solid #1a1a1a;
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 2px solid var(--color-text);
     font-size: 0.9rem;
 }
 
@@ -304,39 +423,64 @@
     display: flex;
     justify-content: space-between;
     padding: 0.3rem 0;
-    color: #555;
+    color: var(--color-text-light);
 }
 
 .modal-total-row.grand-total {
     font-size: 1.1rem;
-    font-weight: 900;
-    color: #1a1a1a;
-    border-top: 1px solid #e0e0e0;
-    margin-top: 0.4rem;
-    padding-top: 0.6rem;
+    font-weight: 700;
+    color: var(--color-text);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-sm);
 }
 
 .modal-btn {
     display: inline-block;
-    margin-top: 1.5rem;
+    margin-top: var(--spacing-lg);
     padding: 0.9rem 2.5rem;
-    background: #1a1a1a;
-    color: #fff;
+    background: var(--color-primary);
+    color: var(--color-surface);
     border: none;
-    font-family: 'Work Sans', sans-serif;
-    font-size: 0.85rem;
+    border-radius: var(--radius-medium);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition-normal);
 }
 
-.modal-btn:hover { background: #d4af37; color: #1a1a1a; }
+.modal-btn:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+}
 
-/* ── RTL ─────────────────────────────────────────── */
+/* ================================================================
+   RTL
+   ================================================================ */
 [dir="rtl"] .form-group select {
     background-position: left 12px center;
     padding-right: 1rem;
     padding-left: 36px;
+}
+
+/* ================================================================
+   MOBILE
+   ================================================================ */
+@media (max-width: 600px) {
+    .page-title { font-size: 1.5rem; }
+
+    .checkout-form h2,
+    .order-summary h2 { font-size: 1.2rem; }
+
+    .phone-input-row { flex-direction: column; }
+    .phone-input-row #phonePrefix { width: 100%; }
+
+    .payment-method { padding: var(--spacing-md); }
+
+    .submit-order-btn { padding: 1rem; font-size: 0.9rem; }
+
+    .modal-content { padding: var(--spacing-lg) var(--spacing-md); }
 }

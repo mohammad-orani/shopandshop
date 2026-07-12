@@ -39,10 +39,11 @@ async function sendTextMessage(to, message) {
 }
 
 async function sendOrderConfirmation(to, customerName, orderId, total) {
+    const storeName = process.env.STORE_NAME || 'Store';
     const body =
         `مرحباً ${customerName}، تم تأكيد طلبك رقم #${orderId} بنجاح! 🎉\n` +
         `المجموع: ${total} JD\n` +
-        `شكراً لتسوقك من PrimeJo 🛍️`;
+        `شكراً لتسوقك من ${storeName} 🛍️`;
     return sendTextMessage(to, body);
 }
 
@@ -54,8 +55,9 @@ async function notifyAdmin(orderId, customerName, total, customerPhone) {
     const client = getClient();
     if (!client) return { success: false, error: 'Twilio credentials not set' };
 
+    const storeName = process.env.STORE_NAME || 'Store';
     const body =
-        `🛒 طلب جديد على PrimeJo!\n` +
+        `🛒 طلب جديد على ${storeName}!\n` +
         `رقم الطلب: #${orderId}\n` +
         `العميل: ${customerName}\n` +
         `الهاتف: ${customerPhone}\n` +

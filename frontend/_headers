@@ -1,0 +1,20 @@
+# Netlify request headers. Filenames in dist/ aren't content-hashed, so we use
+# a moderate max-age rather than a long immutable cache — long enough to avoid
+# re-downloading on every repeat visit, short enough that a redeploy is picked
+# up within a day. If dist/ output ever gains hashed filenames, switch this to
+# `public, max-age=31536000, immutable` and drop the revalidation concern.
+
+/dist/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=3600
+
+/assets/*
+  Cache-Control: public, max-age=604800
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Cache-Control: public, max-age=3600

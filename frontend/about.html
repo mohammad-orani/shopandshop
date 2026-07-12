@@ -4,154 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Primejo</title>
-    <link rel="stylesheet" href="topbaic-style.css">
-    <link rel="stylesheet" href="mobile-nav-fix.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="search-bar.css">
-    <!-- <link rel="stylesheet" href="modern-animations.css"> -->
+    <title>About Us - {{BRAND_NAME}}</title>
+    <meta name="description" content="Learn about {{BRAND_NAME}} — our story, mission, and the values behind every product we sell.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{SITE_URL}}/about.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{BRAND_NAME}}">
+    <meta property="og:title" content="About Us - {{BRAND_NAME}}">
+    <meta property="og:description" content="Learn about {{BRAND_NAME}} — our story, mission, and the values behind every product we sell.">
+    <meta property="og:url" content="{{SITE_URL}}/about.html">
+    <meta property="og:image" content="{{SITE_URL}}/assets/brand/logo.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="About Us - {{BRAND_NAME}}">
+    <meta name="twitter:description" content="Learn about {{BRAND_NAME}} — our story, mission, and the values behind every product we sell.">
+    <meta name="twitter:image" content="{{SITE_URL}}/assets/brand/logo.png">
+
+    <link rel="stylesheet" href="dist/css/topbaic-style.min.css">
+    <link rel="stylesheet" href="dist/css/mobile-nav-fix.min.css">
+    <link rel="stylesheet" href="dist/css/styles.min.css">
+    <link rel="stylesheet" href="dist/css/search-bar.min.css">
+    <link rel="stylesheet" href="dist/css/design-system.min.css">
+    <link rel="stylesheet" href="dist/css/info-pages.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap"></noscript>
-    <style>
-        .about-hero {
-            background: linear-gradient(135deg, var(--primary-black) 0%, var(--grey-dark) 100%);
-            color: var(--primary-white);
-            padding: 6rem 0;
-            text-align: center;
-        }
-
-        .about-hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 4rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-        }
-
-        .about-content {
-            padding: 4rem 0;
-        }
-
-        .about-section {
-            margin-bottom: 4rem;
-        }
-
-        .about-section h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .about-section p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 1rem;
-        }
-
-        .values-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .value-card {
-            background: var(--grey-light);
-            padding: 2rem;
-            border: 2px solid var(--primary-black);
-            text-align: center;
-        }
-
-        .value-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .value-card h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Fix overflow and alignment */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            box-sizing: border-box;
-            width: 100%;
-        }
-
-        .about-hero {
-            padding: 4rem 20px;
-            /* add horizontal padding */
-            overflow: hidden;
-        }
-
-        .about-hero h1 {
-            font-size: clamp(2rem, 6vw, 4rem);
-            /* responsive font */
-        }
-
-        .values-grid {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
-
-        .value-card {
-            word-break: break-word;
-        }
-
-        /* Mobile fixes */
-        @media (max-width: 768px) {
-            .about-hero {
-                padding: 3rem 16px;
-            }
-
-            .about-hero h1 {
-                font-size: 2rem;
-            }
-
-            .about-section h2 {
-                font-size: 1.6rem;
-            }
-
-            .about-section p {
-                font-size: 1rem;
-            }
-
-            .values-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .container.about-content {
-                padding: 2rem 16px;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://primejo-ecommerce-backend-demo.up.railway.app">
+    <link rel="preconnect" href="https://primejo.store">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"></noscript>
 </head>
 
 <body>
     <!-- TOP BAIC Style Header - Include on all pages -->
     <div id="site-header"></div>
 
-
-
-
     <div class="about-hero">
-        <h1 data-en="About Primejo" data-ar="عن Primejo">About Primejo</h1>
-        <p data-en="Your premium shopping destination" data-ar="وجهتك المميزة للتسوق">Your premium shopping destination
+        <h1 data-en="About {{BRAND_NAME}}" data-ar="عن {{BRAND_NAME}}">About {{BRAND_NAME}}</h1>
+        <p data-en="Your premium destination for houseware and home essentials" data-ar="وجهتك المميزة للأدوات المنزلية ومستلزمات المنزل">
+            Your premium destination for houseware and home essentials
         </p>
     </div>
 
     <div class="container about-content">
         <div class="about-section">
             <h2 data-en="Our Story" data-ar="قصتنا">Our Story</h2>
-            <p data-en="Our store was created to provide carefully selected products in personal care, electronics, home essentials, and everyday accessories — all in one place."
-                data-ar="انطلق متجرنا بهدف تقديم منتجات مختارة بعناية في مجالات العناية الشخصية، الإلكترونيات، الأدوات المنزلية، والنثريات — لنوفّر لعملائنا كل ما يحتاجونه في مكان واحد.">
-                Our store was created to provide carefully selected products in personal care, electronics, home
-                essentials, and everyday accessories — all in one place.
+            <p data-en="Our store was created to provide carefully selected houseware and home essentials — from the kitchen to the bathroom — all in one place."
+                data-ar="انطلق متجرنا بهدف تقديم أدوات منزلية ومستلزمات منزلية مختارة بعناية — من المطبخ إلى الحمام — لنوفّر لعملائنا كل ما يحتاجونه في مكان واحد.">
+                Our store was created to provide carefully selected houseware and home essentials — from the kitchen to
+                the bathroom — all in one place.
             </p>
             <p data-en="We don’t list products randomly. Every item is selected based on clear quality standards to ensure real value for our customers."
                 data-ar="نحن لا نعرض أي منتج عشوائيًا، بل نختار منتجاتنا وفق معايير جودة واضحة لنضمن لك أفضل قيمة مقابل السعر.">
@@ -161,23 +64,34 @@
         </div>
 
         <div class="about-section">
+            <h2 data-en="Our Mission" data-ar="مهمتنا">Our Mission</h2>
+            <div class="mission-statement">
+                <p data-en="To make every home feel considered — bringing premium, thoughtfully chosen houseware to the Gulf, without the premium hassle."
+                    data-ar="أن نجعل كل منزل يشعر بالعناية — نقدّم أدوات منزلية فاخرة ومُنتقاة بعناية لمنطقة الخليج، دون أي تعقيد.">
+                    To make every home feel considered — bringing premium, thoughtfully chosen houseware to the Gulf,
+                    without the premium hassle.
+                </p>
+            </div>
+        </div>
+
+        <div class="about-section">
             <h2 data-en="Our Values" data-ar="قيمنا">Our Values</h2>
             <div class="values-grid">
                 <div class="value-card">
-                    <div class="value-icon">⭐</div>
+                    <div class="value-icon" aria-hidden="true">⭐</div>
                     <h3 data-en="Quality First" data-ar="الجودة أولاً">Quality First</h3>
                     <p data-en="We select only the finest products for our customers"
                         data-ar="نختار فقط أفضل المنتجات لعملائنا">We select only the finest products for our customers
                     </p>
                 </div>
                 <div class="value-card">
-                    <div class="value-icon">❤️</div>
+                    <div class="value-icon" aria-hidden="true">❤️</div>
                     <h3 data-en="Customer Care" data-ar="رعاية العملاء">Customer Care</h3>
                     <p data-en="Your satisfaction is our top priority" data-ar="رضاك هو أولويتنا القصوى">Your
                         satisfaction is our top priority</p>
                 </div>
                 <div class="value-card">
-                    <div class="value-icon">🚀</div>
+                    <div class="value-icon" aria-hidden="true">🚀</div>
                     <h3 data-en="Fast Delivery" data-ar="توصيل سريع">Fast Delivery</h3>
                     <p data-en="Quick and reliable shipping to your doorstep" data-ar="شحن سريع وموثوق إلى عتبة بابك">
                         Quick and reliable shipping to your doorstep</p>
@@ -186,40 +100,54 @@
         </div>
 
         <div class="about-section">
-            <h2 data-en="Why Choose Primejo?" data-ar="لماذا تختار Primejo">Why Choose Primejo?</h2>
-            <p data-en="Practical and modern products for everyday life"
-                data-ar="منتجات عملية وعصرية تلبي احتياجاتك اليومية">
-                Practical and modern products for everyday life</p>
-            <p data-en="Competitive prices tailored to the local market" data-ar="أسعار منافسة تناسب السوق المحلي">
-                Competitive prices tailored to the local market</p>
-            <p data-en="Regularly updated collections based on trends and demand"
-                data-ar="تحديث مستمر للمنتجات وفق أحدث الاتجاهات">
-                Regularly updated collections based on trends and demand</p>
-            <p data-en="Secure and user-friendly online shopping experience" data-ar="تجربة شراء إلكترونية سهلة وآمنة ">
-                Secure and user-friendly online shopping experience</p>
-            <p data-en="Fast and professional customer support" data-ar="خدمة عملاء سريعة واحترافية ">
-                Fast and professional customer support</p>
-            <p data-en="Our goal is to become your first choice for online shopping by combining quality, affordability, and convenience."
-                data-ar="هدفنا أن نصبح خيارك الأول للتسوق الإلكتروني من خلال الجمع بين الجودة، السعر المناسب، وسهولة الشراء. ">
-                Our goal is to become your first choice for online shopping by combining quality, affordability, and
-                convenience.</p>
+            <h2 data-en="Why Choose {{BRAND_NAME}}?" data-ar="لماذا تختار {{BRAND_NAME}}">Why Choose {{BRAND_NAME}}?</h2>
+            <ul class="why-choose-list">
+                <li data-en="Practical and modern houseware for everyday life"
+                    data-ar="أدوات منزلية عملية وعصرية تلبي احتياجاتك اليومية">
+                    Practical and modern houseware for everyday life</li>
+                <li data-en="Competitive prices tailored to the local market" data-ar="أسعار منافسة تناسب السوق المحلي">
+                    Competitive prices tailored to the local market</li>
+                <li data-en="Regularly updated collections based on trends and demand"
+                    data-ar="تحديث مستمر للمنتجات وفق أحدث الاتجاهات">
+                    Regularly updated collections based on trends and demand</li>
+                <li data-en="Secure and user-friendly online shopping experience" data-ar="تجربة شراء إلكترونية سهلة وآمنة">
+                    Secure and user-friendly online shopping experience</li>
+                <li data-en="Fast and professional customer support" data-ar="خدمة عملاء سريعة واحترافية">
+                    Fast and professional customer support</li>
+                <li data-en="Our goal is to become your first choice for home shopping by combining quality, affordability, and convenience."
+                    data-ar="هدفنا أن نصبح خيارك الأول للتسوق المنزلي من خلال الجمع بين الجودة، السعر المناسب، وسهولة الشراء.">
+                    Our goal is to become your first choice for home shopping by combining quality, affordability, and
+                    convenience.</li>
+            </ul>
         </div>
     </div>
 
 
     <div id="site-footer"></div>
 
+    <!-- Structured data: Breadcrumb -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{SITE_URL}}/index.html" },
+            { "@type": "ListItem", "position": 2, "name": "About Us", "item": "{{SITE_URL}}/about.html" }
+        ]
+    }
+    </script>
+
     <!-- Scripts -->
-    <script src="header.js" defer></script>
-    <script src="footer.js" defer></script>
+    <script src="dist/js/config.min.js" defer></script>
+    <script src="dist/js/header.min.js" defer></script>
+    <script src="dist/js/footer.min.js" defer></script>
     <!-- <script src="mobile-menu.js" defer></script> -->
-    <script src="config.js" defer></script>
-    <script src="api.js" defer></script>
-    <script src="app.js" defer></script>
-    <script src="settings.js" defer></script>
-    <script src="modern-animations.js" defer></script>
-    <script src="topbaic-products.js" defer></script>
-    <script src="general-info.js" defer></script>
+    <script src="dist/js/api.min.js" defer></script>
+    <script src="dist/js/app.min.js" defer></script>
+    <script src="dist/js/settings.min.js" defer></script>
+    <script src="dist/js/modern-animations.min.js" defer></script>
+    <script src="dist/js/topbaic-products.min.js" defer></script>
+    <script src="dist/js/general-info.min.js" defer></script>
 </body>
 
 </html>

@@ -45,6 +45,13 @@ uploads/*
 dist/
 build/
 
+# Exception: frontend/dist/ is committed, not generated at deploy time — this
+# static site has no build step, so the minified CSS/JS it references must
+# ship in the repo. Regenerate with `npm run build` after editing any source
+# .css/.js file in frontend/.
+!frontend/dist/
+!frontend/dist/**
+
 # Temporary files
 *.tmp
 *.temp

@@ -4,20 +4,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Primejo - Premium E-Commerce | Everything you're looking for is here</title>
-    <meta name="description" content="Quality products, secure checkout. Shop Primejo - Your trusted marketplace. ">
+    <title>{{BRAND_NAME}} - Premium E-Commerce | Everything you're looking for is here</title>
+    <meta name="description" content="Shop {{BRAND_NAME}} for quality products at great prices, with secure checkout and fast delivery across the region.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{SITE_URL}}/index.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{BRAND_NAME}}">
+    <meta property="og:title" content="{{BRAND_NAME}} - Premium E-Commerce">
+    <meta property="og:description" content="Shop {{BRAND_NAME}} for quality products at great prices, with secure checkout and fast delivery across the region.">
+    <meta property="og:url" content="{{SITE_URL}}/index.html">
+    <meta property="og:image" content="{{SITE_URL}}/assets/brand/logo.png">
+    <meta property="og:locale" content="ar_AR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{BRAND_NAME}} - Premium E-Commerce">
+    <meta name="twitter:description" content="Shop {{BRAND_NAME}} for quality products at great prices, with secure checkout and fast delivery across the region.">
+    <meta name="twitter:image" content="{{SITE_URL}}/assets/brand/logo.png">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="topbaic-style.css">
-    <link rel="stylesheet" href="mobile-nav-fix.css">
-    <!-- <link rel="stylesheet" href="modern-animations.css"> -->
-    <link rel="stylesheet" href="slider.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="search-bar.css">
+    <link rel="stylesheet" href="dist/css/topbaic-style.min.css">
+    <link rel="stylesheet" href="dist/css/mobile-nav-fix.min.css">
+    <link rel="stylesheet" href="dist/css/slider.min.css">
+    <link rel="stylesheet" href="dist/css/styles.min.css">
+    <link rel="stylesheet" href="dist/css/search-bar.min.css">
+    <link rel="stylesheet" href="dist/css/design-system.min.css">
+    <link rel="stylesheet" href="dist/css/home.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@400;600&display=swap"></noscript>
+    <link rel="preconnect" href="https://primejo-ecommerce-backend-demo.up.railway.app">
+    <link rel="preconnect" href="https://primejo.store">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"></noscript>
 </head>
 
 <body>
@@ -30,7 +50,20 @@
     <!-- Hero Slider Section -->
     <section class="hero-slider">
         <div class="slider-container">
-            <!-- Loaded dynamically from API -->
+            <!-- Static premium fallback — replaced automatically by slider.js
+                 the moment a real banner exists in the database (see home.css) -->
+            <div class="hero-fallback">
+                <div class="hero-fallback__content">
+                    <span class="hero-fallback__eyebrow" data-en="Shop &amp; Shop — Home Lifestyle"
+                          data-ar="شوب اند شوب — نمط حياة منزلي">Shop &amp; Shop — Home Lifestyle</span>
+                    <h1 data-en="Elevate Everyday Living" data-ar="ارتقِ بحياتك اليومية">Elevate Everyday Living</h1>
+                    <p data-en="Premium houseware, thoughtfully curated for the modern Gulf home."
+                       data-ar="أدوات منزلية فاخرة، مُنتقاة بعناية لمنزلك العصري.">
+                       Premium houseware, thoughtfully curated for the modern Gulf home.</p>
+                    <a href="products.html" class="hero-fallback__cta"
+                       data-en="Shop New Arrivals" data-ar="تسوّق أحدث المنتجات">Shop New Arrivals</a>
+                </div>
+            </div>
         </div>
         <button class="slider-btn prev" id="prevBtn">›</button>
         <button class="slider-btn next" id="nextBtn">‹</button>
@@ -68,27 +101,104 @@
         </div>
     </section>
 
+    <!-- Category Section -->
+    <section class="section category-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-en="Shop by Category" data-ar="تسوّق حسب الفئة">Shop by Category</h2>
+                <p class="section-subtitle" data-en="Everything your home needs, beautifully organized."
+                   data-ar="كل ما يحتاجه منزلك، منظم بعناية.">Everything your home needs, beautifully organized.</p>
+            </div>
+            <div class="category-grid">
+                <a class="category-card" href="category.html?cat=kitchen">
+                    <span class="category-card__icon" aria-hidden="true">🍳</span>
+                    <span class="category-card__name" data-en="Kitchen" data-ar="المطبخ">Kitchen</span>
+                </a>
+                <a class="category-card" href="category.html?cat=dining">
+                    <span class="category-card__icon" aria-hidden="true">🍽️</span>
+                    <span class="category-card__name" data-en="Dining" data-ar="غرفة الطعام">Dining</span>
+                </a>
+                <a class="category-card" href="category.html?cat=storage">
+                    <span class="category-card__icon" aria-hidden="true">🗄️</span>
+                    <span class="category-card__name" data-en="Storage" data-ar="التخزين">Storage</span>
+                </a>
+                <a class="category-card" href="category.html?cat=home-decor">
+                    <span class="category-card__icon" aria-hidden="true">🏺</span>
+                    <span class="category-card__name" data-en="Home Decor" data-ar="ديكور المنزل">Home Decor</span>
+                </a>
+                <a class="category-card" href="category.html?cat=bathroom">
+                    <span class="category-card__icon" aria-hidden="true">🛁</span>
+                    <span class="category-card__name" data-en="Bathroom" data-ar="الحمام">Bathroom</span>
+                </a>
+                <a class="category-card" href="category.html?cat=cleaning">
+                    <span class="category-card__icon" aria-hidden="true">🧹</span>
+                    <span class="category-card__name" data-en="Cleaning" data-ar="التنظيف">Cleaning</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Collections -->
+    <section class="section section--muted featured-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title" data-en="New Arrivals" data-ar="وصل حديثاً">New Arrivals</h2>
+                    <p class="section-subtitle" data-en="Fresh additions to the collection"
+                       data-ar="إضافات جديدة إلى المجموعة">Fresh additions to the collection</p>
+                </div>
+            </div>
+            <div class="products-grid" id="randomProducts"></div>
+        </div>
+    </section>
+
+    <section class="section featured-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title" data-en="Best Sellers" data-ar="الأكثر مبيعاً">Best Sellers</h2>
+                    <p class="section-subtitle" data-en="Customer favorites, time after time"
+                       data-ar="المفضلة لدى عملائنا دائماً">Customer favorites, time after time</p>
+                </div>
+            </div>
+            <div class="products-grid" id="topSellers"></div>
+        </div>
+    </section>
+
+    <section class="section section--muted featured-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title" data-en="Special Offers" data-ar="عروض خاصة">Special Offers</h2>
+                    <p class="section-subtitle" data-en="Seasonal picks at exceptional prices"
+                       data-ar="مختارات موسمية بأسعار استثنائية">Seasonal picks at exceptional prices</p>
+                </div>
+            </div>
+            <div class="products-grid" id="offerProducts"></div>
+        </div>
+    </section>
+
     <!-- Filter Bar -->
     <div class="filter-bar">
         <div class="filter-content">
             <div class="filter-left">
-                <button class="filter-btn active" onclick="filterProducts('all', this)" data-en="All Products"
+                <button class="filter-btn active" onclick="TopBaic.filterProducts('all', this)" data-en="All Products"
                     data-ar="جميع المنتجات">
                     All Products
                 </button>
 
-                <!-- <button class="filter-btn" onclick="filterProducts('new')" data-en="New Arrivals" data-ar="وصل حديثاً">
+                <!-- <button class="filter-btn" onclick="TopBaic.filterProducts('new')" data-en="New Arrivals" data-ar="وصل حديثاً">
                     New Arrivals
                 </button> -->
 
-                <!-- <button class="filter-btn" onclick="filterProducts('topseller', this)" data-en="Top Sellers"
+                <!-- <button class="filter-btn" onclick="TopBaic.filterProducts('topseller', this)" data-en="Top Sellers"
                     data-ar="الأكثر مبيعاً">
                     Top Sellers
                 </button> -->
             </div>
 
             <!-- <div class="filter-right" style="display: flex; gap: 16px; align-items: center;">
-                <select class="sort-select" onchange="sortProducts(this.value)">
+                <select class="sort-select" onchange="TopBaic.sortProducts(this.value)">
                     <option value="featured" data-en="Featured" data-ar="مميز">Featured</option>
                     <option value="price-low" data-en="Price: Low to High" data-ar="السعر: من الأقل للأعلى">Price: Low
                         to High</option>
@@ -107,7 +217,12 @@
 
     <!-- Products Grid -->
     <section class="topbaic-products">
-        <div class="products-grid" id="topbaicProductsGrid">
+        <div class="section-header">
+            <h2 class="section-title" data-en="Our Full Collection" data-ar="مجموعتنا الكاملة">Our Full Collection</h2>
+            <p class="section-subtitle" data-en="Browse everything we have to offer"
+               data-ar="تصفح كل ما نقدمه">Browse everything we have to offer</p>
+        </div>
+        <div class="products-grid" id="topbaicProductsGrid" data-autoload="true">
             <!-- Products will be loaded here by JavaScript -->
         </div>
     </section>
@@ -117,19 +232,125 @@
         <!-- Pagination buttons will be added by JavaScript -->
     </div>
 
+    <!-- Brand / Trust Section -->
+    <section class="section section--surface brand-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-en="Why Shop &amp; Shop" data-ar="لماذا شوب اند شوب">Why Shop &amp; Shop</h2>
+                <p class="section-subtitle" data-en="Built on trust, made for your home."
+                   data-ar="بُني على الثقة، صُنع لمنزلك.">Built on trust, made for your home.</p>
+            </div>
+            <div class="brand-grid">
+                <div class="brand-feature">
+                    <span class="brand-feature__icon" aria-hidden="true">✨</span>
+                    <h3 data-en="Quality Promise" data-ar="وعد الجودة">Quality Promise</h3>
+                    <p data-en="Every piece is inspected for durability and craftsmanship before it reaches your door."
+                       data-ar="كل قطعة تُفحص من حيث المتانة والحرفية قبل وصولها إليك.">
+                       Every piece is inspected for durability and craftsmanship before it reaches your door.</p>
+                </div>
+                <div class="brand-feature">
+                    <span class="brand-feature__icon" aria-hidden="true">🚚</span>
+                    <h3 data-en="Gulf-Wide Delivery" data-ar="توصيل لكافة دول الخليج">Gulf-Wide Delivery</h3>
+                    <p data-en="Fast, reliable shipping across the Gulf, with delivery you can track."
+                       data-ar="شحن سريع وموثوق في جميع أنحاء الخليج، مع إمكانية تتبع الطلب.">
+                       Fast, reliable shipping across the Gulf, with delivery you can track.</p>
+                </div>
+                <div class="brand-feature">
+                    <span class="brand-feature__icon" aria-hidden="true">🤝</span>
+                    <h3 data-en="Dedicated Customer Care" data-ar="خدمة عملاء مخصصة">Dedicated Customer Care</h3>
+                    <p data-en="Our team is here before and after your purchase — real support, real people."
+                       data-ar="فريقنا بجانبك قبل الشراء وبعده — دعم حقيقي من أشخاص حقيقيين.">
+                       Our team is here before and after your purchase — real support, real people.</p>
+                </div>
+                <div class="brand-feature">
+                    <span class="brand-feature__icon" aria-hidden="true">🎯</span>
+                    <h3 data-en="Curated Selection" data-ar="تشكيلة منتقاة بعناية">Curated Selection</h3>
+                    <p data-en="We handpick every product to fit a modern, elegant home."
+                       data-ar="نختار كل منتج بعناية ليلائم منزلاً عصرياً وأنيقاً.">
+                       We handpick every product to fit a modern, elegant home.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="section newsletter-section">
+        <div class="container">
+            <h2 class="section-title" data-en="Stay in the Loop" data-ar="ابقَ على اطلاع">Stay in the Loop</h2>
+            <p class="section-subtitle" data-en="Subscribe for new arrivals, styling tips, and exclusive offers."
+               data-ar="اشترك لتصلك أحدث المنتجات ونصائح التنسيق والعروض الحصرية."
+               style="margin-bottom: var(--spacing-lg);">
+               Subscribe for new arrivals, styling tips, and exclusive offers.</p>
+            <form class="newsletter-form" id="newsletterForm">
+                <input type="email" required placeholder="Your email address"
+                       data-en="Your email address" data-ar="بريدك الإلكتروني"
+                       aria-label="Email address">
+                <button type="submit" data-en="Subscribe" data-ar="اشترك">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
     <div id="site-footer"></div>
 
+    <!-- Structured data: Organization + WebSite (tokens resolved by config.js's applyBrandTokens) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "name": "{{BRAND_NAME}}",
+                "url": "{{SITE_URL}}/index.html",
+                "logo": "{{SITE_URL}}/assets/brand/logo.png",
+                "sameAs": [
+                    "https://www.instagram.com/prime_jo2026/",
+                    "https://web.facebook.com/profile.php?id=61585873581631",
+                    "https://snapchat.com/add/primejo",
+                    "https://tiktok.com/@primejo",
+                    "https://youtube.com/@primejo"
+                ]
+            },
+            {
+                "@type": "WebSite",
+                "name": "{{BRAND_NAME}}",
+                "url": "{{SITE_URL}}/index.html"
+            }
+        ]
+    }
+    </script>
+
     <!-- Scripts -->
-    <script src="header.js" defer></script>
-    <script src="footer.js" defer></script>
-    <script src="config.js" defer></script>
-    <script src="api.js" defer></script>
-    <script src="app.js" defer></script>
-    <script src="settings.js" defer></script>
-    <script src="modern-animations.js" defer></script>
-    <script src="topbaic-products.js" defer></script>
-    <script src="slider.js" defer></script>
-    <script src="general-info.js" defer></script>
+    <script src="dist/js/config.min.js" defer></script>
+    <script src="dist/js/header.min.js" defer></script>
+    <script src="dist/js/footer.min.js" defer></script>
+    <script src="dist/js/api.min.js" defer></script>
+    <script src="dist/js/app.min.js" defer></script>
+    <script src="dist/js/settings.min.js" defer></script>
+    <script src="dist/js/modern-animations.min.js" defer></script>
+    <script src="dist/js/topbaic-products.min.js" defer></script>
+    <script src="dist/js/slider.min.js" defer></script>
+    <script src="dist/js/general-info.min.js" defer></script>
+    <script>
+        // Newsletter signup — no backend endpoint exists for this yet, so it's
+        // a client-side-only confirmation. Wire it to a real API route here
+        // if/when one is added; nothing else on the page depends on this.
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.getElementById('newsletterForm');
+            if (!form) return;
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var msg = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar')
+                    ? 'شكراً لاشتراكك! 🎉'
+                    : 'Thanks for subscribing! 🎉';
+                if (window.ModernAnimations && window.ModernAnimations.showToast) {
+                    window.ModernAnimations.showToast(msg, 'success');
+                } else {
+                    alert(msg);
+                }
+                form.reset();
+            });
+        });
+    </script>
 </body>
 
 </html>

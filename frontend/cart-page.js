@@ -46,25 +46,35 @@ async function loadCartItems() {
             const isTier = item.tierPrice !== undefined && item.tierPrice !== null;
             const priceLabel = isTier
                 ? `${item.quantity} pcs — ${item.tierPrice.toFixed(2)} JOD`
-                : `${product.newPrice.toFixed(2)} JOD`;
+                : `${product.newPrice.toFixed(2)} JOD each`;
+            const lineTotal = isTier ? item.tierPrice : product.newPrice * item.quantity;
+            const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
 
             cartHTML += `
                 <div class="cart-item" data-product-id="${product.id}">
-                    <img src="${product.image}" alt="${product[nameKey]}" class="cart-item-image">
+                    <div class="cart-item-image-wrap">
+                        <img src="${product.image}" alt="${product[nameKey]}" class="cart-item-image" loading="lazy">
+                    </div>
                     <div class="cart-item-details">
                         <h3>${product[nameKey]}</h3>
                         <p class="cart-item-price">${priceLabel}</p>
+                        <p class="cart-item-line-total">${lineTotal.toFixed(2)} JOD</p>
                         ${isTier ? `<span class="tier-tag">Bundle Deal</span>` : ''}
                     </div>
-                    <div class="cart-item-quantity">
-                        ${isTier ? `
-                            <span class="tier-qty-badge">${item.quantity} pcs</span>
-                        ` : `
-                            <button onclick="updateQuantity(${product.id}, ${item.quantity - 1})" class="qty-btn">-</button>
-                            <input type="number" value="${item.quantity}" min="1" readonly>
-                            <button onclick="updateQuantity(${product.id}, ${item.quantity + 1})" class="qty-btn">+</button>
-                        `}
-                        <button onclick="removeItem(${product.id})" class="remove-btn">×</button>
+                    <div class="cart-item-actions">
+                        <div class="cart-item-quantity">
+                            ${isTier ? `
+                                <span class="tier-qty-badge">${item.quantity} pcs</span>
+                            ` : `
+                                <button onclick="CartPage.updateQuantity(${product.id}, ${item.quantity - 1})" class="qty-btn">-</button>
+                                <input type="number" value="${item.quantity}" min="1" readonly>
+                                <button onclick="CartPage.updateQuantity(${product.id}, ${item.quantity + 1})" class="qty-btn">+</button>
+                            `}
+                        </div>
+                        <button onclick="removeItem(${product.id})" class="remove-btn" title="${isAr ? 'إزالة' : 'Remove'}">
+                            <span aria-hidden="true">🗑</span>
+                            <span class="remove-btn-label">${isAr ? 'إزالة' : 'Remove'}</span>
+                        </button>
                     </div>
                 </div>
             `;
@@ -78,7 +88,7 @@ async function loadCartItems() {
 
     } catch (error) {
         console.error('Error loading cart:', error);
-        cartItemsContainer.innerHTML = '<p style="color: red; padding: 2rem;">Error loading cart items</p>';
+        cartItemsContainer.innerHTML = '<p style="color: var(--color-error); padding: 2rem;">Error loading cart items</p>';
     }
 }
 
@@ -156,7 +166,7 @@ async function updateOrderSummary() {
     }
 }
 
-function updateQuantity(productId, newQuantity) {
+function cartPageUpdateQuantity(productId, newQuantity) {
     if (newQuantity < 1) return;
     updateCartItemQuantity(productId, newQuantity);
     loadCartItems();
@@ -200,14 +210,14 @@ async function loadTopBaicTopSellerProducts() {
     if (window.ModernAnimations && window.ModernAnimations.showProductSkeleton) {
         window.ModernAnimations.showProductSkeleton(grid, 8);
     } else {
-        grid.innerHTML = '<p style="padding:40px;text-align:center;color:#999;">Loading...</p>';
+        grid.innerHTML = '<p style="padding:40px;text-align:center;color:var(--color-text-light);">Loading...</p>';
     }
 
     try {
         const products = await getProducts();
 
         if (!products.length) {
-            grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#999;" data-en="No products available" data-ar="لا توجد منتجات">No products available</p>';
+            grid.innerHTML = '<p style="text-align:center;padding:3rem;color:var(--color-text-light);" data-en="No products available" data-ar="لا توجد منتجات">No products available</p>';
             return;
         }
 
@@ -235,14 +245,18 @@ async function loadTopBaicTopSellerProducts() {
 
     } catch (err) {
         console.error('loadTopBaicTopSellerProducts error:', err);
-        grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#e74c3c;">Failed to load products.</p>';
+        grid.innerHTML = '<p style="text-align:center;padding:3rem;color:var(--color-error);">Failed to load products.</p>';
     }
 }
 
 // Filter (works on already-loaded cards)
+// Namespaced under window.CartPage (see bottom of file) — this file,
+// topbaic-products.js, and app.js each used to declare their own same-named
+// filterProducts/sortProducts globally, silently overwriting each other
+// depending on <script> tag order.
 let defaultFilter = 'topseller';
 
-async function filterProducts(filter, clickedBtn) {
+async function cartPageFilterProducts(filter, clickedBtn) {
     defaultFilter = filter;
 
     // Use passed button element — global event is unreliable in async functions
@@ -252,7 +266,7 @@ async function filterProducts(filter, clickedBtn) {
     const grid = document.getElementById('topbaicTopSellerProductsGrid');
     if (!grid) return;
 
-    grid.innerHTML = '<p style="padding:40px;text-align:center;color:#999;">Loading...</p>';
+    grid.innerHTML = '<p style="padding:40px;text-align:center;color:var(--color-text-light);">Loading...</p>';
 
     const allProducts = await getProducts();
     let filtered = allProducts;
@@ -262,7 +276,7 @@ async function filterProducts(filter, clickedBtn) {
     if (filter === 'topseller') filtered = allProducts.filter(p => p.is_top_seller == 1 || p.topSeller || p.isTopSeller);
 
     if (filtered.length === 0) {
-        grid.innerHTML = '<p style="text-align:center;padding:3rem;color:#999;" data-en="No products found" data-ar="لا توجد منتجات">No products found</p>';
+        grid.innerHTML = '<p style="text-align:center;padding:3rem;color:var(--color-text-light);" data-en="No products found" data-ar="لا توجد منتجات">No products found</p>';
         if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
         return;
     }
@@ -272,7 +286,7 @@ async function filterProducts(filter, clickedBtn) {
 }
 
 // Sort
-async function sortProducts(sortBy) {
+async function cartPageSortProducts(sortBy) {
     const grid = document.getElementById('topbaicTopSellerProductsGrid');
     if (!grid) return;
 
@@ -308,5 +322,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     console.log('✓ TOP BAIC style loaded');
 });
+
+window.CartPage = {
+    updateQuantity: cartPageUpdateQuantity,
+    filterProducts: cartPageFilterProducts,
+    sortProducts: cartPageSortProducts
+};
 
 console.log('✅ cart-page.js loaded');

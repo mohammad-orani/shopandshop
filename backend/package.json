@@ -1,7 +1,7 @@
 {
-  "name": "primejo-ecommerce-backend",
+  "name": "ecommerce-backend",
   "version": "1.0.0",
-  "description": "Primejo E-Commerce Backend API",
+  "description": "White-label e-commerce backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,7 +16,7 @@
     "nodejs",
     "express"
   ],
-  "author": "PrimeJo Team",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.1.1",

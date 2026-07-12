@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Primejo</title>
+    <title>Admin Panel - {{BRAND_NAME}}</title>
     <link rel="stylesheet" href="admin-styles.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Work+Sans:wght@300;400;500;600&display=swap"
@@ -19,7 +19,7 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>Primejo ADMIN</h1>
+                <h1>{{BRAND_NAME}} ADMIN</h1>
                 <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
             </div>
             <nav class="sidebar-nav">
@@ -704,11 +704,11 @@ Add "Banners" to your sidebar nav too:
                     <div class="form-row">
                         <div class="form-group">
                             <label>Brand Name</label>
-                            <input type="text" id="brandName" placeholder="e.g. Primejo" required>
+                            <input type="text" id="brandName" placeholder="e.g. {{BRAND_NAME}}" required>
                         </div>
                         <div class="form-group">
                             <label>Email Address</label>
-                            <input type="email" id="emailAddress" placeholder="info@primejo.com">
+                            <input type="email" id="emailAddress" placeholder="info@yourstore.com">
                         </div>
                     </div>
                     <div class="form-row">

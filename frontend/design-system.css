@@ -1,0 +1,424 @@
+/* ================================================================
+   SHOP & SHOP — DESIGN SYSTEM
+   Houseware / Home Lifestyle · Gulf market
+   Premium · Modern · Elegant · Warm · Trustworthy
+   ================================================================
+   Load this file LAST, after every other stylesheet on the page
+   (topbaic-style.css, styles.css, product/cart/checkout.css,
+   search-bar.css, mobile-nav-fix.css, slider.css). It does two things:
+
+   1. Defines the new brand's design tokens (section 1).
+   2. Re-points every CSS variable the OLD stylesheets already use
+      (--accent-gold, --text-primary, --shadow-md, etc.) at the new
+      tokens (section 2), so the entire existing site re-themes to
+      the new brand with zero HTML changes and zero broken styles.
+   3. Provides a ready-to-use component foundation (section 3) —
+      buttons, cards, product cards, forms, badges, alerts, nav,
+      sections — for the page-by-page redesign to adopt next.
+      Nothing on the current pages uses these classes yet; adding
+      this file does not change any existing page's markup.
+   ================================================================ */
+
+
+/* ================================================================
+   1. DESIGN TOKENS
+   ================================================================ */
+:root {
+    /* ---------- Colors ---------- */
+    --color-primary:      #A8623C;  /* warm terracotta — primary brand color */
+    --color-secondary:    #2F2622;  /* deep espresso brown — grounding, premium */
+    --color-accent:       #C79A56;  /* warm brass/gold — CTAs, highlights, price tags */
+    --color-background:   #FAF6F1;  /* warm ivory page background */
+    --color-surface:      #FFFFFF;  /* card / panel surface */
+    --color-text:         #2B2420;  /* warm charcoal body text */
+    --color-text-light:   #7C6F63;  /* muted taupe — secondary text */
+    --color-border:       #E7DFD4;  /* soft warm border */
+    --color-success:      #4C7A5D;  /* muted sage green */
+    --color-error:        #B23B2E;  /* muted brick red */
+
+    /* Extra shades used by the component foundation below — not part of
+       the required token list, but harmless additions built from it. */
+    --color-primary-dark:   #8B4E30;
+    --color-accent-dark:    #A97D3E;
+    --color-secondary-light:#463A33;
+    --color-primary-rgb:    168, 98, 60;
+    --color-accent-rgb:     199, 154, 86;
+    --color-text-rgb:       43, 36, 32;
+    --color-success-rgb:    76, 122, 93;
+    --color-error-rgb:      178, 59, 46;
+    --color-surface-rgb:    255, 255, 255;
+
+    /* ---------- Typography ---------- */
+    --font-heading: 'Fraunces', Georgia, serif;
+    --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* ---------- Spacing ---------- */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 40px;
+
+    /* ---------- Border radius ---------- */
+    --radius-small:  6px;
+    --radius-medium: 12px;
+    --radius-large:  20px;
+
+    /* ---------- Shadows (warm-tinted, not flat black) ---------- */
+    --shadow-small:  0 1px 3px rgba(var(--color-text-rgb), 0.08);
+    --shadow-medium: 0 6px 20px rgba(var(--color-text-rgb), 0.10);
+    --shadow-large:  0 16px 40px rgba(var(--color-text-rgb), 0.14);
+}
+
+
+/* ================================================================
+   2. LEGACY VARIABLE BRIDGE
+   Every custom property the old Primejo/Topbaic stylesheets read from.
+   Re-pointing them here re-themes the whole existing site immediately.
+   Safe to delete once every page has migrated to section 3's classes.
+   ================================================================ */
+:root {
+    /* topbaic-style.css */
+    --primary-dark:      var(--color-text);
+    --primary-black:     var(--color-text);
+    --accent-gold:       var(--color-accent);
+    --accent-gold-dark:  var(--color-accent-dark);
+    --accent-blue:       var(--color-secondary);
+
+    /* styles.css / cart.css */
+    --primary-white:  var(--color-surface);
+    --grey-light:     var(--color-background);
+    --grey-medium:    var(--color-border);
+    --grey-dark:      var(--color-text-light);
+    --text-primary:   var(--color-text);
+    --text-secondary: var(--color-text-light);
+    --text-light:     var(--color-text-light);
+    --border-light:   var(--color-border);
+    --bg-light:       var(--color-background);
+    --bg-white:       var(--color-surface);
+
+    --shadow-sm:   var(--shadow-small);
+    --shadow-md:   var(--shadow-medium);
+    --shadow-lg:   var(--shadow-large);
+    --shadow-xl:   var(--shadow-large);
+    --shadow-gold: 0 6px 20px rgba(var(--color-accent-rgb), 0.30);
+
+    --font-primary: var(--font-body);
+    /* --font-heading already declared in section 1 with the new value */
+
+    --radius-sm: var(--radius-small);
+    --radius-md: var(--radius-medium);
+    --radius-lg: var(--radius-large);
+
+    /* modern-animations.css */
+    --shadow-glow: 0 0 20px rgba(var(--color-accent-rgb), 0.35);
+
+    /* motion timings — brand-neutral, preserved as-is */
+    --transition-fast:   0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow:   0.5s ease;
+}
+
+
+/* ================================================================
+   3. COMPONENT FOUNDATION
+   New, generically-named classes for the upcoming page redesign.
+   Every value below comes from a token in section 1 — no hardcoded
+   colors, spacing, radii, or shadows.
+   ================================================================ */
+
+/* ---------- Buttons ---------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition-fast);
+    white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+    background: var(--color-primary);
+    color: var(--color-surface);
+}
+.btn-primary:hover { background: var(--color-primary-dark); }
+
+.btn-secondary {
+    background: var(--color-secondary);
+    color: var(--color-surface);
+}
+.btn-secondary:hover { background: var(--color-secondary-light); }
+
+.btn-accent {
+    background: var(--color-accent);
+    color: var(--color-secondary);
+}
+.btn-accent:hover { background: var(--color-accent-dark); }
+
+.btn-outline {
+    background: transparent;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+.btn-outline:hover { background: var(--color-primary); color: var(--color-surface); }
+
+.btn-ghost {
+    background: transparent;
+    color: var(--color-text);
+}
+.btn-ghost:hover { background: var(--color-background); }
+
+.btn-sm { padding: var(--spacing-xs) var(--spacing-md); font-size: 0.85rem; }
+.btn-lg { padding: var(--spacing-md) var(--spacing-xl); font-size: 1.05rem; }
+.btn-block { display: flex; width: 100%; }
+
+
+/* ---------- Cards ---------- */
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-small);
+    overflow: hidden;
+    transition: var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-medium); }
+
+.card-body   { padding: var(--spacing-lg); }
+.card-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
+.card-footer {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+}
+
+
+/* ---------- Product cards ---------- */
+.product-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    overflow: hidden;
+    box-shadow: var(--shadow-small);
+    transition: var(--transition-normal);
+    position: relative;
+}
+.product-card:hover {
+    box-shadow: var(--shadow-large);
+    transform: translateY(-4px);
+}
+
+.product-card__image-wrap {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: var(--color-background);
+    overflow: hidden;
+}
+.product-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition-slow);
+}
+.product-card:hover .product-card__image { transform: scale(1.06); }
+
+.product-card__body {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+.product-card__category {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-light);
+}
+.product-card__title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+.product-card__price-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+.product-card__price {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+.product-card__price--old {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    text-decoration: line-through;
+}
+.product-card__badge {
+    position: absolute;
+    top: var(--spacing-sm);
+    left: var(--spacing-sm);
+    z-index: 2;
+}
+
+
+/* ---------- Badges ---------- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--spacing-sm);
+    border-radius: var(--radius-small);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+}
+.badge-primary   { background: var(--color-primary);  color: var(--color-surface); }
+.badge-accent    { background: var(--color-accent);   color: var(--color-secondary); }
+.badge-success   { background: var(--color-success);  color: var(--color-surface); }
+.badge-error     { background: var(--color-error);    color: var(--color-surface); }
+.badge-new       { background: var(--color-secondary);color: var(--color-surface); }
+.badge-sale      { background: var(--color-error);     color: var(--color-surface); }
+.badge-outline   { background: transparent; border: 1px solid var(--color-border); color: var(--color-text-light); }
+
+
+/* ---------- Alerts ---------- */
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-medium);
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+}
+.alert-success { background: rgba(76, 122, 93, 0.1);  border-color: var(--color-success); color: var(--color-success); }
+.alert-error   { background: rgba(178, 59, 46, 0.1);  border-color: var(--color-error);   color: var(--color-error); }
+.alert-info    { background: rgba(var(--color-primary-rgb), 0.08); border-color: var(--color-primary); color: var(--color-primary); }
+.alert-warning { background: rgba(var(--color-accent-rgb), 0.15);  border-color: var(--color-accent-dark); color: var(--color-accent-dark); }
+
+
+/* ---------- Forms & inputs ---------- */
+.form-group { margin-bottom: var(--spacing-lg); }
+
+.form-label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-text-light);
+    border-radius: var(--radius-small);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--color-text);
+    transition: var(--transition-fast);
+}
+.form-textarea { min-height: 120px; resize: vertical; }
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+}
+.form-input.is-error { border-color: var(--color-error); }
+
+.form-hint  { margin-top: var(--spacing-xs); font-size: 0.8rem; color: var(--color-text-light); }
+.form-error { margin-top: var(--spacing-xs); font-size: 0.8rem; color: var(--color-error); }
+
+
+/* ---------- Navigation ---------- */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+}
+.navbar-brand {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text);
+    text-decoration: none;
+}
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.navbar-link {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+.navbar-link:hover,
+.navbar-link.is-active { color: var(--color-primary); }
+
+
+/* ---------- Sections ---------- */
+.section {
+    padding: var(--spacing-xl) var(--spacing-lg);
+}
+.section-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+.section-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-xs);
+}
+.section-subtitle {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--color-text-light);
+    margin: 0;
+}
+.section--surface { background: var(--color-surface); }
+.section--muted   { background: var(--color-background); }
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}

@@ -50,6 +50,7 @@ function createTopBaicProductCard(rawProduct) {
 
     const productName = product[nameKey] || product.name_en || '';
     const productDesc = product[descKey] || product.description_en || '';
+    const isFavorited = typeof isInFavorites === 'function' && isInFavorites(product.id);
 
     return `
         <div class="topbaic-product-card product-card scroll-reveal">
@@ -70,12 +71,23 @@ function createTopBaicProductCard(rawProduct) {
 
                 <!-- Quick Actions -->
                 <div class="quick-actions">
-                    <button class="quick-action-btn"
+                    <button class="quick-action-btn ${isFavorited ? 'active' : ''}"
+                            data-product-id="${product.id}"
+                            data-heart-icon="true"
                             onclick="event.stopPropagation(); toggleFavorite(${product.id})"
-                            title="Add to Favorites">❤️</button>
+                            title="Add to Favorites"
+                            aria-label="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}"
+                            aria-pressed="${isFavorited}">${isFavorited ? '❤️' : '🤍'}</button>
                     <button class="quick-action-btn"
                             onclick="window.location.href='product.html?id=${product.id}'"
-                            title="Quick View">👁️</button>
+                            title="Quick View"
+                            aria-label="Quick view ${productName.replace(/"/g, '&quot;')}">👁️</button>
+                    ${availableQty > 0 ? `
+                    <button class="quick-action-btn"
+                            onclick="event.stopPropagation(); addToCartTopBaic(${product.id})"
+                            title="Quick Add to Cart"
+                            aria-label="Quick add to cart">🛒</button>
+                    ` : ''}
                 </div>
 
                 <!-- Free Delivery Badge 
@@ -111,11 +123,11 @@ function createTopBaicProductCard(rawProduct) {
                     ` : ''}
                 </div>
 
-                <!-- Stock Status 
-                <div class="stock-status" style="min-height:22px;">
+                <!-- Stock Status -->
+                <div class="stock-status">
                     <span class="${stockClass}"></span>
                     <span data-en="${stockText}" data-ar="${stockTextAr}">${stockText}</span>
-                </div> -->
+                </div>
 
                 <!-- Add to Cart Button -->
                 <button class="add-to-cart-btn"
@@ -224,9 +236,13 @@ async function loadTopBaicProducts() {
 }
 
 // Filter (works on already-loaded cards)
+// Namespaced under window.TopBaic (see bottom of file) instead of exposed as a
+// bare global — topbaic-products.js, cart-page.js, and app.js each used to
+// declare their own same-named filterProducts/sortProducts globally, silently
+// overwriting each other depending on <script> tag order.
 let currentFilter = 'all';
 
-async function filterProducts(filter, clickedBtn) {
+async function topbaicFilterProducts(filter, clickedBtn) {
     currentFilter = filter;
 
     // Use passed button element — global event is unreliable in async functions
@@ -256,7 +272,7 @@ async function filterProducts(filter, clickedBtn) {
 }
 
 // Sort
-async function sortProducts(sortBy) {
+async function topbaicSortProducts(sortBy) {
     const grid = document.getElementById('topbaicProductsGrid');
     if (!grid) return;
 
@@ -282,9 +298,14 @@ window.addEventListener('scroll', function () {
     if (header) header.classList.toggle('scrolled', window.scrollY > 50);
 });
 
-// Init
+// Init — auto-load only runs where the grid explicitly opts in via
+// data-autoload="true" (currently just the homepage). Category and search
+// pages have their own fetch/filter/render logic for this same grid element
+// and must own it exclusively; auto-loading there raced with their renders
+// and clobbered filtered results with the full unfiltered catalog.
 document.addEventListener('DOMContentLoaded', function () {
-    if (document.getElementById('topbaicProductsGrid')) {
+    const grid = document.getElementById('topbaicProductsGrid');
+    if (grid && grid.dataset.autoload === 'true') {
         loadTopBaicProducts();
     }
     console.log('✓ TOP BAIC style loaded');
@@ -293,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
 window.TopBaic = {
     createProductCard: createTopBaicProductCard,
     loadProducts: loadTopBaicProducts,
-    filterProducts: filterProducts,
-    sortProducts: sortProducts,
+    filterProducts: topbaicFilterProducts,
+    sortProducts: topbaicSortProducts,
     addToCart: addToCartTopBaic
 };

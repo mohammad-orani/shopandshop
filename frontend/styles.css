@@ -400,7 +400,7 @@ body[dir="rtl"] {
     top: -6px;
     right: -6px;
     background: var(--accent-gold);
-    color: white;
+    color: var(--color-text);
     font-size: 10px;
     font-weight: 700;
     padding: 2px 5px;
@@ -637,7 +637,7 @@ section {
 .filter-btn.active {
     background: var(--accent-gold);
     border-color: var(--accent-gold);
-    color: white;
+    color: var(--color-text);
 }
 
 .sort-select {

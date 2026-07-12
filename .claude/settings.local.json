@@ -12,7 +12,10 @@
       "Bash(npm install:*)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(node -e ' *)",
+      "Bash(grep -nE \"#[0-9a-fA-F]{3,6}|rgba?\\\\\\([0-9]\" checkout.css)",
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\(\" checkout.html)"
     ]
   }
 }

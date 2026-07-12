@@ -2,7 +2,7 @@
  * Category Page Logic — Fixed for API-based categories with numeric IDs
  */
 
-const CAT_API = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+const CAT_API = window.API_URL;
 
 let currentCategoryFilter = 'all';
 let currentCategoryId     = null;
@@ -55,7 +55,7 @@ async function loadCategoryBanners() {
         return `
             <div class="category-banner scroll-reveal"
                  onclick="window.location.href='category.html?cat=${cat.id}'">
-                <img src="${img}" alt="${name_en}" class="category-banner-image"
+                <img src="${img}" alt="${name_en}" class="category-banner-image" loading="lazy"
                      onerror="this.src='https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=600&fit=crop'">
                 <div class="category-banner-overlay">
                     <h3 class="category-banner-title"
@@ -94,14 +94,73 @@ async function loadCategoryProducts(categoryId) {
             : category.name_en;
     }
 
+    // Update category hero title (categories have no description field in the
+    // schema, so #categoryDescription is intentionally left empty — CSS hides
+    // it via :empty rather than showing a fabricated summary)
+    const titleEl = document.getElementById('categoryTitle');
+    if (titleEl && category) {
+        titleEl.setAttribute('data-en', category.name_en);
+        titleEl.setAttribute('data-ar', category.name_ar || category.name_en);
+        titleEl.textContent = currentLanguage === 'ar'
+            ? (category.name_ar || category.name_en)
+            : category.name_en;
+    }
+
+    // SEO: give this category its own title/description/canonical/breadcrumb
+    // instead of the generic "Categories" hub tags set in category.html.
+    if (category) {
+        const brandName = (window.BRAND && window.BRAND.name) || '';
+        const siteUrl = (window.BRAND && window.BRAND.siteUrl) || '';
+        const catName = category.name_en;
+
+        document.title = `${catName} - ${brandName}`;
+
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', `Shop ${catName} at ${brandName} — quality products, secure checkout, fast delivery.`);
+
+        const canonical = document.querySelector('link[rel="canonical"]');
+        if (canonical) canonical.setAttribute('href', `${siteUrl}/category.html?cat=${categoryId}`);
+
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.setAttribute('content', `${catName} - ${brandName}`);
+        const ogDesc = document.querySelector('meta[property="og:description"]');
+        if (ogDesc) ogDesc.setAttribute('content', `Shop ${catName} at ${brandName} — quality products, secure checkout, fast delivery.`);
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute('content', `${siteUrl}/category.html?cat=${categoryId}`);
+
+        const breadcrumbSchema = document.getElementById('breadcrumbSchema');
+        if (breadcrumbSchema) {
+            breadcrumbSchema.textContent = JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/index.html` },
+                    { '@type': 'ListItem', position: 2, name: 'Categories', item: `${siteUrl}/category.html` },
+                    { '@type': 'ListItem', position: 3, name: catName, item: `${siteUrl}/category.html?cat=${categoryId}` }
+                ]
+            });
+        }
+    }
+
     // Fetch products for this category
     currentCategoryId     = categoryId;
     allCategoryProducts   = await fetchProductsByCategory(categoryId);
     currentCategoryFilter = 'all';
 
+    updateCategoryCount(allCategoryProducts.length);
     displayCategoryProducts(allCategoryProducts);
 
     if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
+}
+
+// ── Product count label (kept in sync with the currently filtered/sorted set) ──
+function updateCategoryCount(count) {
+    const countEl = document.getElementById('categoryCount');
+    if (!countEl) return;
+    const isAr = typeof currentLanguage !== 'undefined' && currentLanguage === 'ar';
+    countEl.setAttribute('data-en', `${count} product(s)`);
+    countEl.setAttribute('data-ar', `${count} منتج`);
+    countEl.textContent = isAr ? `${count} منتج` : `${count} product(s)`;
 }
 
 // ── Display products using existing card function ─────────────────────────
@@ -111,18 +170,15 @@ function displayCategoryProducts(products) {
 
     if (!products || products.length === 0) {
         grid.innerHTML = `
-            <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
-                <h2 style="font-size:24px;margin-bottom:16px;"
-                    data-en="No products found" data-ar="لم يتم العثور على منتجات">
+            <div class="empty-state">
+                <h2 data-en="No products found" data-ar="لم يتم العثور على منتجات">
                     No products found
                 </h2>
-                <a href="category.html"
-                   style="display:inline-block;padding:12px 32px;background:#1a1a1a;color:white;
-                          text-decoration:none;border-radius:6px;font-weight:600;"
-                   data-en="View All Categories" data-ar="عرض جميع الفئات">
+                <a href="category.html" data-en="View All Categories" data-ar="عرض جميع الفئات">
                    View All Categories
                 </a>
             </div>`;
+        if (typeof switchLanguage === 'function') switchLanguage(currentLanguage || 'en');
         return;
     }
 
@@ -135,9 +191,14 @@ function displayCategoryProducts(products) {
             const price = p.new_price || p.newPrice || 0;
             const img   = p.image_url || p.image || '';
             return `
-                <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'">
+                <div class="product-card"
+                     role="button"
+                     tabindex="0"
+                     aria-label="${name}"
+                     onclick="window.location.href='product.html?id=${p.id}'"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='product.html?id=${p.id}';}">
                     <div class="product-image-wrapper">
-                        <img src="${img}" alt="${name}" class="product-image"
+                        <img src="${img}" alt="${name}" class="product-image" loading="lazy"
                              onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
                     </div>
                     <div class="product-info">
@@ -162,6 +223,7 @@ function filterCategoryProducts(filter) {
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     if (event && event.target) event.target.classList.add('active');
 
+    updateCategoryCount(filtered.length);
     displayCategoryProducts(filtered);
 }
 

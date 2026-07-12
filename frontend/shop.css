@@ -1,0 +1,200 @@
+/* ================================================================
+   SHOP PAGES — Products Listing (products.html) & Category (category.html)
+   Built entirely on design-system.css tokens — no hardcoded colors.
+
+   Every id/class referenced by category-page.js and the inline scripts in
+   products.html/category.html (#topbaicProductsGrid, #categoryBannersGrid,
+   #categoryBannersSection, #categoryProductsSection, #breadcrumbCategory,
+   #searchQueryLabel, #productCount, .filter-btn/.active) is untouched here;
+   this file only adds presentation for markup those scripts already expect
+   or that is purely new/additive (category hero, empty states).
+   ================================================================ */
+
+
+/* ---------- Search results header (products.html) ---------- */
+.search-results-header {
+    max-width: 1400px;
+    margin: var(--spacing-xl) auto var(--spacing-sm);
+    padding: 0 var(--spacing-lg);
+}
+
+.search-results-header h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs);
+}
+
+.search-query-highlight {
+    color: var(--color-accent-dark);
+}
+
+.search-results-count {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-sm);
+}
+
+
+/* ---------- Empty state (search-no-results / category no-results) ----------
+   Shared visual treatment for "nothing found" across both pages. */
+.search-no-results,
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    color: var(--color-text-light);
+}
+
+.search-no-results svg,
+.empty-state__icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto var(--spacing-md);
+    opacity: 0.5;
+    display: block;
+}
+
+.search-no-results h2,
+.empty-state h2 {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text);
+}
+
+.search-no-results p,
+.empty-state p {
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.search-no-results a,
+.empty-state a {
+    display: inline-block;
+    margin-top: var(--spacing-sm);
+    padding: 0.7rem 1.75rem;
+    background: var(--color-primary);
+    color: var(--color-surface);
+    text-decoration: none;
+    border-radius: var(--radius-small);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+}
+
+.search-no-results a:hover,
+.empty-state a:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+}
+
+
+/* ---------- Category banners grid (category.html, no ?cat selected) ---------- */
+.category-banners {
+    max-width: 1400px;
+    margin: var(--spacing-xl) auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.banners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.category-banner {
+    position: relative;
+    height: 240px;
+    border-radius: var(--radius-large);
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-small);
+    background: var(--color-background);
+}
+
+.category-banner:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-large);
+}
+
+.category-banner-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.category-banner:hover .category-banner-image {
+    transform: scale(1.08);
+}
+
+.category-banner-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(var(--color-text-rgb), 0.85), transparent);
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+}
+
+.category-banner-title {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-surface);
+    margin-bottom: 4px;
+}
+
+.category-banner-count {
+    font-size: 0.8rem;
+    color: rgba(var(--color-surface-rgb), 0.85);
+}
+
+
+/* ---------- Category hero (category.html, ?cat=X selected) ---------- */
+.category-header-single {
+    max-width: 1400px;
+    margin: var(--spacing-lg) auto var(--spacing-md);
+    padding: 0 var(--spacing-lg);
+    text-align: center;
+}
+
+.category-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.6rem 1.25rem;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: var(--radius-small);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: var(--transition-fast);
+    margin-bottom: var(--spacing-md);
+}
+
+.category-back-btn:hover {
+    background: var(--color-text);
+    border-color: var(--color-text);
+    color: var(--color-surface);
+}
+
+#categoryTitle {
+    font-family: var(--font-heading);
+}
+
+#categoryCount {
+    font-family: var(--font-body);
+}
+
+/* Categories have no description field in the database — this element is
+   populated only if/when one exists, so it collapses cleanly when empty
+   instead of leaving a blank line. */
+#categoryDescription:empty {
+    display: none;
+}

@@ -33,10 +33,10 @@ router.post('/create-intent', async (req, res) => {
             currency: currency.toLowerCase(),
             automatic_payment_methods: { enabled: true },
             receipt_email: customer_email || undefined,
-            description: `PrimeJo Order — ${customer_name || 'Customer'}`,
+            description: `${process.env.STORE_NAME || 'Store'} Order — ${customer_name || 'Customer'}`,
             metadata: {
                 ...metadata,
-                source: 'primejo-mobile',
+                source: `${(process.env.STORE_NAME || 'store').toLowerCase()}-mobile`,
             },
         });
 
@@ -56,7 +56,7 @@ router.post('/create-intent', async (req, res) => {
 // Requires raw body — add before express.json() in server.js for this route
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
-        return res.status(503).json({ error: 'Webhook not configured' });
+        return res.status(503).json({ success: false, error: 'Webhook not configured' });
     }
     const sig = req.headers['stripe-signature'];
     let event;
@@ -64,7 +64,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
         console.error('Webhook signature error:', err.message);
-        return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+        return res.status(400).json({ success: false, error: `Webhook Error: ${err.message}` });
     }
 
     try {

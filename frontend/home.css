@@ -1,0 +1,308 @@
+/* ================================================================
+   SHOP & SHOP — HOMEPAGE
+   Mobile-first layout for the new sections added to index.html:
+   hero fallback, category grid, featured collections, brand/trust
+   section, newsletter. Built entirely on design-system.css tokens —
+   load this file AFTER design-system.css.
+
+   Existing sections (hero-slider, trust-strip, filter-bar,
+   topbaic-products/#topbaicProductsGrid, pagination) keep their
+   original classes/ids untouched — this file only adds new rules,
+   it never overrides functional selectors those scripts depend on.
+   ================================================================ */
+
+
+/* ---------- Hero: static premium fallback ----------
+   Lives inside .slider-container. slider.js only overwrites this
+   container's innerHTML when the `banners` table actually has rows
+   (see frontend/slider.js:15) — so this fallback hero renders as-is
+   whenever no promotional banner exists yet, and is safely replaced
+   the moment an admin adds one. */
+.hero-fallback {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(var(--color-accent-rgb), 0.35), transparent 55%),
+        radial-gradient(circle at 85% 80%, rgba(var(--color-primary-rgb), 0.30), transparent 50%),
+        linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary-dark) 55%, var(--color-primary) 100%);
+}
+
+/* Soft decorative texture — evokes a lifestyle scene without a photo asset */
+.hero-fallback::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.10) 1.5px, transparent 1.5px);
+    background-size: 28px 28px;
+    opacity: 0.5;
+}
+
+.hero-fallback__content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+    padding: var(--spacing-lg);
+    max-width: 720px;
+}
+
+.hero-fallback__eyebrow {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-md);
+}
+
+.hero-fallback__content h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 6vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 var(--spacing-sm);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.hero-fallback__content p {
+    font-family: var(--font-body);
+    font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+    opacity: 0.92;
+    margin: 0 0 var(--spacing-lg);
+}
+
+.hero-fallback__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: var(--color-accent);
+    color: var(--color-secondary);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition-fast);
+}
+
+.hero-fallback__cta:hover {
+    background: var(--color-accent-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-large);
+}
+
+
+/* ---------- Category section ---------- */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    text-align: center;
+    text-decoration: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    padding: var(--spacing-lg) var(--spacing-sm);
+    box-shadow: var(--shadow-small);
+    transition: var(--transition-normal);
+}
+
+.category-card:hover {
+    box-shadow: var(--shadow-large);
+    transform: translateY(-4px);
+    border-color: var(--color-accent);
+}
+
+.category-card__icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    background: var(--color-background);
+    border-radius: 50%;
+    transition: var(--transition-normal);
+}
+
+.category-card:hover .category-card__icon {
+    background: var(--color-accent);
+    transform: scale(1.08);
+}
+
+.category-card__name {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+@media (min-width: 560px) {
+    .category-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 900px) {
+    .category-grid { grid-template-columns: repeat(6, 1fr); }
+    .category-card { padding: var(--spacing-xl) var(--spacing-sm); }
+    .category-card__icon { width: 68px; height: 68px; font-size: 1.9rem; }
+}
+
+
+/* ---------- Featured collections ---------- */
+.featured-section .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    text-align: left;
+    margin-bottom: var(--spacing-lg);
+}
+
+.featured-section .section-header .section-title { margin: 0; }
+.featured-section .section-header .section-subtitle { display: none; }
+
+@media (min-width: 640px) {
+    .featured-section .section-header .section-subtitle { display: block; }
+}
+
+/* Reuses the site's existing .products-grid / product card classes so
+   these rows render with identical cards to the main catalog grid. */
+.featured-section .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 640px) {
+    .featured-section .products-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1024px) {
+    .featured-section .products-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+
+/* ---------- Brand / trust section ---------- */
+.brand-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+}
+
+.brand-feature {
+    text-align: center;
+    padding: var(--spacing-lg);
+}
+
+.brand-feature__icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+}
+
+.brand-feature h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-xs);
+}
+
+.brand-feature p {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+    margin: 0;
+}
+
+@media (min-width: 640px) {
+    .brand-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+    .brand-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+
+/* ---------- Newsletter section ---------- */
+.newsletter-section {
+    background: var(--color-secondary);
+    text-align: center;
+}
+
+.newsletter-section .section-title,
+.newsletter-section .section-subtitle {
+    color: #fff;
+}
+
+.newsletter-section .section-subtitle {
+    opacity: 0.8;
+}
+
+.newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-width: 460px;
+    margin: 0 auto;
+}
+
+.newsletter-form input[type="email"] {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-small);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+}
+
+.newsletter-form input[type="email"]::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+.newsletter-form input[type="email"]:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.newsletter-form button {
+    background: var(--color-accent);
+    color: var(--color-secondary);
+    border: none;
+    border-radius: var(--radius-small);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.newsletter-form button:hover { background: var(--color-accent-dark); }
+
+@media (min-width: 560px) {
+    .newsletter-form { flex-direction: row; }
+    .newsletter-form input[type="email"] { flex: 1; }
+}

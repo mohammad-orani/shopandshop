@@ -1,0 +1,14 @@
+# TODO: this file is static (no templating) — replace https://www.example.com
+# below with the real production domain before launch, and regenerate
+# sitemap.xml the same way (see BRAND.siteUrl in config.js for the HTML pages,
+# which resolve automatically).
+
+User-agent: *
+Allow: /
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /favorites.html
+Disallow: /products.html
+Disallow: /admin/
+
+Sitemap: https://www.example.com/sitemap.xml

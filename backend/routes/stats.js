@@ -21,7 +21,7 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
             pending_orders,
             delivered_orders
         });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
 module.exports = router;

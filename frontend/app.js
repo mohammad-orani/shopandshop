@@ -166,7 +166,11 @@ function createProductCard(product) {
              data-product-id="${product.id}"
              data-new="${product.isNew || false}"
              data-topseller="${product.topSeller || false}"
-             onclick="viewProduct(${product.id})">
+             role="button"
+             tabindex="0"
+             aria-label="${(product[nameKey] || product.name_en || 'Product').replace(/"/g, '&quot;')}"
+             onclick="viewProduct(${product.id})"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();viewProduct(${product.id});}">
             ${product.isOffer ? '<div class="product-badge">SALE</div>' : ''}
             <div class="product-image">
                 <img src="${imageUrl}"
@@ -190,7 +194,9 @@ function createProductCard(product) {
                             data-en="Add to Cart"
                             data-ar="أضف للسلة">Add to Cart</button>
                     <button class="btn btn-fav ${isInFavorites(product.id) ? 'active' : ''}"
-                            onclick="event.stopPropagation(); toggleFavorite(${product.id})">♥</button>
+                            onclick="event.stopPropagation(); toggleFavorite(${product.id})"
+                            aria-label="${isInFavorites(product.id) ? 'Remove from favorites' : 'Add to favorites'}"
+                            aria-pressed="${isInFavorites(product.id)}">♥</button>
                 </div>
             </div>
         </div>
@@ -252,8 +258,14 @@ if (document.getElementById('topSellers')) {
 // NOTE: Slider is initialized in slider.js — do NOT init it here.
 
 // ==================== PRODUCT FILTERING ====================
+// Namespaced under window.App (see bottom of file) instead of a bare global —
+// this used to collide with same-named filterProducts declared in
+// topbaic-products.js and cart-page.js, which always loaded after this file
+// and silently won, making this specific implementation unreachable in
+// practice. Kept and namespaced rather than removed, in case anything
+// external still expects App.filterProducts to exist.
 
-function filterProducts(category) {
+function appFilterProducts(category) {
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
         btn.classList.remove('active');
@@ -321,14 +333,26 @@ function isInFavorites(productId) {
 
 function toggleFavorite(productId) {
     let favorites = getFavorites();
+    const willBeFavorite = !favorites.includes(productId);
     if (favorites.includes(productId)) {
         favorites = favorites.filter(id => id !== productId);
     } else {
         favorites.push(productId);
     }
     saveFavorites(favorites);
+
     const btn = event.target;
     btn.classList.toggle('active');
+
+    // Keep every instance of this product's heart button in sync — the same
+    // product can appear in more than one row (New Arrivals, Best Sellers,
+    // the main grid...) at once.
+    document.querySelectorAll(`.quick-action-btn[data-product-id="${productId}"]`).forEach(el => {
+        el.classList.toggle('active', willBeFavorite);
+        if (el.dataset.heartIcon === 'true') el.textContent = willBeFavorite ? '❤️' : '🤍';
+    });
+
+    updateFavoritesCount();
 }
 
 // ==================== LOAD FAVORITES PAGE ====================
@@ -388,13 +412,19 @@ async function loadFavorites() {
 
             return `
                 <div class="favorite-card" data-product-id="${product.id}">
-                    <div class="fav-card-image" onclick="viewProduct(${product.id})">
+                    <div class="fav-card-image"
+                         role="button"
+                         tabindex="0"
+                         aria-label="${name.replace(/"/g, '&quot;')}"
+                         onclick="viewProduct(${product.id})"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();viewProduct(${product.id});}">
                         <img src="${imageUrl}"
                              alt="${name.replace(/"/g, '&quot;')}"
                              loading="lazy"
                              onerror="this.onerror=null;this.src='https://placehold.co/300x300?text=No+Image'">
                         <button class="fav-remove-btn"
                                 title="Remove from favorites"
+                                aria-label="Remove from favorites"
                                 onclick="event.stopPropagation(); removeFavorite(${product.id})">
                             ✕
                         </button>
@@ -505,6 +535,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     console.log('✅ App initialized');
 });
+
+window.App = {
+    filterProducts: appFilterProducts
+};
 
 console.log('✅ app.js loaded');
 

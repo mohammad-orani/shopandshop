@@ -1,6 +1,6 @@
 // ==================== ADMIN.JS - DATABASE CONNECTED ====================
 
-const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
 
 // ==================== NAVIGATION ====================
 
@@ -873,8 +873,9 @@ function printOrderModal() {
 
     const win = window.open('', '_blank', 'width=800,height=700');
     const printDate = new Date().toLocaleString();
+    const brandName = (window.BRAND && window.BRAND.name) || 'Store';
     win.document.write(
-        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order - Primejo</title><style>' +
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order - ' + brandName + '</title><style>' +
         '* { margin:0; padding:0; box-sizing:border-box; }' +
         'body { font-family: Segoe UI, Arial, sans-serif; font-size:13px; color:#1a1a1a; padding:30px; }' +
         'h1 { font-size:22px; font-weight:900; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #1a1a1a; }' +
@@ -890,9 +891,9 @@ function printOrderModal() {
         'img { width:44px; height:44px; object-fit:cover; border-radius:3px; }' +
         '.footer { margin-top:30px; text-align:center; font-size:11px; color:#aaa; border-top:1px solid #e0e0e0; padding-top:15px; }' +
         '</style></head><body>' +
-        '<h1>Order Details — Primejo</h1>' +
+        '<h1>Order Details — ' + brandName + '</h1>' +
         content +
-        '<div class="footer">Printed on ' + printDate + ' — Primejo Admin</div>' +
+        '<div class="footer">Printed on ' + printDate + ' — ' + brandName + ' Admin</div>' +
         '<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}};<\/script>' +
         '</body></html>'
     );
@@ -1013,7 +1014,7 @@ async function exportOrders() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `primejo_orders_${Date.now()}.csv`;
+        a.download = `${(window.BRAND && window.BRAND.slug) || 'store'}_orders_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
         showToast('✅ Orders exported!');
@@ -1197,7 +1198,7 @@ async function submitRefund(e) {
 
     try {
 
-        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
         const res = await fetch(`${API_BASE}/orders/${orderId}/refund`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
@@ -1241,7 +1242,7 @@ async function openEditOrderModal(rawOrder) {
 
     // Fetch full order to get item row IDs (needed for the update endpoint)
     try {
-        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
         const res = await fetch(`${API_BASE}/orders/${id}`, {
             headers: { 'Authorization': `Bearer ${getAdminToken()}` }
         });
@@ -1337,7 +1338,7 @@ async function submitEditOrder(e) {
     msgEl.textContent = '';
 
     try {
-        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
 
         // 1. Update order header fields
         const res  = await fetch(`${API_BASE}/orders/${orderId}`, {
@@ -1411,7 +1412,7 @@ async function submitCancel(e) {
     msgEl.textContent = '';
 
     try {
-        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
         const res = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
@@ -1502,7 +1503,7 @@ async function loadLogs(filterAction = '', filterUser = '') {
     try {
         container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#888;">Loading logs...</td></tr>';
 
-        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
         const params = new URLSearchParams({ limit: 300 });
         if (filterAction) params.append('action', filterAction);
         if (filterUser) params.append('user', filterUser);
@@ -1553,7 +1554,7 @@ async function loadLogs(filterAction = '', filterUser = '') {
 async function exportLogs() {
     try {
 
-        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : 'https://primejo-ecommerce-backend-demo.up.railway.app/api');
+        const API_BASE = (typeof API_URL !== 'undefined' ? API_URL : window.API_URL);
         const res = await fetch(`${API_BASE}/admin-logs?limit=9999`, {
             headers: { 'Authorization': `Bearer ${getAdminToken()}` }
         });
@@ -1570,7 +1571,7 @@ async function exportLogs() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `primejo_admin_logs_${Date.now()}.csv`;
+        a.download = `${(window.BRAND && window.BRAND.slug) || 'store'}_admin_logs_${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
         showToast('✅ Logs exported!');

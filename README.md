@@ -1,4 +1,8 @@
-# PrimeJo E-Commerce Platform
+# E-Commerce Platform
+
+Brand identity (name, logo, contact info, theme colors) is centralized in
+`frontend/config.js` and `admin/config.js` — see those files to white-label
+this codebase for a new store.
 
 A complete, full-stack e-commerce website with bilingual support (English/Arabic) and a powerful admin panel.
 
@@ -33,7 +37,7 @@ A complete, full-stack e-commerce website with bilingual support (English/Arabic
 ## Project Structure
 
 ```
-primejo-ecommerce/
+project-root/
 ├── frontend/               # Customer-facing website
 │   ├── index.html         # Home page
 │   ├── product.html       # Product details
@@ -65,12 +69,12 @@ primejo-ecommerce/
 
 1. Create a MySQL database:
 ```sql
-CREATE DATABASE primejo_ecommerce;
+CREATE DATABASE ecommerce;
 ```
 
 2. Import the schema:
 ```bash
-mysql -u root -p primejo_ecommerce < database/schema.sql
+mysql -u root -p ecommerce < database/schema.sql
 ```
 
 ### Step 2: Backend Setup
@@ -95,7 +99,7 @@ cp .env.example .env
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_password
-DB_NAME=primejo_ecommerce
+DB_NAME=ecommerce
 JWT_SECRET=your_secret_key
 ```
 
@@ -118,13 +122,13 @@ Or use any simple HTTP server of your choice.
 #### Option 2: Direct File Access
 Open `frontend/index.html` directly in your browser.
 
-**Note**: The frontend currently uses localStorage for demo purposes. To connect to the backend API, you'll need to update the JavaScript files to make API calls instead of using localStorage.
+**Note**: The frontend is fully wired to the backend API — `frontend/config.js` sets `API_URL`, and `frontend/api.js` handles all product/category/order/general-info requests. There is no localStorage-based demo mode for catalog data; localStorage is only used for the cart and favorites.
 
 ### Step 4: Admin Panel Access
 
 1. Open `admin/index.html` in your browser
 2. Default credentials (if using the backend):
-   - Email: admin@primejo.strore
+   - Email: admin@yourstore.com
    - Password: (set in database)
 
 ## Usage Guide
@@ -217,10 +221,8 @@ const nodemailer = require('nodemailer');
 
 ## Demo Data
 
-The platform comes with sample products in the localStorage. For production:
-1. Remove sample data from `frontend/app.js`
-2. Connect frontend to backend API
-3. Add real products through admin panel
+The database ships with no sample products or categories — add your own
+through the admin panel (`admin/index.html`) before launch.
 
 ## Security Notes
 
@@ -271,12 +273,9 @@ The platform comes with sample products in the localStorage. For production:
 
 ## Support
 
-For issues or questions, contact: info@primejo.store
+For issues or questions, contact your store's support address (configured in
+`frontend/config.js` / the admin general-info settings).
 
 ## License
 
 MIT License - feel free to use this project for commercial purposes.
-
----
-
-**Built with ❤️ for primeJO E-Commerce**

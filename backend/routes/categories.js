@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
             : 'SELECT * FROM categories WHERE is_visible = 1 ORDER BY name_en';
         const [categories] = await pool.query(query);
         res.json(categories);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
 // POST /api/categories

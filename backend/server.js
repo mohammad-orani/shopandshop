@@ -28,10 +28,12 @@ const generalLimiter = rateLimit({
     message: { success: false, error: 'Too many requests, please try again later.' }
 });
 
+const storeDomain = process.env.STORE_DOMAIN || 'primejo.store';
+
 app.use(cors({
     origin: [
-        'https://primejo.store',
-        'https://www.primejo.store',
+        `https://${storeDomain}`,
+        `https://www.${storeDomain}`,
         'https://adminprimejo.netlify.app',
         'http://127.0.0.1:5500',
         'http://localhost:5500',
@@ -133,6 +135,55 @@ async function ensureProductsQuantityTiersColumn() {
     }
 }
 
+async function ensureGeneralInfoTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS general_info (
+                gi_id                   INT AUTO_INCREMENT PRIMARY KEY,
+                gi_brand_name           VARCHAR(100),
+                gi_phone_number         VARCHAR(30),
+                gi_email_address        VARCHAR(150),
+                gi_minimum_order_amount DECIMAL(10, 2) DEFAULT 0,
+                gi_whatsapp             VARCHAR(300),
+                gi_instagram            VARCHAR(300),
+                gi_facebook             VARCHAR(300),
+                gi_snapchat             VARCHAR(300),
+                gi_tiktok               VARCHAR(300),
+                gi_youtube              VARCHAR(300),
+                gi_delivery_note        VARCHAR(300)
+            )
+        `);
+        console.log('general_info table ready');
+    } catch (err) {
+        console.warn('general_info table migration warning:', err.message);
+    }
+}
+
+async function ensureBannersTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS banners (
+                id          INT AUTO_INCREMENT PRIMARY KEY,
+                title_en    VARCHAR(200),
+                title_ar    VARCHAR(200),
+                subtitle_en VARCHAR(300),
+                subtitle_ar VARCHAR(300),
+                btn_text_en VARCHAR(100) DEFAULT 'SHOP NOW',
+                btn_text_ar VARCHAR(100) DEFAULT 'تسوق الآن',
+                btn_link    VARCHAR(300) DEFAULT '#',
+                image_url   TEXT,
+                bg_color    VARCHAR(200) DEFAULT 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                sort_order  INT DEFAULT 0,
+                is_active   BOOLEAN DEFAULT TRUE,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('banners table ready');
+    } catch (err) {
+        console.warn('banners table migration warning:', err.message);
+    }
+}
+
 async function ensureGeneralInfoColumns() {
     try {
         const newCols = [
@@ -211,6 +262,22 @@ async function ensureOrderItemsVariantColumn() {
     }
 }
 
+async function ensureCategoriesVisibleColumn() {
+    try {
+        const [cols] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories'`
+        );
+        if (!cols.map(c => c.COLUMN_NAME).includes('is_visible')) {
+            await pool.query(`ALTER TABLE categories ADD COLUMN is_visible BOOLEAN DEFAULT TRUE`);
+            console.log('Added column: categories.is_visible');
+        }
+        console.log('categories.is_visible verified');
+    } catch (err) {
+        console.warn('categories.is_visible migration warning:', err.message);
+    }
+}
+
 async function ensureWhatsAppTables() {
     try {
         await pool.query(`
@@ -257,14 +324,17 @@ async function ensureWhatsAppTables() {
     await ensureWhatsAppTables();
     await ensureOrdersColumns();
     await ensureAdminLogsTable();
+    await ensureGeneralInfoTable();
+    await ensureBannersTable();
     await ensureGeneralInfoColumns();
     await ensureProductsQuantityTiersColumn();
     await ensureProductFreeDeliveryColumn();
     await ensureProductColorVariantsColumn();
     await ensureOrderItemsVariantColumn();
+    await ensureCategoriesVisibleColumn();
 
     app.listen(PORT, () => {
-        console.log(`Primejo API running on port ${PORT}`);
+        console.log(`${process.env.STORE_NAME || 'Store'} API running on port ${PORT}`);
     });
 })();
 

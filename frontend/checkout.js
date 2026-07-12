@@ -17,9 +17,11 @@ function showFreeDeliveryPopup(cartTotal, minAmount) {
 
     const popup = document.createElement('div');
     popup.id = 'freeDeliveryPopup';
+    popup.setAttribute('role', 'status');
+    popup.setAttribute('aria-live', 'polite');
     popup.innerHTML = `
         <div class="fdp-inner">
-            <button class="fdp-close" onclick="closeFreeDeliveryPopup()">✕</button>
+            <button class="fdp-close" onclick="closeFreeDeliveryPopup()" aria-label="Close">✕</button>
             <div class="fdp-icon">${isFree ? '🎉' : '🚚'}</div>
             ${isFree ? `
                 <div class="fdp-title fdp-success">
@@ -45,7 +47,7 @@ function showFreeDeliveryPopup(cartTotal, minAmount) {
             </div>
             <div class="fdp-bar-labels">
                 <span>${formatPrice(0)}</span>
-                <span style="font-weight:700;color:${isFree ? '#10b981' : '#d4af37'}">
+                <span style="font-weight:700;color:${isFree ? 'var(--color-success)' : 'var(--color-accent)'}">
                     ${formatPrice(cartTotal)}
                 </span>
                 <span>${formatPrice(minAmount)} 🚚</span>
@@ -83,32 +85,32 @@ function closeFreeDeliveryPopup() {
             z-index: 99999;
             width: min(420px, calc(100vw - 32px));
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            filter: drop-shadow(0 8px 32px rgba(0,0,0,0.18));
+            filter: drop-shadow(0 8px 32px rgba(var(--color-text-rgb), 0.18));
         }
         #freeDeliveryPopup.fdp-visible { transform: translateX(-50%) translateY(0); }
         .fdp-inner {
-            background: #fff; border-radius: 16px; padding: 20px 24px 18px;
-            border: 2px solid #f0f0f0; position: relative; text-align: center;
+            background: var(--color-surface); border-radius: var(--radius-large); padding: 20px 24px 18px;
+            border: 2px solid var(--color-border); position: relative; text-align: center;
         }
         .fdp-close {
             position: absolute; top: 10px; right: 12px;
-            background: none; border: none; font-size: 14px; color: #aaa; cursor: pointer; line-height: 1;
+            background: none; border: none; font-size: 14px; color: var(--color-text-light); cursor: pointer; line-height: 1;
         }
-        .fdp-close:hover { color: #333; }
+        .fdp-close:hover { color: var(--color-text); }
         .fdp-icon { font-size: 2rem; margin-bottom: 6px; }
-        .fdp-title { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; line-height: 1.4; }
-        .fdp-title.fdp-success { color: #10b981; }
-        .fdp-sub { font-size: 0.82rem; color: #888; margin-bottom: 14px; }
-        .fdp-bar-track { width: 100%; height: 10px; background: #f0f0f0; border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
-        .fdp-bar-fill { height: 100%; background: linear-gradient(90deg, #d4af37, #f0c040); border-radius: 99px; transition: width 0.8s ease; }
-        .fdp-bar-fill.fdp-bar-done { background: linear-gradient(90deg, #10b981, #34d399); }
-        .fdp-bar-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #999; margin-bottom: 14px; }
+        .fdp-title { font-size: 1rem; font-weight: 700; color: var(--color-text); margin-bottom: 4px; line-height: 1.4; }
+        .fdp-title.fdp-success { color: var(--color-success); }
+        .fdp-sub { font-size: 0.82rem; color: var(--color-text-light); margin-bottom: 14px; }
+        .fdp-bar-track { width: 100%; height: 10px; background: var(--color-background); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+        .fdp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--color-accent-dark), var(--color-accent)); border-radius: 99px; transition: width 0.8s ease; }
+        .fdp-bar-fill.fdp-bar-done { background: var(--color-success); }
+        .fdp-bar-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-light); margin-bottom: 14px; }
         .fdp-shop-btn {
-            width: 100%; padding: 10px; background: #1a1a1a; color: white;
+            width: 100%; padding: 10px; background: var(--color-primary); color: white;
             border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 700;
             cursor: pointer; transition: background 0.2s ease;
         }
-        .fdp-shop-btn:hover { background: #d4af37; }
+        .fdp-shop-btn:hover { background: var(--color-primary-dark); }
         [dir="rtl"] .fdp-close { right: auto; left: 12px; }
     `;
     document.head.appendChild(style);
@@ -244,8 +246,8 @@ async function updateDeliveryFee() {
             ? (isAr ? 'هذا المنتج يشمل توصيل مجاني' : 'Free delivery included with this product')
             : '';
         document.getElementById('deliveryFeeDisplay').innerHTML =
-            `<span style="color:#10b981;font-weight:700;">${freeText}</span>` +
-            (reasonText ? `<span style="display:block;font-size:0.75rem;color:#10b981;margin-top:2px;">${reasonText}</span>` : '');
+            `<span style="color:var(--color-success);font-weight:700;">${freeText}</span>` +
+            (reasonText ? `<span style="display:block;font-size:0.75rem;color:var(--color-success);margin-top:2px;">${reasonText}</span>` : '');
     } else {
         selectedDeliveryFee = cityDisplayedFee;
         selectedActualFee   = cityActualFee;
@@ -259,7 +261,7 @@ async function updateDeliveryFee() {
         document.getElementById('deliveryFeeDisplay').innerHTML = `
             <span style="font-weight:700;">${formatPrice(cityDisplayedFee)}</span>
             ${minimumOrderAmount > 0 ? `
-                <span style="display:block;font-size:0.75rem;color:#e74c3c;margin-top:2px;cursor:pointer;"
+                <span style="display:block;font-size:0.75rem;color:var(--color-accent-dark);margin-top:2px;cursor:pointer;"
                       onclick="showFreeDeliveryPopup(${cartTotal}, ${minimumOrderAmount})">
                     ${addText}
                 </span>
@@ -277,7 +279,7 @@ function resetDeliveryFee() {
     const displayEl = document.getElementById('deliveryFeeDisplay');
     if (displayEl) {
         const isAr = (typeof currentLanguage !== 'undefined' && currentLanguage === 'ar');
-        displayEl.innerHTML = `<span style="color:#999;">${isAr ? 'اختر المدينة أولاً' : 'Select city first'}</span>`;
+        displayEl.innerHTML = `<span style="color:var(--color-text-light);">${isAr ? 'اختر المدينة أولاً' : 'Select city first'}</span>`;
     }
     updateOrderTotal();
 }
@@ -341,6 +343,25 @@ async function loadOrderSummary() {
 
 // ==================== FORM SUBMISSION ====================
 
+// Visual validation feedback — purely a visible cue layered on top of the
+// existing phone checks below; the validation rules themselves (regex,
+// digit-length checks, alert messages) are unchanged.
+function markPhoneInvalid() {
+    const input = document.getElementById('customerPhone');
+    const group = input?.closest('.form-group');
+    input?.classList.add('is-invalid');
+    group?.classList.add('has-error');
+}
+
+function clearPhoneInvalid() {
+    const input = document.getElementById('customerPhone');
+    const group = input?.closest('.form-group');
+    input?.classList.remove('is-invalid');
+    group?.classList.remove('has-error');
+}
+
+document.getElementById('customerPhone')?.addEventListener('input', clearPhoneInvalid);
+
 document.getElementById('checkoutForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -348,6 +369,7 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
     const rawPhone = document.getElementById('customerPhone')?.value?.trim() || '';
     const digitsOnly = rawPhone.replace(/\D/g, ''); // strip spaces, dashes, parens, etc.
     if (!/^\d+$/.test(digitsOnly) || digitsOnly.length === 0) {
+        markPhoneInvalid();
         alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
             ? 'رقم الهاتف غير صحيح.'
             : 'Invalid phone number. Please enter digits only.');
@@ -355,6 +377,7 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
     }
     if (digitsOnly.startsWith('0')) {
         if (digitsOnly.length !== 10) {
+            markPhoneInvalid();
             alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
                 ? 'رقم الهاتف غير صحيح.'
                 : 'Invalid phone number. Must be 10 digits when starting with 0.');
@@ -362,12 +385,14 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
         }
     } else {
         if (digitsOnly.length !== 9) {
+            markPhoneInvalid();
             alert(typeof currentLanguage !== 'undefined' && currentLanguage === 'ar'
                 ? 'رقم الهاتف غير صحيح.'
                 : 'Invalid phone number. Must be 9 digits.');
             return;
         }
     }
+    clearPhoneInvalid();
 
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn?.textContent;
@@ -477,7 +502,7 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async functi
                 modalDeliveryEl.textContent = selectedDeliveryFee === 0
                     ? (isAr ? 'مجاناً ✓' : 'FREE ✓')
                     : formatPrice(selectedDeliveryFee);
-                if (selectedDeliveryFee === 0) modalDeliveryEl.style.color = '#10b981';
+                if (selectedDeliveryFee === 0) modalDeliveryEl.style.color = 'var(--color-success)';
             }
 
             const modalTotalEl = document.getElementById('modalTotal');

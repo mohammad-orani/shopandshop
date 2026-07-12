@@ -3,7 +3,7 @@
 // Uses Railway MySQL database via backend endpoints
 
 // API_URL is defined in config.js — loaded before this script in every HTML page
-const API_URL = window.API_URL || 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+const API_URL = window.API_URL;
 
 // ==================== PRODUCTS ====================
 
@@ -227,19 +227,42 @@ function updateCartCount() {
 }
 
 // ==================== GENERAL INFO ====================
+// Single source of truth for store settings (brand name, contact info, social
+// links, minimum order amount). general-info.js delegates to this function
+// instead of maintaining its own separate fetch + cache — see there for the
+// DOM-updating logic that consumes this data.
+
+let _generalInfoCache = null;
+let _generalInfoCacheTs = 0;
 
 async function getGeneralInfoFromAPI() {
+    const now = Date.now();
+    if (_generalInfoCache && (now - _generalInfoCacheTs) < _CACHE_TTL) {
+        return _generalInfoCache;
+    }
     try {
         const response = await fetch(`${API_URL}/general-info`);
         if (!response.ok) throw new Error('Failed to fetch general info');
         const data = await response.json();
-        return data.info || data;
+        const result = data.info || data;
+        _generalInfoCache = result;
+        _generalInfoCacheTs = now;
+        return result;
     } catch (error) {
         console.error('❌ Error fetching general info:', error);
-        return {
-            brand_name: 'PrimeJo',
-            phone_number: '+962786215022',
-            email_address: 'Info@primejo.store',
+        var brand = window.BRAND || {};
+        var contact = brand.contact || {};
+        var social = brand.social || {};
+        return _generalInfoCache || {
+            brand_name: brand.name || 'Store',
+            phone_number: contact.phone || '+962786215022',
+            email_address: contact.email || 'info@example.com',
+            whatsapp: contact.whatsapp || '',
+            instagram: social.instagram || '',
+            facebook: social.facebook || '',
+            snapchat: social.snapchat || '',
+            tiktok: social.tiktok || '',
+            youtube: social.youtube || '',
             minimum_order_amount: 25
         };
     }

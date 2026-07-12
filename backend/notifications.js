@@ -8,16 +8,17 @@ const https = require('https');
 // Add these to your Railway environment variables:
 // CALLMEBOT_APIKEY   = your CallMeBot API key
 // SENDGRID_API_KEY   = your SendGrid API key
-// SENDGRID_FROM      = your verified sender email (e.g. orders@primejo.store)
-// STORE_NAME         = Primejo
+// SENDGRID_FROM      = your verified sender email (e.g. orders@yourstore.com)
+// STORE_NAME         = your brand name
+// STORE_EMAIL        = fallback contact email if SENDGRID_FROM is unset
 
 // Read at runtime, not build time
 function getConfig() {
     return {
         CALLMEBOT_APIKEY: process.env.CALLMEBOT_APIKEY || '',
         SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || '',
-        SENDGRID_FROM:    process.env.SENDGRID_FROM    || 'orders@primejo.store',
-        STORE_NAME:       process.env.STORE_NAME       || 'Primejo'
+        SENDGRID_FROM:    process.env.SENDGRID_FROM    || process.env.STORE_EMAIL || 'orders@example.com',
+        STORE_NAME:       process.env.STORE_NAME       || 'Store'
     };
 }
 

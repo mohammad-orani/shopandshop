@@ -1,12 +1,25 @@
 // routes/orders.js
 
-const express  = require('express');
-const pool     = require('../db');
+const express   = require('express');
+const rateLimit = require('express-rate-limit');
+const pool      = require('../db');
 const { notifyOrderStatusChange } = require('../notifications');
 const { authenticateToken, isAdmin, logAction } = require('../middleware');
 const { sendOrderConfirmation, notifyAdmin } = require('../utils/whatsapp');
 
 const router = express.Router();
+
+// POST /api/orders is public (no auth) and writes to the DB, so it gets its
+// own stricter limit on top of the app-wide generalLimiter in server.js —
+// generous enough for a real shared-IP household/office, tight enough to
+// blunt scripted order spam / stock-draining.
+const orderLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: 'Too many orders submitted, please try again later.' }
+});
 
 // Helper: fetch items for one order by its numeric DB id
 async function fetchOrderItems(dbId) {
@@ -43,7 +56,7 @@ async function fetchOrderItems(dbId) {
 }
 
 // POST /api/orders (PUBLIC)
-router.post('/', async (req, res) => {
+router.post('/', orderLimiter, async (req, res) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -55,28 +68,92 @@ router.post('/', async (req, res) => {
             delivery_street, delivery_building, delivery_floor,
             delivery_address, order_notes,
             payment_method,
-            delivery_fee, actual_delivery_fee, shipping_fee,
-            items, subtotal, total, currency, language, order_status
+            items, currency, language
         } = req.body;
+        // NOTE: price, total, subtotal, delivery_fee, actual_delivery_fee, and
+        // order_status are deliberately NOT trusted from req.body — a client
+        // could submit any price/total it likes (or a non-'pending' status)
+        // via a raw API call, not just through the real checkout page. Every
+        // money figure below is recomputed from the database.
+
+        if (!Array.isArray(items) || items.length === 0) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, error: 'Order must contain at least one item' });
+        }
 
         const order_id = clientOrderId || ('ORD-' + Date.now());
         // Strip trunk 0 only when it appears immediately after the country code (1-4 digits).
         // Using greedy {1,4} prevents the lazy +? from scanning into the subscriber number
         // and accidentally removing an internal 0 (e.g. +962786215023 must stay unchanged).
         const sanitizedPhone = (customer_phone || '').replace(/^(\+\d{1,4})0(\d)/, '$1$2');
-        const displayedFee = parseFloat(delivery_fee ?? shipping_fee ?? 0);
 
-        let actualFee = parseFloat(actual_delivery_fee ?? displayedFee ?? 0);
-        if (delivery_city) {
+        // ── Recompute every item's price/total from the real product row ──
+        const productIds = [...new Set(items.map(i => parseInt(i.productId)).filter(Boolean))];
+        let productRows = [];
+        if (productIds.length > 0) {
+            [productRows] = await connection.query(
+                `SELECT id, new_price, quantity_tiers, is_free_delivery FROM products WHERE id IN (?)`,
+                [productIds]
+            );
+        }
+        const productById = new Map(productRows.map(p => [p.id, p]));
+
+        const verifiedItems = [];
+        for (const item of items) {
+            const productId = parseInt(item.productId);
+            const product = productById.get(productId);
+            if (!product) continue; // unknown/deleted product — silently dropped, same as the frontend already does
+
+            const quantity = Math.max(1, parseInt(item.quantity) || 1);
+
+            let tiers = null;
+            try { tiers = product.quantity_tiers ? JSON.parse(product.quantity_tiers) : null; } catch (e) { tiers = null; }
+            const matchedTier = Array.isArray(tiers) ? tiers.find(t => Number(t.qty) === quantity) : null;
+
+            const realNewPrice = parseFloat(product.new_price || 0);
+            const lineTotal = matchedTier ? parseFloat(matchedTier.price) : realNewPrice * quantity;
+            const unitPrice  = matchedTier ? lineTotal / quantity : realNewPrice;
+
+            verifiedItems.push({
+                productId, quantity, unitPrice, lineTotal,
+                isFreeDelivery: !!product.is_free_delivery,
+                productName:   item.productName   || '',
+                productNameAr: item.productNameAr || '',
+                selectedColor: item.selectedColor || null
+            });
+        }
+
+        if (verifiedItems.length === 0) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, error: 'No valid products in order' });
+        }
+
+        const subtotal = verifiedItems.reduce((sum, i) => sum + i.lineTotal, 0);
+
+        // ── Recompute delivery fee: free-by-threshold, free-delivery product, or the city's real fee ──
+        const [[generalInfo]] = await connection.query(
+            'SELECT gi_minimum_order_amount FROM general_info LIMIT 1'
+        );
+        const minimumOrderAmount = parseFloat(generalInfo?.gi_minimum_order_amount) || 0;
+        const isFreeByThreshold = minimumOrderAmount > 0 && subtotal >= minimumOrderAmount;
+        const hasFreeDeliveryProduct = verifiedItems.some(i => i.isFreeDelivery);
+        const isFreeDelivery = isFreeByThreshold || hasFreeDeliveryProduct;
+
+        let displayedFee = 0;
+        let actualFee = 0;
+        if (!isFreeDelivery && delivery_city) {
             const [cityRows] = await connection.query(
-                `SELECT actual_fee FROM delivery_cities
+                `SELECT actual_fee, displayed_fee FROM delivery_cities
                  WHERE city_name_en = ? OR city_name_ar = ? LIMIT 1`,
                 [delivery_city, delivery_city]
             );
-            if (cityRows.length > 0 && cityRows[0].actual_fee != null) {
-                actualFee = parseFloat(cityRows[0].actual_fee);
+            if (cityRows.length > 0) {
+                actualFee    = parseFloat(cityRows[0].actual_fee    ?? 0);
+                displayedFee = parseFloat(cityRows[0].displayed_fee ?? 0);
             }
         }
+
+        const total = subtotal + displayedFee;
 
         const [orderResult] = await connection.query(
             `INSERT INTO orders (
@@ -95,50 +172,48 @@ router.post('/', async (req, res) => {
                 delivery_country || '', delivery_city || '',
                 delivery_street || '', delivery_building || '', delivery_floor || '',
                 delivery_address || '', order_notes || '',
-                payment_method || 'cash', 'pending', order_status || 'pending',
-                currency || 'JOD', subtotal || 0, displayedFee, actualFee,
-                total || 0, language || 'en'
+                payment_method || 'cash', 'pending', 'pending',
+                currency || 'JOD', subtotal, displayedFee, actualFee,
+                total, language || 'en'
             ]
         );
 
         const dbOrderId = orderResult.insertId;
 
-        for (const item of (items || [])) {
+        for (const item of verifiedItems) {
             await connection.query(
                 `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, total, selected_variant)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [dbOrderId, parseInt(item.productId), item.productName || '',
-                    item.productNameAr || '', item.quantity, item.price, item.total,
-                    item.selectedColor || null]
+                [dbOrderId, item.productId, item.productName,
+                    item.productNameAr, item.quantity, item.unitPrice, item.lineTotal,
+                    item.selectedColor]
             );
         }
 
-        for (const item of (items || [])) {
-            if (item.productId) {
-                await connection.query(
-                    `UPDATE products
-                     SET stock = GREATEST(0, stock - ?),
-                         quantity_to_sell = GREATEST(0, quantity_to_sell - ?)
-                     WHERE id = ?`,
-                    [item.quantity, item.quantity, parseInt(item.productId)]
-                );
-            }
+        for (const item of verifiedItems) {
+            await connection.query(
+                `UPDATE products
+                 SET stock = GREATEST(0, stock - ?),
+                     quantity_to_sell = GREATEST(0, quantity_to_sell - ?)
+                 WHERE id = ?`,
+                [item.quantity, item.quantity, item.productId]
+            );
         }
 
         await connection.commit();
-        console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${(items || []).length} items`);
+        console.log(`Order created: ${order_id} | db id: ${dbOrderId} | ${verifiedItems.length} items`);
         const phoneChanged = customer_phone !== sanitizedPhone;
         await logAction(req, 'CREATE', 'order', order_id,
-            `New order from ${customer_name || 'unknown'} | phone_raw: ${customer_phone || '—'}${phoneChanged ? ` → phone_saved: ${sanitizedPhone}` : ''} | city: ${delivery_city || '—'} | total: ${total || 0} | items: ${(items || []).length}`
+            `New order from ${customer_name || 'unknown'} | phone_raw: ${customer_phone || '—'}${phoneChanged ? ` → phone_saved: ${sanitizedPhone}` : ''} | city: ${delivery_city || '—'} | total: ${total} | items: ${verifiedItems.length}`
         );
 
         // WhatsApp notifications (fire-and-forget — never block the response)
         const waPhone = sanitizedPhone || customer_phone || '';
         if (waPhone) {
-            sendOrderConfirmation(waPhone, customer_name || 'عزيزي العميل', order_id, total || 0)
+            sendOrderConfirmation(waPhone, customer_name || 'عزيزي العميل', order_id, total)
                 .catch(e => console.warn('WA confirmation failed:', e.message));
         }
-        notifyAdmin(order_id, customer_name || 'Unknown', total || 0, waPhone)
+        notifyAdmin(order_id, customer_name || 'Unknown', total, waPhone)
             .catch(e => console.warn('WA admin notify failed:', e.message));
 
         // Auto-save customer phone to whatsapp_contacts
@@ -247,7 +322,7 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Get orders error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -266,14 +341,14 @@ router.get('/:id', authenticateToken, isAdmin, async (req, res) => {
                 'SELECT * FROM orders WHERE order_id = ? LIMIT 1', [param]
             );
         }
-        if (orders.length === 0) return res.status(404).json({ error: 'Order not found' });
+        if (orders.length === 0) return res.status(404).json({ success: false, error: 'Order not found' });
 
         const order = orders[0];
         const items = await fetchOrderItems(order.id);
         res.json({ ...order, items });
     } catch (error) {
         console.error('Get single order error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
