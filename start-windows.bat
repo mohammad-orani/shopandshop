@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo    KIWI E-COMMERCE - Quick Start
+echo    SHOP AND SHOP - Quick Start
 echo ========================================
 echo.
 

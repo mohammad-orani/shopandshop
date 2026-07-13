@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" fill="none">
+  <!-- Symbol (Left-aligned, perfectly centered vertically) -->
+  <g transform="translate(80, 75)">
+    <!-- Loop 1 (Primary Green) -->
+    <path d="M30 110 C 0 110, 0 40, 30 40 C 60 40, 90 110, 120 110 C 150 110, 150 40, 120 40" stroke="#1B8F4B" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Loop 2 (Dark Green Interlock) -->
+    <path d="M120 40 C 150 40, 150 110, 120 110 C 90 110, 60 40, 30 40 C 0 40, 0 110, 30 110" stroke="#166534" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    <!-- Center Connection Node -->
+    <circle cx="75" cy="75" r="14" fill="#1B8F4B"/>
+  </g>
+  
+  <!-- Typography (Modern Sans-Serif: Manrope/SF Pro Inspired Geometric Architecture) -->
+  <text x="280" y="172" font-family="system-ui, -apple-system, 'SF Pro', 'Manrope', sans-serif" font-size="84" font-weight="800" fill="#166534" letter-spacing="-0.03em">Shop</text>
+  <text x="510" y="172" font-family="system-ui, -apple-system, 'SF Pro', 'Manrope', sans-serif" font-size="84" font-weight="300" fill="#1B8F4B" letter-spacing="-0.01em">&amp;</text>
+  <text x="610" y="172" font-family="system-ui, -apple-system, 'SF Pro', 'Manrope', sans-serif" font-size="84" font-weight="800" fill="#166534" letter-spacing="-0.03em">Shop</text>
+</svg>

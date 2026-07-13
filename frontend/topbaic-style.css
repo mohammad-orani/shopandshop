@@ -1,5 +1,5 @@
 /* ============================================
-   PRIMEJO - PREMIUM DESIGN SYSTEM
+   SHOP & SHOP - PREMIUM DESIGN SYSTEM
    Modern, Clean, Luxury E-Commerce Style
    ============================================ */
 
@@ -8,21 +8,21 @@
    ============================================ */
 
 :root {
-    --primary-dark: #1a1a1a;
-    --primary-black: #000000;
-    --accent-gold: #c9a961;
-    --accent-gold-dark: #b8943f;
-    --accent-blue: #2d5c8f;
-    --text-primary: #1a1a1a;
-    --text-secondary: #666666;
-    --text-light: #999999;
-    --border-light: #ebebeb;
-    --bg-light: #f6f6f6;
+    --primary-dark: #1F2937;
+    --primary-black: #1F2937;
+    --accent-gold: #39B86C;
+    --accent-gold-dark: #2E9C5C;
+    --accent-blue: #14532D;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-light: #6B7280;
+    --border-light: #DCE8DF;
+    --bg-light: #F8FAF8;
     --bg-white: #ffffff;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.12);
-    --shadow-gold: 0 6px 20px rgba(201, 169, 97, 0.25);
+    --shadow-sm: 0 2px 8px rgba(31, 41, 55, 0.05);
+    --shadow-md: 0 6px 20px rgba(31, 41, 55, 0.08);
+    --shadow-lg: 0 12px 36px rgba(31, 41, 55, 0.12);
+    --shadow-gold: 0 6px 20px rgba(57, 184, 108, 0.25);
     --font-primary: 'Work Sans', 'Helvetica Neue', Arial, sans-serif;
     --font-heading: 'Playfair Display', Georgia, serif;
     --radius-sm: 8px;
@@ -81,7 +81,7 @@ body {
 
 /* Top Bar */
 .header-top {
-    background: #111111;
+    background: var(--color-secondary, #14532D);
     padding: 7px 0;
     font-size: 0.82rem;
 }
@@ -159,7 +159,7 @@ body {
 
 .lang-btn.active {
     background: white;
-    color: #111;
+    color: var(--color-secondary, #14532D);
 }
 
 .currency-wrapper {
@@ -201,14 +201,14 @@ body {
 }
 
 .currency-select option {
-    background: #1a1a1a;
+    background: var(--color-secondary, #14532D);
     color: white;
 }
 
 /* Main Header */
 .header-main {
     background: white;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border, #DCE8DF);
     padding: 14px 0;
 }
 
@@ -941,7 +941,7 @@ body {
     border: 1.5px solid var(--border-light);
     border-radius: var(--radius-sm);
     font-size: 1rem;
-    color: #bbb;
+    color: var(--text-light);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -953,9 +953,9 @@ body {
 
 .btn-fav:hover,
 .btn-fav.active {
-    background: rgba(178, 59, 46, 0.08);
-    border-color: var(--color-error);
-    color: var(--color-error);
+    background: var(--color-primary-light, #EAF8F0);
+    border-color: var(--color-primary, #1B8F4B);
+    color: var(--color-primary, #1B8F4B);
 }
 
 /* ── Rating ── */
@@ -980,7 +980,7 @@ body {
    ============================================ */
 
 .topbaic-delivery-banner {
-    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    background: linear-gradient(135deg, var(--color-primary, #1B8F4B) 0%, var(--color-primary-dark, #167A3F) 100%);
     color: white;
     padding: 12px 20px;
     border-radius: var(--radius-sm);
@@ -1036,7 +1036,7 @@ body {
    ============================================ */
 
 .topbaic-footer {
-    background: var(--primary-black);
+    background: var(--color-secondary, #14532D);
     color: white;
     padding: 60px 0 30px;
     margin-top: 80px;
@@ -1437,7 +1437,7 @@ body[dir="rtl"] .social-link:hover {
 }
 
 /* ============================================
-   END OF PRIMEJO PREMIUM STYLES
+   END OF SHOP & SHOP PREMIUM STYLES
    ============================================ */
 
 

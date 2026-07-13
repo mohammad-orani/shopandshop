@@ -141,7 +141,7 @@
 }
 
 .slider-dot.active {
-    background: var(--accent-gold, #d4af37);
+    background: var(--accent-gold, #39B86C);
     width: 22px;
     border-radius: 4px;
 }

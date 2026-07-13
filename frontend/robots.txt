@@ -1,4 +1,4 @@
-# TODO: this file is static (no templating) — replace https://www.example.com
+# TODO: this file is static (no templating) — replace https://shopandshop.online
 # below with the real production domain before launch, and regenerate
 # sitemap.xml the same way (see BRAND.siteUrl in config.js for the HTML pages,
 # which resolve automatically).
@@ -11,4 +11,4 @@ Disallow: /favorites.html
 Disallow: /products.html
 Disallow: /admin/
 
-Sitemap: https://www.example.com/sitemap.xml
+Sitemap: https://shopandshop.online/sitemap.xml

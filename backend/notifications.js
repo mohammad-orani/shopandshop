@@ -111,17 +111,17 @@ async function sendEmail(toEmail, subject, message, order) {
     <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; margin: 0;">
         <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <!-- Header -->
-            <div style="background: #1a1a1a; padding: 24px; text-align: center;">
-                <h1 style="color: #d4af37; margin: 0; font-size: 24px; letter-spacing: 2px;">${STORE_NAME}</h1>
+            <div style="background: #1B8F4B; padding: 24px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 2px;">${STORE_NAME}</h1>
             </div>
             <!-- Body -->
             <div style="padding: 30px; text-align: ${lang === 'ar' ? 'right' : 'left'};">
                 <p style="font-size: 16px; color: #333; line-height: 1.7; white-space: pre-line;">${message}</p>
-                <div style="background: #f8f8f8; border-right: 4px solid #d4af37; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                <div style="background: #f8f8f8; border-right: 4px solid #1B8F4B; padding: 15px; margin: 20px 0; border-radius: 4px;">
                     <strong style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">
                         ${lang === 'ar' ? 'رقم الطلب' : 'Order ID'}
                     </strong><br>
-                    <span style="font-size: 18px; font-weight: 900; color: #1a1a1a; font-family: monospace;">${orderId}</span>
+                    <span style="font-size: 18px; font-weight: 900; color: #1F2937; font-family: monospace;">${orderId}</span>
                 </div>
             </div>
             <!-- Footer -->

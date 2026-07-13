@@ -28,7 +28,7 @@ const generalLimiter = rateLimit({
     message: { success: false, error: 'Too many requests, please try again later.' }
 });
 
-const storeDomain = process.env.STORE_DOMAIN || 'primejo.store';
+const storeDomain = process.env.STORE_DOMAIN || 'shopandshop.online';
 
 app.use(cors({
     origin: [

@@ -1,7 +1,6 @@
 /* ================================================================
    SHOP & SHOP — DESIGN SYSTEM
-   Houseware / Home Lifestyle · Gulf market
-   Premium · Modern · Elegant · Warm · Trustworthy
+   Premium Green · Minimal · Modern · Apple-level spacing
    ================================================================
    Load this file LAST, after every other stylesheet on the page
    (topbaic-style.css, styles.css, product/cart/checkout.css,
@@ -25,27 +24,31 @@
    ================================================================ */
 :root {
     /* ---------- Colors ---------- */
-    --color-primary:      #A8623C;  /* warm terracotta — primary brand color */
-    --color-secondary:    #2F2622;  /* deep espresso brown — grounding, premium */
-    --color-accent:       #C79A56;  /* warm brass/gold — CTAs, highlights, price tags */
-    --color-background:   #FAF6F1;  /* warm ivory page background */
+    --color-primary:      #1B8F4B;  /* brand green — primary */
+    --color-secondary:    #14532D;  /* deep forest green — footer, dark surfaces */
+    --color-accent:       #39B86C;  /* fresh accent green — highlights, secondary CTAs */
+    --color-background:   #FFFFFF;  /* page background */
+    --color-background-alt:#F8FAF8; /* secondary background */
+    --color-primary-light:#EAF8F0;  /* tint background for badges, hovers, highlights */
     --color-surface:      #FFFFFF;  /* card / panel surface */
-    --color-text:         #2B2420;  /* warm charcoal body text */
-    --color-text-light:   #7C6F63;  /* muted taupe — secondary text */
-    --color-border:       #E7DFD4;  /* soft warm border */
-    --color-success:      #4C7A5D;  /* muted sage green */
-    --color-error:        #B23B2E;  /* muted brick red */
+    --color-text:         #1F2937;  /* dark text */
+    --color-text-light:   #6B7280;  /* light / secondary text */
+    --color-border:       #DCE8DF;  /* soft green-grey border */
+    --color-success:      #2EAD5A;  /* success */
+    --color-error:        #DC3545;  /* error */
+    --color-warning:      #F59E0B;  /* warning */
 
     /* Extra shades used by the component foundation below — not part of
        the required token list, but harmless additions built from it. */
-    --color-primary-dark:   #8B4E30;
-    --color-accent-dark:    #A97D3E;
-    --color-secondary-light:#463A33;
-    --color-primary-rgb:    168, 98, 60;
-    --color-accent-rgb:     199, 154, 86;
-    --color-text-rgb:       43, 36, 32;
-    --color-success-rgb:    76, 122, 93;
-    --color-error-rgb:      178, 59, 46;
+    --color-primary-dark:   #167A3F;  /* primary hover */
+    --color-accent-dark:    #2E9C5C;
+    --color-secondary-light:#1D6B3C;
+    --color-primary-rgb:    27, 143, 75;
+    --color-accent-rgb:     57, 184, 108;
+    --color-text-rgb:       31, 41, 55;
+    --color-success-rgb:    46, 173, 90;
+    --color-error-rgb:      220, 53, 69;
+    --color-warning-rgb:    245, 158, 11;
     --color-surface-rgb:    255, 255, 255;
 
     /* ---------- Typography ---------- */
@@ -60,20 +63,20 @@
     --spacing-xl: 40px;
 
     /* ---------- Border radius ---------- */
-    --radius-small:  6px;
-    --radius-medium: 12px;
-    --radius-large:  20px;
+    --radius-small:  8px;
+    --radius-medium: 16px;
+    --radius-large:  24px;
 
-    /* ---------- Shadows (warm-tinted, not flat black) ---------- */
-    --shadow-small:  0 1px 3px rgba(var(--color-text-rgb), 0.08);
-    --shadow-medium: 0 6px 20px rgba(var(--color-text-rgb), 0.10);
-    --shadow-large:  0 16px 40px rgba(var(--color-text-rgb), 0.14);
+    /* ---------- Shadows (soft, neutral — not flat black) ---------- */
+    --shadow-small:  0 1px 3px rgba(var(--color-text-rgb), 0.06);
+    --shadow-medium: 0 6px 20px rgba(var(--color-text-rgb), 0.08);
+    --shadow-large:  0 16px 40px rgba(var(--color-text-rgb), 0.12);
 }
 
 
 /* ================================================================
    2. LEGACY VARIABLE BRIDGE
-   Every custom property the old Primejo/Topbaic stylesheets read from.
+   Every custom property the legacy Topbaic-derived stylesheets read from.
    Re-pointing them here re-themes the whole existing site immediately.
    Safe to delete once every page has migrated to section 3's classes.
    ================================================================ */
@@ -87,14 +90,14 @@
 
     /* styles.css / cart.css */
     --primary-white:  var(--color-surface);
-    --grey-light:     var(--color-background);
+    --grey-light:     var(--color-background-alt);
     --grey-medium:    var(--color-border);
     --grey-dark:      var(--color-text-light);
     --text-primary:   var(--color-text);
     --text-secondary: var(--color-text-light);
     --text-light:     var(--color-text-light);
     --border-light:   var(--color-border);
-    --bg-light:       var(--color-background);
+    --bg-light:       var(--color-background-alt);
     --bg-white:       var(--color-surface);
 
     --shadow-sm:   var(--shadow-small);
@@ -293,9 +296,10 @@
     line-height: 1.6;
 }
 .badge-primary   { background: var(--color-primary);  color: var(--color-surface); }
-.badge-accent    { background: var(--color-accent);   color: var(--color-secondary); }
+.badge-accent    { background: var(--color-accent);   color: var(--color-surface); }
 .badge-success   { background: var(--color-success);  color: var(--color-surface); }
 .badge-error     { background: var(--color-error);    color: var(--color-surface); }
+.badge-warning   { background: var(--color-warning);  color: var(--color-surface); }
 .badge-new       { background: var(--color-secondary);color: var(--color-surface); }
 .badge-sale      { background: var(--color-error);     color: var(--color-surface); }
 .badge-outline   { background: transparent; border: 1px solid var(--color-border); color: var(--color-text-light); }
@@ -311,10 +315,10 @@
     border: 1px solid transparent;
     font-size: 0.9rem;
 }
-.alert-success { background: rgba(76, 122, 93, 0.1);  border-color: var(--color-success); color: var(--color-success); }
-.alert-error   { background: rgba(178, 59, 46, 0.1);  border-color: var(--color-error);   color: var(--color-error); }
+.alert-success { background: rgba(var(--color-success-rgb), 0.1);  border-color: var(--color-success); color: var(--color-success); }
+.alert-error   { background: rgba(var(--color-error-rgb), 0.1);  border-color: var(--color-error);   color: var(--color-error); }
 .alert-info    { background: rgba(var(--color-primary-rgb), 0.08); border-color: var(--color-primary); color: var(--color-primary); }
-.alert-warning { background: rgba(var(--color-accent-rgb), 0.15);  border-color: var(--color-accent-dark); color: var(--color-accent-dark); }
+.alert-warning { background: rgba(var(--color-warning-rgb), 0.12);  border-color: var(--color-warning); color: var(--color-warning); }
 
 
 /* ---------- Forms & inputs ---------- */
@@ -334,7 +338,7 @@
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--color-surface);
-    border: 1px solid var(--color-text-light);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-small);
     font-family: var(--font-body);
     font-size: 0.95rem;
@@ -348,7 +352,7 @@
 .form-select:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.12);
 }
 .form-input.is-error { border-color: var(--color-error); }
 

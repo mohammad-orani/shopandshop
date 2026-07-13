@@ -1,5 +1,5 @@
 /**
- * PRIMEJO - Search Query Handler
+ * SHOP & SHOP - Search Query Handler
  * Add this to products.html (or include as search-handler.js)
  * Reads ?search= from URL and filters the products grid automatically
  */

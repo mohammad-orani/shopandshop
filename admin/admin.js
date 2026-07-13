@@ -582,9 +582,9 @@ async function loadOrders(filterStatus = '', page = 1) {
         const btn = document.getElementById('filterBtn_' + (s || 'all'));
         if (btn) {
             const isActive = s === filterStatus;
-            btn.style.background   = isActive ? '#1a1a1a' : '#fff';
-            btn.style.color        = isActive ? '#fff'    : '#1a1a1a';
-            btn.style.borderColor  = isActive ? '#1a1a1a' : '#e0e0e0';
+            btn.style.background   = isActive ? '#1B8F4B' : '#fff';
+            btn.style.color        = isActive ? '#fff'    : '#1F2937';
+            btn.style.borderColor  = isActive ? '#1B8F4B' : '#e0e0e0';
         }
     });
 
@@ -663,7 +663,7 @@ function renderOrdersPagination() {
 
     const btnStyle = (disabled) =>
         `padding:6px 14px;border:1.5px solid #e0e0e0;background:#fff;font-size:0.82rem;font-weight:700;
-         border-radius:4px;cursor:${disabled ? 'default' : 'pointer'};color:${disabled ? '#ccc' : '#1a1a1a'};
+         border-radius:4px;cursor:${disabled ? 'default' : 'pointer'};color:${disabled ? '#ccc' : '#1F2937'};
          transition:all 0.15s;`;
 
     // Build page number buttons (show up to 5 around current page)
@@ -684,7 +684,7 @@ function renderOrdersPagination() {
 
             ${pageNums.map(p => `
                 <button onclick="loadOrders('${_ordersFilter}', ${p})"
-                        style="${btnStyle(false)}${p === _ordersPage ? 'background:#1a1a1a;color:#fff;border-color:#1a1a1a;' : ''}">
+                        style="${btnStyle(false)}${p === _ordersPage ? 'background:#1B8F4B;color:#fff;border-color:#1B8F4B;' : ''}">
                     ${p}
                 </button>`).join('')}
 
@@ -785,14 +785,14 @@ async function viewOrderDetails(orderId) {
                         </td>
                         <td style="padding:10px 12px;text-align:center;color:#555;">${qty}</td>
                         <td style="padding:10px 12px;text-align:right;color:#555;">${price}JD</td>
-                        <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1a1a1a;">${total}JD</td>
+                        <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1F2937;">${total}JD</td>
                     </tr>`;
             }).join('');
 
             itemsHTML = `
                 <div style="margin-bottom:1.2rem;">
                     <h4 style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;
-                                color:#fff;background:#1a1a1a;padding:8px 12px;margin:0;border-radius:4px 4px 0 0;">
+                                color:#fff;background:#1B8F4B;padding:8px 12px;margin:0;border-radius:4px 4px 0 0;">
                         🛍️ Order Items (${order.items.length})
                     </h4>
                     <table style="width:100%;border-collapse:collapse;font-size:0.9rem;border:1.5px solid #e8e8e8;border-top:none;border-radius:0 0 4px 4px;overflow:hidden;">
@@ -843,14 +843,14 @@ async function viewOrderDetails(orderId) {
                 ${itemsHTML}
 
                 <!-- Totals -->
-                <div style="border-top:2px solid #1a1a1a;padding-top:0.8rem;">
+                <div style="border-top:2px solid #1B8F4B;padding-top:0.8rem;">
                     ${subtotal > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;color:#666;">
                         <span>Subtotal</span><span>${subtotal.toFixed(2)}JD</span></div>` : ''}
                     ${displayedShipping > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;color:#666;">
                         <span>Shipping</span><span>${displayedShipping.toFixed(2)}JD</span></div>` : ''}
                     <div style="display:flex;justify-content:space-between;font-size:1.3rem;font-weight:900;margin-top:0.4rem;">
                         <span>Total</span>
-                        <span style="color:#1a1a1a;">${total.toFixed(2)}JD</span>
+                        <span style="color:#1B8F4B;">${total.toFixed(2)}JD</span>
                     </div>
                 </div>
             </div>
@@ -877,8 +877,8 @@ function printOrderModal() {
     win.document.write(
         '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order - ' + brandName + '</title><style>' +
         '* { margin:0; padding:0; box-sizing:border-box; }' +
-        'body { font-family: Segoe UI, Arial, sans-serif; font-size:13px; color:#1a1a1a; padding:30px; }' +
-        'h1 { font-size:22px; font-weight:900; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #1a1a1a; }' +
+        'body { font-family: Segoe UI, Arial, sans-serif; font-size:13px; color:#1F2937; padding:30px; }' +
+        'h1 { font-size:22px; font-weight:900; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #1B8F4B; }' +
         '.status-badge { display:inline-block; padding:3px 10px; border-radius:3px; font-size:11px; font-weight:700; text-transform:uppercase; }' +
         '.status-pending    { background:#fff3cd; color:#856404; }' +
         '.status-processing { background:#cce5ff; color:#004085; }' +
@@ -886,7 +886,7 @@ function printOrderModal() {
         '.status-delivered  { background:#d4edda; color:#155724; }' +
         '.status-cancelled  { background:#f8d7da; color:#721c24; }' +
         'table { width:100%; border-collapse:collapse; margin:10px 0; }' +
-        'th { background:#1a1a1a; color:#fff; padding:8px 12px; text-align:left; font-size:11px; text-transform:uppercase; }' +
+        'th { background:#1B8F4B; color:#fff; padding:8px 12px; text-align:left; font-size:11px; text-transform:uppercase; }' +
         'td { padding:10px 12px; border-bottom:1px solid #f0f0f0; }' +
         'img { width:44px; height:44px; object-fit:cover; border-radius:3px; }' +
         '.footer { margin-top:30px; text-align:center; font-size:11px; color:#aaa; border-top:1px solid #e0e0e0; padding-top:15px; }' +
@@ -1057,11 +1057,11 @@ function showToast(msg, duration = 3000) {
     const toast = document.createElement('div');
     toast.style.cssText = `
         position:fixed;bottom:30px;right:30px;
-        background:#1a1a1a;color:white;
-        border-left:4px solid #d4af37;
+        background:#14532D;color:white;
+        border-left:4px solid #39B86C;
         padding:14px 24px;border-radius:4px;
         font-weight:600;font-size:0.95rem;
-        z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.2);
+        z-index:99999;box-shadow:0 4px 20px rgba(31,41,55,0.25);
         transition:opacity 0.3s;
     `;
     toast.textContent = msg;
@@ -1276,7 +1276,7 @@ function renderEditableItems(items) {
                            data-item-id="${item.id || ''}" data-index="${i}" data-field="quantity"
                            class="edit-item-field"
                            style="width:100%;padding:0.35rem 0.4rem;border:1.5px solid #e0e0e0;border-radius:4px;font-size:0.88rem;font-family:inherit;"
-                           onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#e0e0e0'"
+                           onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'"
                            oninput="recalcEditTotal()">
                 </div>
                 <div>
@@ -1285,7 +1285,7 @@ function renderEditableItems(items) {
                            data-item-id="${item.id || ''}" data-index="${i}" data-field="price"
                            class="edit-item-field"
                            style="width:100%;padding:0.35rem 0.4rem;border:1.5px solid #e0e0e0;border-radius:4px;font-size:0.88rem;font-family:inherit;"
-                           onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#e0e0e0'"
+                           onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'"
                            oninput="recalcEditTotal()">
                 </div>
             </div>`;
@@ -1475,13 +1475,13 @@ async function loadLogs(filterAction = '', filterUser = '') {
                     value="${filterUser}"
                     style="padding:7px 12px;border:1.5px solid #e0e0e0;font-size:0.88rem;outline:none;border-radius:3px;width:220px;"
                     oninput="loadLogs(document.getElementById('logFilterBtn_all') ? window._currentLogFilter || '' : '', this.value)"
-                    onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e0e0e0'">
+                    onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'">
                 <button onclick="loadLogs('', ''); document.getElementById('logsUserSearch').value='';"
                     style="padding:7px 14px;background:#f0f0f0;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;">
                     Clear
                 </button>
                 <button onclick="exportLogs()"
-                    style="padding:7px 14px;background:#1a1a1a;color:#fff;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;margin-left:auto;">
+                    style="padding:7px 14px;background:#1B8F4B;color:#fff;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;border-radius:3px;margin-left:auto;">
                     ⬇️ Export CSV
                 </button>
             </div>
@@ -1601,7 +1601,7 @@ async function loadBanners() {
 
         container.innerHTML = banners.map(b => `
             <div class="banner-card" style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:1rem;">
-                <div style="height:120px;background:${b.image_url ? `url('${b.image_url}') center/cover` : (b.bg_color || '#667eea')};position:relative;">
+                <div style="height:120px;background:${b.image_url ? `url('${b.image_url}') center/cover` : (b.bg_color || '#1B8F4B')};position:relative;">
                     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
                         <div style="color:white;text-align:center;">
                             <strong style="font-size:1.1rem;">${b.title_en || ''}</strong><br>
@@ -1613,7 +1613,7 @@ async function loadBanners() {
                     <span style="font-size:0.8rem;color:#888;">Order: ${b.sort_order || 0} | ${b.is_active ? '✅ Active' : '❌ Inactive'}</span>
                     <div style="display:flex;gap:8px;">
                         <button onclick="editBanner(${JSON.stringify(b).replace(/"/g, '&quot;')})"
-                            style="padding:5px 12px;background:#1a1a1a;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;">
+                            style="padding:5px 12px;background:#1B8F4B;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;">
                             Edit
                         </button>
                         <button onclick="deleteBanner(${b.id})"
@@ -1639,7 +1639,7 @@ function editBanner(b) {
     document.getElementById('bannerBtnAr').value = b.btn_text_ar || '';
     document.getElementById('bannerBtnLink').value = b.btn_link || '';
     document.getElementById('bannerImageUrl').value = b.image_url || '';
-    document.getElementById('bannerBgColor').value = b.bg_color || '#667eea';
+    document.getElementById('bannerBgColor').value = b.bg_color || '#1B8F4B';
     document.getElementById('bannerSortOrder').value = b.sort_order || 0;
     document.getElementById('bannerIsActive').checked = b.is_active !== false;
     document.getElementById('bannerFormTitle').textContent = 'Edit Banner';
@@ -1650,7 +1650,7 @@ function resetBannerForm() {
     document.getElementById('bannerEditId').value = '';
     document.getElementById('bannerForm').reset();
     document.getElementById('bannerFormTitle').textContent = 'Add New Banner';
-    document.getElementById('bannerBgColor').value = '#667eea';
+    document.getElementById('bannerBgColor').value = '#1B8F4B';
 }
 
 async function saveBanner(e) {

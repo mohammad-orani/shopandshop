@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  PRIMEJO - SHARED HEADER COMPONENT
+ *  SHOP & SHOP - SHARED HEADER COMPONENT
  *  File: header.js
  * ============================================================
  */
@@ -8,7 +8,7 @@
 (function () {
 
     var brand = window.BRAND || {};
-    var logoSrc = brand.logo || 'assets/brand/logo.png';
+    var logoSrc = brand.logo || 'assets/brand/logo.svg';
     var brandName = brand.name || 'Store';
 
     var headerHTML = '<header class="topbaic-header">' +

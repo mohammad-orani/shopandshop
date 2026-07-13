@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
+  <!-- Minimalist Premium Light Background Grid Layer -->
+  <rect width="512" height="512" rx="112" fill="#F4FBF6"/>
+  <!-- Centered Symbol Component -->
+  <g transform="translate(131, 131)">
+    <path d="M50 183 C 0 183, 0 67, 50 67 C 100 67, 150 183, 200 183 C 250 183, 250 67, 200 67" stroke="#1B8F4B" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M200 67 C 250 67, 250 183, 200 183 C 150 183, 100 67, 50 67 C 0 67, 0 183, 50 183" stroke="#166534" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="125" cy="125" r="22" fill="#1B8F4B"/>
+  </g>
+</svg>

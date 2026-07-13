@@ -7,7 +7,7 @@
 // automatically talks to a local backend; every other host uses production.
 (function () {
     var DEV_API_URL  = 'http://localhost:3000/api';
-    var PROD_API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+    var PROD_API_URL = 'https://shopandshop-production.up.railway.app/api';
     var isDev = ['localhost', '127.0.0.1', ''].indexOf(window.location.hostname) !== -1;
 
     // Only assign to window — no const, to avoid "already declared" conflict with api files
@@ -15,20 +15,19 @@
 })();
 
 window.BRAND = {
-    name: 'PrimeJo',
-    slug: 'primejo',
+    name: 'Shop and Shop',
+    slug: 'shop-and-shop',
     favicon: {
-        ico: '../frontend/assets/brand/favicon.ico',
-        png32: '../frontend/assets/brand/favicon-32.png',
-        png192: '../frontend/assets/brand/favicon-192.png'
+        svg: '../frontend/assets/brand/favicon.svg',
+        icon: '../frontend/assets/brand/icon.svg'
     },
-    title: 'Admin Panel - PrimeJo'
+    title: 'Admin Panel - Shop and Shop'
 };
 
 // ==================== APPLY BRAND TO THE CURRENT PAGE ====================
 (function () {
-    // Injects the full favicon set: a classic .ico (older browsers / OS
-    // bookmarks) plus sized PNGs (modern browsers, PWA/home-screen icons).
+    // Injects the favicon: an SVG icon (scales to any size in modern browsers)
+    // plus a larger square icon for apple-touch-icon / home-screen use.
     function applyBrandFavicon() {
         var brand = window.BRAND;
         var favicon = brand && brand.favicon;
@@ -38,21 +37,18 @@ window.BRAND = {
             el.parentNode.removeChild(el);
         });
 
-        function addLink(rel, href, sizes, type) {
+        function addLink(rel, href, type) {
             if (!href) return;
             var link = document.createElement('link');
             link.rel = rel;
             link.href = href;
-            if (sizes) link.setAttribute('sizes', sizes);
             if (type) link.type = type;
             link.setAttribute('data-brand-favicon', '');
             document.head.appendChild(link);
         }
 
-        addLink('icon', favicon.ico, undefined, 'image/x-icon');
-        addLink('icon', favicon.png32, '32x32', 'image/png');
-        addLink('icon', favicon.png192, '192x192', 'image/png');
-        addLink('apple-touch-icon', favicon.png192);
+        addLink('icon', favicon.svg, 'image/svg+xml');
+        addLink('apple-touch-icon', favicon.icon);
     }
 
     // Replaces the {{BRAND_NAME}} token used in static HTML (titles, sidebar

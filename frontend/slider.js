@@ -17,7 +17,7 @@ async function loadBanners() {
         container.innerHTML = banners.map((b, i) => {
             const bg = b.image_url
                 ? `background: url('${b.image_url}') center/cover no-repeat;`
-                : `background: ${b.bg_color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};`;
+                : `background: ${b.bg_color || 'linear-gradient(135deg, #1B8F4B 0%, #14532D 100%)'};`;
 
             const lang = document.documentElement.lang || 'en';
             const title = (lang === 'ar' && b.title_ar) ? b.title_ar : (b.title_en || b.title || '');

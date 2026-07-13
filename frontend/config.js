@@ -12,7 +12,7 @@
 // Override either URL below if your local backend runs on a different port.
 (function () {
     var DEV_API_URL  = 'http://localhost:3000/api';
-    var PROD_API_URL = 'https://primejo-ecommerce-backend-demo.up.railway.app/api';
+    var PROD_API_URL = 'https://shopandshop-production.up.railway.app/api';
     var isDev = ['localhost', '127.0.0.1', ''].indexOf(window.location.hostname) !== -1;
 
     // Only assign to window — no const, to avoid "already declared" conflict with api.js
@@ -20,31 +20,34 @@
 })();
 
 window.BRAND = {
-    name: 'PrimeJo',
-    nameAr: 'بريميجو',
-    slug: 'primejo',
+    name: 'Shop and Shop',
+    nameAr: 'شوب اند شوب',
+    slug: 'Shop and Shop',
     // TODO: replace with the real production domain before launch — used for
     // canonical URLs, Open Graph/Twitter og:url, and JSON-LD. Also update the
     // {{SITE_URL}} occurrences in sitemap.xml/robots.txt (those are static
     // files and can't read this value).
     siteUrl: 'https://www.example.com',
-    logo: 'assets/brand/logo.png',
+    logo: 'assets/brand/logo.svg',
+    logoWhite: 'assets/brand/logo-white.svg',
+    logoBlack: 'assets/brand/logo-black.svg',
+    // SVG favicon (scales cleanly in modern browsers) + a larger square icon
+    // used for the apple-touch-icon / home-screen tile.
     favicon: {
-        ico: 'assets/brand/favicon.ico',
-        png32: 'assets/brand/favicon-32.png',
-        png192: 'assets/brand/favicon-192.png'
+        svg: 'assets/brand/favicon.svg',
+        icon: 'assets/brand/icon.svg'
     },
 
     // Used as the fallback <title> / meta description when a page doesn't
     // define its own — page-specific titles use the {{BRAND_NAME}} token instead.
-    title: 'PrimeJo - Premium E-Commerce | Everything you\'re looking for is here',
-    metaDescription: 'Quality products, secure checkout. Shop PrimeJo - Your trusted marketplace.',
+    title: 'Shop and Shop - Premium E-Commerce | Everything you\'re looking for is here',
+    metaDescription: 'Quality products, secure checkout. Shop Shop and Shop - Your trusted marketplace.',
 
     // Fallback contact info shown before the general-info API responds.
     // The live values are admin-editable via the general_info DB table.
     contact: {
         phone: '+962786215022',
-        email: 'Info@primejo.store',
+        email: 'Info@shopandshop.online',
         whatsapp: '+962786215022'
     },
 
@@ -65,11 +68,11 @@ window.BRAND = {
     // Kept only for pages/scripts that read window.BRAND.theme directly;
     // design-system.css is the actual source of truth for the values.
     theme: {
-        primaryDark: '#2B2420',
-        primaryBlack: '#2B2420',
-        accentGold: '#C79A56',
-        accentGoldDark: '#A97D3E',
-        accentBlue: '#2F2622'
+        primaryDark: '#1F2937',
+        primaryBlack: '#1F2937',
+        accentGold: '#39B86C',
+        accentGoldDark: '#2E9C5C',
+        accentBlue: '#14532D'
     }
 };
 
@@ -88,8 +91,8 @@ window.BRAND = {
         if (theme.accentBlue)     root.setProperty('--accent-blue', theme.accentBlue);
     }
 
-    // Injects the full favicon set: a classic .ico (older browsers / OS
-    // bookmarks) plus sized PNGs (modern browsers, PWA/home-screen icons).
+    // Injects the favicon: an SVG icon (scales to any size in modern browsers)
+    // plus a larger square icon for apple-touch-icon / home-screen use.
     // Safe to call more than once — removes any links it previously added.
     function applyBrandFavicon() {
         var brand = window.BRAND;
@@ -100,21 +103,18 @@ window.BRAND = {
             el.parentNode.removeChild(el);
         });
 
-        function addLink(rel, href, sizes, type) {
+        function addLink(rel, href, type) {
             if (!href) return;
             var link = document.createElement('link');
             link.rel = rel;
             link.href = href;
-            if (sizes) link.setAttribute('sizes', sizes);
             if (type) link.type = type;
             link.setAttribute('data-brand-favicon', '');
             document.head.appendChild(link);
         }
 
-        addLink('icon', favicon.ico, undefined, 'image/x-icon');
-        addLink('icon', favicon.png32, '32x32', 'image/png');
-        addLink('icon', favicon.png192, '192x192', 'image/png');
-        addLink('apple-touch-icon', favicon.png192);
+        addLink('icon', favicon.svg, 'image/svg+xml');
+        addLink('apple-touch-icon', favicon.icon);
     }
 
     // Replaces the {{BRAND_NAME}}/{{SITE_URL}} tokens used in static HTML
