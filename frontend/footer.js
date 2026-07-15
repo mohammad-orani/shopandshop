@@ -25,7 +25,7 @@
             <div class="footer-content">
 
                 <div class="footer-section">
-                    <h3>${brandName.toUpperCase()}</h3>
+                    <h3 data-brand style="text-transform:uppercase;">${brandName.toUpperCase()}</h3>
                     <p data-en="Our world of shopping, simplified. Premium products, unbeatable value."
                        data-ar="عالم التسوق لدينا أصبح أبسط. منتجات مميزة، قيمة لا تُضاهى.">
                         Our world of shopping, simplified. Premium products, unbeatable value.
@@ -125,7 +125,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; ${currentYear} ${brandName}. All rights reserved.</p>
+                <p>&copy; ${currentYear} <span data-brand>${brandName}</span>. All rights reserved.</p>
             </div>
         </footer>`;
 

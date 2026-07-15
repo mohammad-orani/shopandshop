@@ -1,10 +1,14 @@
 // utils/whatsapp.js — Twilio WhatsApp sender
 
 const twilio = require('twilio');
+const { getStoreInfo } = require('./storeInfo');
 
 const ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
 const FROM        = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886';
+// ADMIN_WHATSAPP is intentionally a separate env var, not general_info's
+// "Store WhatsApp Number" — it's where operational new-order alerts land,
+// which can legitimately differ from the customer-facing contact number.
 const ADMIN_WA    = process.env.ADMIN_WHATSAPP;
 
 function getClient() {
@@ -39,7 +43,7 @@ async function sendTextMessage(to, message) {
 }
 
 async function sendOrderConfirmation(to, customerName, orderId, total) {
-    const storeName = process.env.STORE_NAME || 'Store';
+    const { name: storeName } = await getStoreInfo();
     const body =
         `مرحباً ${customerName}، تم تأكيد طلبك رقم #${orderId} بنجاح! 🎉\n` +
         `المجموع: ${total} JD\n` +
@@ -55,7 +59,7 @@ async function notifyAdmin(orderId, customerName, total, customerPhone) {
     const client = getClient();
     if (!client) return { success: false, error: 'Twilio credentials not set' };
 
-    const storeName = process.env.STORE_NAME || 'Store';
+    const { name: storeName } = await getStoreInfo();
     const body =
         `🛒 طلب جديد على ${storeName}!\n` +
         `رقم الطلب: #${orderId}\n` +

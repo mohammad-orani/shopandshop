@@ -161,7 +161,11 @@
 @media (max-width: 768px) {
     .hero-slider {
         aspect-ratio: 4 / 3;   /* taller on mobile so banner content is visible */
-        margin-bottom: 24px;
+        /* Neutralize the generic `section { padding: 4rem 0; }` rule — it was
+           leaving ~64px of near-white padding above AND below the slide on
+           mobile, reading as a large empty gap before the feature section. */
+        padding: 0;
+        margin-bottom: 16px;
     }
 
     .slide-content h1,
@@ -183,7 +187,8 @@
 @media (max-width: 480px) {
     .hero-slider {
         aspect-ratio: 1 / 1;   /* square on small phones — fits portrait product banners */
-        margin-bottom: 16px;
+        padding: 0;
+        margin-bottom: 12px;
     }
 
     .slide-content {

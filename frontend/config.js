@@ -121,11 +121,24 @@ window.BRAND = {
     // (titles, meta tags, headings, copyright lines, SEO tags, JSON-LD) so a
     // single name/URL change in BRAND propagates everywhere without editing
     // every page.
-    function applyBrandTokens() {
+    //
+    // The brand name is pulled live from the General Info API (single source
+    // of truth, admin-editable) — window.BRAND.name is used only as the
+    // fallback if that fetch is unavailable (e.g. api.js not loaded on this
+    // page) or fails, since getGeneralInfoFromAPI() itself already falls back
+    // to window.BRAND internally on network failure. siteUrl has no General
+    // Info equivalent (it's a deployment-time constant, not editable store
+    // data), so it's intentionally still sourced from the static config.
+    async function applyBrandTokens() {
         var brand = window.BRAND;
         if (!brand) return;
         var name = brand.name;
         var siteUrl = brand.siteUrl || '';
+
+        if (typeof getGeneralInfoFromAPI === 'function') {
+            var info = await getGeneralInfoFromAPI();
+            if (info && info.brand_name) name = info.brand_name;
+        }
 
         function replaceTokens(str) {
             return str.split('{{BRAND_NAME}}').join(name).split('{{SITE_URL}}').join(siteUrl);

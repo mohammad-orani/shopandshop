@@ -29,9 +29,10 @@
                 <a href="#products" class="nav-link" onclick="showSection('products')">
                     <span>📦</span> Products
                 </a>
-                <a href="#categories" class="nav-link" onclick="showSection('categories')">
+                <!--  <a href="#categories" class="nav-link" onclick="showSection('categories')">
                     <span>📁</span> Categories
                 </a>
+                -->
                 <a href="#delivery" class="nav-link" onclick="showSection('delivery')">
                     <span>🚚</span> Delivery Fees
                 </a>
@@ -41,24 +42,27 @@
                 <a href="#reports" class="nav-link" onclick="showSection('reports')">
                     <span>📈</span> Reports
                 </a>
-                <a href="#banners" class="nav-link" onclick="showSection('banners')">
+                <!-- <a href="#banners" class="nav-link" onclick="showSection('banners')">
                     <span>🖼️</span> Banners
                 </a>
+                -->
                 <a href="#general-info-section" class="nav-link" onclick="showSection('general-info-section')">
                     <span>🏢</span> General Info
                 </a>
                 <a href="#settings" class="nav-link" onclick="showSection('settings')">
                     <span>🔒</span> Settings
                 </a>
-                <a href="#logs" class="nav-link" onclick="showSection('logs')">
+                <!--- <a href="#logs" class="nav-link" onclick="showSection('logs')">
                     <span>📋</span> Activity Log
                 </a>
+            
                 <a href="#wa-contacts" class="nav-link" onclick="showSection('wa-contacts')">
                     <span>📇</span> WA Contacts
                 </a>
                 <a href="#wa-broadcast" class="nav-link" onclick="showSection('wa-broadcast')">
                     <span>📢</span> WA Broadcast
                 </a>
+                -->
             </nav>
         </aside>
 
@@ -67,10 +71,11 @@
             <header class="top-bar">
                 <div class="top-bar-left">
                     <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                            <line x1="3" y1="6"  x2="21" y2="6"/>
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
                         </svg>
                     </button>
                     <h2 id="pageTitle">Dashboard</h2>
@@ -188,13 +193,14 @@
                         <!-- Quantity Tiers -->
                         <div class="form-row">
                             <div class="form-group" style="width:100%">
-                                <label>📦 Quantity Tiers <span style="font-weight:400;color:#666;">(Optional — bundle pricing)</span></label>
+                                <label>📦 Quantity Tiers <span style="font-weight:400;color:#666;">(Optional — bundle
+                                        pricing)</span></label>
                                 <small style="color:#666;display:block;margin-bottom:0.5rem;">
                                     Example: 1 pc → 3 JOD &nbsp;|&nbsp; 3 pcs → 7 JOD &nbsp;|&nbsp; 5 pcs → 10 JOD
                                 </small>
                                 <div id="tiersContainer"></div>
                                 <button type="button" onclick="addTierRow()"
-                                        style="margin-top:0.5rem;background:#2d5c8f;color:#fff;border:none;padding:0.4rem 0.9rem;cursor:pointer;border-radius:4px;font-size:0.9rem;">
+                                    style="margin-top:0.5rem;background:#2d5c8f;color:#fff;border:none;padding:0.4rem 0.9rem;cursor:pointer;border-radius:4px;font-size:0.9rem;">
                                     + Add Tier
                                 </button>
                                 <small style="display:block;margin-top:0.4rem;color:#888;">
@@ -207,11 +213,13 @@
                         <!-- COLOR VARIANTS -->
                         <div class="form-row">
                             <div class="form-group" style="width:100%;">
-                                <label>🎨 Color Variants <small style="color:#888;font-weight:400;">(optional)</small></label>
-                                <small style="color:#888;">Add colors the customer can choose from. Hex is optional — leave blank to show a text label instead.</small>
+                                <label>🎨 Color Variants <small
+                                        style="color:#888;font-weight:400;">(optional)</small></label>
+                                <small style="color:#888;">Add colors the customer can choose from. Hex is optional —
+                                    leave blank to show a text label instead.</small>
                                 <div id="colorsContainer" style="margin-top:0.5rem;"></div>
                                 <button type="button" onclick="addColorRow()"
-                                        style="margin-top:0.5rem;background:#2d6a4f;color:#fff;border:none;padding:0.4rem 0.9rem;cursor:pointer;border-radius:4px;font-size:0.9rem;">
+                                    style="margin-top:0.5rem;background:#2d6a4f;color:#fff;border:none;padding:0.4rem 0.9rem;cursor:pointer;border-radius:4px;font-size:0.9rem;">
                                     + Add Color
                                 </button>
                             </div>
@@ -287,7 +295,8 @@
                                     <input type="checkbox" id="productFreeDelivery">
                                     <span style="color: #27ae60; font-weight: 600;">🚚 Free Delivery</span>
                                 </label>
-                                <small style="display: block; color: #666; margin-top: 0.5rem;">Show free delivery badge on this product</small>
+                                <small style="display: block; color: #666; margin-top: 0.5rem;">Show free delivery badge
+                                    on this product</small>
                             </div>
                             <div class="form-group checkbox-group">
                                 <label>
@@ -857,7 +866,8 @@ Add "Banners" to your sidebar nav too:
                                 <option value="Custom">Custom…</option>
                             </select>
                         </div>
-                        <div class="form-group" id="waCustomCategoryGroup" style="margin:0;min-width:160px;display:none;">
+                        <div class="form-group" id="waCustomCategoryGroup"
+                            style="margin:0;min-width:160px;display:none;">
                             <label>Custom Category Name</label>
                             <input type="text" id="waCustomCategoryInput" placeholder="e.g. VIP Jordan">
                         </div>
@@ -899,7 +909,9 @@ Add "Banners" to your sidebar nav too:
                             </tr>
                         </thead>
                         <tbody id="waContactsTableBody">
-                            <tr><td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Loading…</td></tr>
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:2rem;color:#aaa;">Loading…</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -912,7 +924,8 @@ Add "Banners" to your sidebar nav too:
                 <div class="section-header">
                     <div>
                         <h3>📢 WhatsApp Broadcast</h3>
-                        <span style="font-size:0.82rem;color:#888;">Send messages to a contact category via Twilio WhatsApp</span>
+                        <span style="font-size:0.82rem;color:#888;">Send messages to a contact category via Twilio
+                            WhatsApp</span>
                     </div>
                 </div>
 
@@ -930,18 +943,21 @@ Add "Banners" to your sidebar nav too:
                                 <option value="Inactive">Inactive</option>
                             </select>
                         </div>
-                        <p id="waBroadcastCountLabel" style="font-size:0.82rem;color:#888;margin:-0.5rem 0 0.75rem;"></p>
+                        <p id="waBroadcastCountLabel" style="font-size:0.82rem;color:#888;margin:-0.5rem 0 0.75rem;">
+                        </p>
 
                         <div class="form-group">
                             <label style="display:flex;align-items:center;gap:0.5rem;">
-                                <input type="checkbox" id="waBroadcastTemplateToggle" onchange="toggleWaBroadcastTemplate()">
+                                <input type="checkbox" id="waBroadcastTemplateToggle"
+                                    onchange="toggleWaBroadcastTemplate()">
                                 Use Approved Template (for cold outreach)
                             </label>
                         </div>
 
                         <div id="waBroadcastTextGroup" class="form-group">
                             <label>Message Body</label>
-                            <textarea id="waBroadcastMessage" rows="5" placeholder="Type your message here…" style="width:100%;resize:vertical;"></textarea>
+                            <textarea id="waBroadcastMessage" rows="5" placeholder="Type your message here…"
+                                style="width:100%;resize:vertical;"></textarea>
                         </div>
 
                         <div id="waBroadcastTemplateGroup" class="form-group" style="display:none;">
@@ -951,16 +967,20 @@ Add "Banners" to your sidebar nav too:
                             <input type="text" id="waBroadcastLangCode" value="ar" placeholder="ar / en">
                         </div>
 
-                        <button class="btn-primary" onclick="sendWaBroadcast()" id="waBroadcastBtn" style="width:100%;margin-top:0.5rem;">
+                        <button class="btn-primary" onclick="sendWaBroadcast()" id="waBroadcastBtn"
+                            style="width:100%;margin-top:0.5rem;">
                             📤 Send Broadcast
                         </button>
 
                         <!-- Progress -->
                         <div id="waBroadcastProgress" style="display:none;margin-top:1rem;">
                             <div style="height:6px;background:#eee;border-radius:4px;overflow:hidden;">
-                                <div id="waBroadcastBar" style="height:100%;background:var(--primary,#1B8F4B);width:0%;transition:width 0.3s;border-radius:4px;"></div>
+                                <div id="waBroadcastBar"
+                                    style="height:100%;background:var(--primary,#1B8F4B);width:0%;transition:width 0.3s;border-radius:4px;">
+                                </div>
                             </div>
-                            <p id="waBroadcastProgressLabel" style="font-size:0.8rem;color:#888;margin-top:0.4rem;text-align:center;"></p>
+                            <p id="waBroadcastProgressLabel"
+                                style="font-size:0.8rem;color:#888;margin-top:0.4rem;text-align:center;"></p>
                         </div>
                     </div>
 
@@ -990,61 +1010,85 @@ Add "Banners" to your sidebar nav too:
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                         <div class="form-group">
-                            <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Customer Name</label>
-                            <input type="text" id="editCustomerName" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
+                            <label
+                                style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Customer
+                                Name</label>
+                            <input type="text" id="editCustomerName"
+                                style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
                                 onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'">
                         </div>
                         <div class="form-group">
-                            <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Customer Phone</label>
-                            <input type="text" id="editCustomerPhone" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
+                            <label
+                                style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Customer
+                                Phone</label>
+                            <input type="text" id="editCustomerPhone"
+                                style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
                                 onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'">
                         </div>
                         <div class="form-group">
-                            <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Country</label>
-                            <input type="text" id="editDeliveryCountry" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
+                            <label
+                                style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Country</label>
+                            <input type="text" id="editDeliveryCountry"
+                                style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
                                 onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'">
                         </div>
                         <div class="form-group">
-                            <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">City</label>
-                            <input type="text" id="editDeliveryCity" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
+                            <label
+                                style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">City</label>
+                            <input type="text" id="editDeliveryCity"
+                                style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
                                 onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'">
                         </div>
                     </div>
 
                     <div class="form-group" style="margin-top:0.8rem;">
-                        <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Delivery Address</label>
-                        <textarea id="editDeliveryAddress" rows="3" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;resize:vertical;margin-top:0.3rem;font-family:inherit;"
-                            onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
+                        <label
+                            style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Delivery
+                            Address</label>
+                        <textarea id="editDeliveryAddress" rows="3"
+                            style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;resize:vertical;margin-top:0.3rem;font-family:inherit;"
+                            onfocus="this.style.borderColor='#1B8F4B'"
+                            onblur="this.style.borderColor='#e0e0e0'"></textarea>
                     </div>
 
                     <!-- Editable Order Items -->
                     <div id="editOrderItemsSection" style="margin-top:1rem;">
-                        <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:0.5rem;">
+                        <label
+                            style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:0.5rem;">
                             Order Items
                         </label>
                         <div id="editOrderItemsList">
                             <p style="color:#999;font-size:0.85rem;">Loading items…</p>
                         </div>
-                        <div id="editOrderTotalDisplay" style="text-align:right;font-size:0.88rem;font-weight:700;color:#1F2937;margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid #eee;"></div>
+                        <div id="editOrderTotalDisplay"
+                            style="text-align:right;font-size:0.88rem;font-weight:700;color:#1F2937;margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid #eee;">
+                        </div>
                     </div>
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.8rem;">
                         <div class="form-group">
-                            <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Delivery Fee (JD)</label>
-                            <input type="number" id="editDeliveryFee" step="0.01" min="0" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
+                            <label
+                                style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Delivery
+                                Fee (JD)</label>
+                            <input type="number" id="editDeliveryFee" step="0.01" min="0"
+                                style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
                                 onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'"
                                 oninput="recalcEditTotal()">
                         </div>
                         <div class="form-group">
-                            <label style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Order Notes</label>
-                            <input type="text" id="editOrderNotes" style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
+                            <label
+                                style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;">Order
+                                Notes</label>
+                            <input type="text" id="editOrderNotes"
+                                style="width:100%;padding:0.65rem;border:1.5px solid #e0e0e0;font-size:0.92rem;margin-top:0.3rem;font-family:inherit;"
                                 onfocus="this.style.borderColor='#1B8F4B'" onblur="this.style.borderColor='#e0e0e0'">
                         </div>
                     </div>
 
                     <p id="editOrderMsg" style="font-size:0.88rem;min-height:1.2rem;margin:0.8rem 0;"></p>
                     <div class="form-actions">
-                        <button type="submit" style="padding:0.75rem 1.5rem;background:#1B8F4B;color:#fff;border:none;font-weight:700;cursor:pointer;font-size:0.92rem;">
+                        <button type="submit"
+                            style="padding:0.75rem 1.5rem;background:#1B8F4B;color:#fff;border:none;font-weight:700;cursor:pointer;font-size:0.92rem;">
                             💾 Save Changes
                         </button>
                         <button type="button" onclick="closeEditOrderModal()" class="btn-secondary">Cancel</button>

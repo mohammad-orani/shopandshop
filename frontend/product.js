@@ -105,7 +105,7 @@ async function loadProductDetails() {
             }
         } catch (e) { console.warn('Category lookup failed:', e); }
 
-        updateProductSEO(product, categoryName);
+        await updateProductSEO(product, categoryName);
         displayProductDetails(product, categoryName);
 
         // Related products — reuses the existing catalog endpoint and the
@@ -120,9 +120,15 @@ async function loadProductDetails() {
 
 // ==================== SEO: TITLE, META, CANONICAL, PRODUCT + BREADCRUMB SCHEMA ====================
 
-function updateProductSEO(product, categoryName) {
+async function updateProductSEO(product, categoryName) {
     const brand = window.BRAND || {};
-    const brandName = brand.name || '';
+    // Brand name comes live from General Info (single source of truth);
+    // window.BRAND.name is only the fallback if that fetch is unavailable or
+    // fails (getGeneralInfoFromAPI() already falls back internally on network
+    // failure). siteUrl has no General Info equivalent — it's a
+    // deployment-time constant, not editable store data.
+    const generalInfo = (typeof getGeneralInfoFromAPI === 'function') ? await getGeneralInfoFromAPI() : null;
+    const brandName = (generalInfo && generalInfo.brand_name) || brand.name || '';
     const siteUrl = brand.siteUrl || '';
     const name = product.name_en || '';
     const description = (product.description_en || '').replace(/<[^>]*>/g, '').trim();

@@ -25,13 +25,20 @@
             el.textContent = `📞 ${info.phone_number}`;
         });
 
-        // Update brand name
+        // Update brand name (img tags carry it as alt text, not textContent)
         document.querySelectorAll('.brand-name, [data-brand]').forEach(el => {
-            el.textContent = info.brand_name;
+            if (el.tagName === 'IMG') {
+                el.alt = info.brand_name;
+            } else {
+                el.textContent = info.brand_name;
+            }
         });
 
         // ✅ Update minimum order amount in banner
-        const minAmount = parseFloat(info.minimum_order_amount) || 15;
+        // Number.isFinite (not `||`) so an intentionally-saved 0 (e.g. "always
+        // free delivery") isn't treated as missing and overridden by the default.
+        const parsedMinAmount = parseFloat(info.minimum_order_amount);
+        const minAmount = Number.isFinite(parsedMinAmount) ? parsedMinAmount : 15;
         const currentLang = localStorage.getItem('selectedLanguage') || 'en';
 
         document.querySelectorAll('.delivery-banner-subtitle').forEach(el => {
@@ -83,6 +90,27 @@
             });
         });
 
+        // Update the JSON-LD Organization "sameAs" links (index.html only —
+        // no-op elsewhere) so search engines see the current social URLs
+        // instead of the hardcoded fallback baked into the page.
+        var orgSchema = document.getElementById('orgSchema');
+        if (orgSchema) {
+            try {
+                var schema = JSON.parse(orgSchema.textContent);
+                var nodes = Array.isArray(schema['@graph']) ? schema['@graph'] : [schema];
+                var org = nodes.find(function (node) { return node['@type'] === 'Organization'; });
+                if (org) {
+                    var sameAs = [info.instagram, info.facebook, info.snapchat, info.tiktok, info.youtube].filter(Boolean);
+                    if (sameAs.length) {
+                        org.sameAs = sameAs;
+                        orgSchema.textContent = JSON.stringify(schema);
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not update Organization JSON-LD sameAs:', e);
+            }
+        }
+
         // Show delivery note on checkout page
         const noteBox  = document.getElementById('delivery-note-box');
         const noteText = document.getElementById('delivery-note-text');
@@ -124,21 +152,28 @@
                     50%      { opacity:0.85; transform:translateY(-2px); }
                 }
                 @media (max-width: 640px) {
+                    /* Standard mobile FAB size/corner position, plus the iOS
+                       safe-area inset. This does NOT solve card overlap by
+                       itself — that's handled structurally by reserving a
+                       clear lane in the product grid (see .products-grid
+                       right-column margin in styles.css), so cards never
+                       extend under this button's footprint regardless of
+                       scroll position or viewport width. */
                     #wa-float-btn {
-                        width:50px !important;
-                        height:50px !important;
-                        bottom:5.5rem !important;
-                        right:1rem !important;
+                        width:44px !important;
+                        height:44px !important;
+                        bottom:calc(1.25rem + env(safe-area-inset-bottom, 0px)) !important;
+                        right:calc(1rem + env(safe-area-inset-right, 0px)) !important;
                     }
                     #wa-float-btn svg {
-                        width:26px !important;
-                        height:26px !important;
+                        width:23px !important;
+                        height:23px !important;
                     }
                     #wa-float-label {
                         font-size:0.72rem !important;
                         padding:6px 10px !important;
-                        bottom:calc(5.5rem + 7px) !important;
-                        right:calc(1rem + 50px + 8px) !important;
+                        bottom:calc(1.25rem + env(safe-area-inset-bottom, 0px) + 4px) !important;
+                        right:calc(1rem + env(safe-area-inset-right, 0px) + 44px + 8px) !important;
                     }
                 }
             `;

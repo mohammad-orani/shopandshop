@@ -226,9 +226,13 @@ async function updateDeliveryFee() {
         return product && !!(product.is_free_delivery || product.isFreeDelivery);
     });
 
+    // Number.isFinite (not `||`) so an intentionally-saved 0 — meaning "no
+    // site-wide free-delivery threshold" per the `> 0` check below — isn't
+    // treated as missing and silently replaced by the default.
     try {
         const info = await getGeneralInfoFromAPI();
-        minimumOrderAmount = parseFloat(info.minimum_order_amount) || 15;
+        const parsed = parseFloat(info.minimum_order_amount);
+        minimumOrderAmount = Number.isFinite(parsed) ? parsed : 15;
     } catch (e) {
         minimumOrderAmount = 15;
     }

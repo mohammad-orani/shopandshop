@@ -867,13 +867,17 @@ function closeOrderModal() {
     document.getElementById('orderModal')?.classList.remove('show');
 }
 
-function printOrderModal() {
+async function printOrderModal() {
     const content = document.getElementById('orderDetailsContent')?.innerHTML;
     if (!content) return;
 
+    // Open the window synchronously (still inside the click's user-gesture
+    // context) before the async general-info fetch, so popup blockers don't
+    // treat the later window.document.write as an unsolicited popup.
     const win = window.open('', '_blank', 'width=800,height=700');
     const printDate = new Date().toLocaleString();
-    const brandName = (window.BRAND && window.BRAND.name) || 'Store';
+    const info = await getGeneralInfo();
+    const brandName = (info && info.brand_name) || (window.BRAND && window.BRAND.name) || 'Store';
     win.document.write(
         '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order - ' + brandName + '</title><style>' +
         '* { margin:0; padding:0; box-sizing:border-box; }' +

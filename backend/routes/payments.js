@@ -2,6 +2,7 @@
 // Requires: STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in .env
 
 const express = require('express');
+const { getStoreInfo } = require('../utils/storeInfo');
 const router  = express.Router();
 
 let stripe;
@@ -28,14 +29,19 @@ router.post('/create-intent', async (req, res) => {
         // JOD is a 3-decimal currency — 1 JOD = 1000 fils
         const amountInSmallestUnit = Math.round(parseFloat(amount) * 1000);
 
+        const { name: storeName } = await getStoreInfo();
+
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amountInSmallestUnit,
             currency: currency.toLowerCase(),
             automatic_payment_methods: { enabled: true },
             receipt_email: customer_email || undefined,
-            description: `${process.env.STORE_NAME || 'Store'} Order — ${customer_name || 'Customer'}`,
+            description: `${storeName} Order — ${customer_name || 'Customer'}`,
             metadata: {
                 ...metadata,
+                // Internal analytics tag, deliberately left keyed on the env var
+                // rather than the admin-editable brand name so dashboards/reports
+                // stay stable across a rebrand.
                 source: `${(process.env.STORE_NAME || 'store').toLowerCase()}-mobile`,
             },
         });

@@ -263,7 +263,7 @@ async function getGeneralInfoFromAPI() {
             snapchat: social.snapchat || '',
             tiktok: social.tiktok || '',
             youtube: social.youtube || '',
-            minimum_order_amount: 25
+            minimum_order_amount: 15
         };
     }
 }

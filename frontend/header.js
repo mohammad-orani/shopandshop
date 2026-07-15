@@ -15,7 +15,7 @@
         '<div class="header-main">' +
         '<div class="header-main-inner">' +
         '<a href="index.html" style="display:inline-block;line-height:0;">' +
-        '<img src="' + logoSrc + '" alt="' + brandName + '" loading="eager" style="height:80px;width:auto;object-fit:contain;display:block;">' +
+        '<img src="' + logoSrc + '" alt="' + brandName + '" data-brand loading="eager" style="height:80px;width:auto;object-fit:contain;display:block;">' +
         '</a>' +
         '<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open menu" aria-expanded="false">&#9776;</button>' +
         '<nav class="topbaic-nav" id="mobileNav">' +

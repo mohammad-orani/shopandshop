@@ -109,7 +109,13 @@ async function loadCategoryProducts(categoryId) {
     // SEO: give this category its own title/description/canonical/breadcrumb
     // instead of the generic "Categories" hub tags set in category.html.
     if (category) {
-        const brandName = (window.BRAND && window.BRAND.name) || '';
+        // Brand name comes live from General Info (single source of truth);
+        // window.BRAND.name is only the fallback if that fetch is unavailable
+        // or fails (getGeneralInfoFromAPI() already falls back internally on
+        // network failure). siteUrl has no General Info equivalent — it's a
+        // deployment-time constant, not editable store data.
+        const generalInfo = (typeof getGeneralInfoFromAPI === 'function') ? await getGeneralInfoFromAPI() : null;
+        const brandName = (generalInfo && generalInfo.brand_name) || (window.BRAND && window.BRAND.name) || '';
         const siteUrl = (window.BRAND && window.BRAND.siteUrl) || '';
         const catName = category.name_en;
 

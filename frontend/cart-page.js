@@ -137,8 +137,11 @@ async function updateOrderSummary() {
         }
 
         // Free shipping banner
-        const info     = await getGeneralInfoFromAPI();
-        const minOrder = parseFloat(info.minimum_order_amount) || 25;
+        // Number.isFinite (not `||`) so an intentionally-saved 0 isn't treated
+        // as missing and silently replaced by the default.
+        const info        = await getGeneralInfoFromAPI();
+        const parsedMinOrder = parseFloat(info.minimum_order_amount);
+        const minOrder     = Number.isFinite(parsedMinOrder) ? parsedMinOrder : 15;
         const bannerEl = document.getElementById('freeShippingBanner');
         if (bannerEl) {
             if (cart.length === 0) {

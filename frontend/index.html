@@ -138,7 +138,7 @@
         </div>
     </section>
 -->
-    <!-- Featured Collections -->
+    <!-- Featured Collections 
     <section class="section section--muted featured-section">
         <div class="container">
             <div class="section-header">
@@ -177,7 +177,7 @@
             <div class="products-grid" id="offerProducts"></div>
         </div>
     </section>
-
+-->
     <!-- Filter Bar -->
     <div class="filter-bar">
         <div class="filter-content">
@@ -292,8 +292,11 @@
 
     <div id="site-footer"></div>
 
-    <!-- Structured data: Organization + WebSite (tokens resolved by config.js's applyBrandTokens) -->
-    <script type="application/ld+json">
+    <!-- Structured data: Organization + WebSite. name/url/logo tokens resolved
+         by config.js's applyBrandTokens(); sameAs is rewritten live from
+         General Info by general-info.js — see updateGeneralInfo(). The URLs
+         below are only the pre-JS / API-unreachable fallback. -->
+    <script type="application/ld+json" id="orgSchema">
     {
         "@context": "https://schema.org",
         "@graph": [
@@ -325,7 +328,6 @@
     <script src="dist/js/footer.min.js" defer></script>
     <script src="dist/js/api.min.js" defer></script>
     <script src="dist/js/app.min.js" defer></script>
-    <script src="dist/js/settings.min.js" defer></script>
     <script src="dist/js/modern-animations.min.js" defer></script>
     <script src="dist/js/topbaic-products.min.js" defer></script>
     <script src="dist/js/slider.min.js" defer></script>

@@ -3,22 +3,28 @@
 // Add to your backend folder and require in server.js
 
 const https = require('https');
+const { getStoreInfo } = require('./utils/storeInfo');
 
 // ==================== CONFIG ====================
 // Add these to your Railway environment variables:
 // CALLMEBOT_APIKEY   = your CallMeBot API key
 // SENDGRID_API_KEY   = your SendGrid API key
-// SENDGRID_FROM      = your verified sender email (e.g. orders@yourstore.com)
-// STORE_NAME         = your brand name
-// STORE_EMAIL        = fallback contact email if SENDGRID_FROM is unset
+// SENDGRID_FROM      = your verified SendGrid sender identity (must be verified
+//                      in SendGrid regardless of brand — leave unset to fall
+//                      back to the General Info email address)
+//
+// Brand name and the SENDGRID_FROM fallback email are read from the
+// general_info table (single source of truth, edited via the admin panel's
+// General Info section) — see backend/utils/storeInfo.js.
 
 // Read at runtime, not build time
-function getConfig() {
+async function getConfig() {
+    const store = await getStoreInfo();
     return {
         CALLMEBOT_APIKEY: process.env.CALLMEBOT_APIKEY || '',
         SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || '',
-        SENDGRID_FROM:    process.env.SENDGRID_FROM    || process.env.STORE_EMAIL || 'orders@example.com',
-        STORE_NAME:       process.env.STORE_NAME       || 'Store'
+        SENDGRID_FROM:    process.env.SENDGRID_FROM    || store.email,
+        STORE_NAME:       store.name
     };
 }
 
@@ -47,8 +53,8 @@ const statusMessages = {
     }
 };
 
-function buildMessage(order, newStatus) {
-    const { STORE_NAME } = getConfig();
+async function buildMessage(order, newStatus) {
+    const { STORE_NAME } = await getConfig();
     const lang = order.language || 'ar';
     const statusMsg = statusMessages[newStatus]?.[lang] || statusMessages[newStatus]?.en || `Status updated to: ${newStatus}`;
     const orderId = order.order_id || order.id;
@@ -65,7 +71,7 @@ function buildMessage(order, newStatus) {
 // ==================== WHATSAPP via CALLMEBOT ====================
 
 async function sendWhatsApp(phone, message) {
-    const { CALLMEBOT_APIKEY, SENDGRID_API_KEY, SENDGRID_FROM, STORE_NAME } = getConfig();
+    const { CALLMEBOT_APIKEY } = await getConfig();
     if (!CALLMEBOT_APIKEY) {
         console.warn('⚠️ CALLMEBOT_APIKEY not set — skipping WhatsApp');
         return { success: false, error: 'API key not configured' };
@@ -94,7 +100,7 @@ async function sendWhatsApp(phone, message) {
 // ==================== EMAIL via SENDGRID ====================
 
 async function sendEmail(toEmail, subject, message, order) {
-    const { SENDGRID_API_KEY, SENDGRID_FROM, STORE_NAME } = getConfig();
+    const { SENDGRID_API_KEY, SENDGRID_FROM, STORE_NAME } = await getConfig();
     if (!SENDGRID_API_KEY) {
         console.warn('⚠️ SENDGRID_API_KEY not set — skipping email');
         return { success: false, error: 'API key not configured' };
@@ -179,7 +185,7 @@ async function sendEmail(toEmail, subject, message, order) {
 async function notifyOrderStatusChange(order, newStatus) {
     if (!order || !newStatus) return;
 
-    const message = buildMessage(order, newStatus);
+    const message = await buildMessage(order, newStatus);
     const lang = order.language || 'ar';
     const subject = lang === 'ar'
         ? `تحديث طلبك - ${order.order_id || order.id}`
