@@ -48,7 +48,15 @@ app.use(generalLimiter);
 // Stripe webhook needs raw body — must be registered before express.json()
 app.use('/api/payments/webhook', require('./routes/payments'));
 app.use(express.json());
-app.use(express.static('public'));
+// helmet()'s default Cross-Origin-Resource-Policy: same-origin blocks the
+// admin panel and storefront (separate Netlify origins, see the CORS
+// allowlist above) from embedding these images at all — CORS only governs
+// fetch/XHR, not <img> loading, so it doesn't help here. Relax CORP to
+// cross-origin only for these static files; every other response keeps
+// helmet's stricter default.
+app.use(express.static('public', {
+    setHeaders: (res) => res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+}));
 
 // ============ ROUTES ============
 
@@ -57,6 +65,7 @@ app.use('/api/customers',    require('./routes/customers').router);
 app.use('/api/payments',     require('./routes/payments'));
 app.use('/api/categories',   require('./routes/categories'));
 app.use('/api/products',     require('./routes/products'));
+app.use('/api/upload',       require('./routes/upload'));
 app.use('/api/orders',       require('./routes/orders'));
 app.use('/api/delivery',     require('./routes/delivery'));
 app.use('/api/general-info', require('./routes/generalInfo'));
