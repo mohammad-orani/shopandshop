@@ -1610,6 +1610,26 @@ loadDashboard();
 
 // ==================== BANNERS ====================
 
+// Lazily created once, then reused (setValue/reset) across editBanner()/
+// resetBannerForm() calls — same pattern as the product image uploaders.
+let bannerImageUploader = null;
+
+function ensureBannerImageUploader() {
+    if (!bannerImageUploader) {
+        bannerImageUploader = createSingleImageUploader('bannerImageUploader', {
+            uploadType: 'banner',
+            acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+            maxBytes: 8 * 1024 * 1024,
+            extraClass: 'img-uploader--banner'
+        });
+    }
+}
+
+// Unlike the product form (hidden until "Add New Product" is clicked), the
+// banner form's container is always present in the DOM, so its uploader is
+// initialized eagerly here rather than lazily on first open.
+ensureBannerImageUploader();
+
 async function loadBanners() {
     const container = document.getElementById('bannersContainer');
     if (!container) return;
@@ -1654,6 +1674,7 @@ async function loadBanners() {
 }
 
 function editBanner(b) {
+    ensureBannerImageUploader();
     document.getElementById('bannerEditId').value = b.id || '';
     document.getElementById('bannerTitleEn').value = b.title_en || '';
     document.getElementById('bannerTitleAr').value = b.title_ar || '';
@@ -1662,7 +1683,7 @@ function editBanner(b) {
     document.getElementById('bannerBtnEn').value = b.btn_text_en || '';
     document.getElementById('bannerBtnAr').value = b.btn_text_ar || '';
     document.getElementById('bannerBtnLink').value = b.btn_link || '';
-    document.getElementById('bannerImageUrl').value = b.image_url || '';
+    bannerImageUploader.setValue(b.image_url || '');
     document.getElementById('bannerBgColor').value = b.bg_color || '#1B8F4B';
     document.getElementById('bannerSortOrder').value = b.sort_order || 0;
     document.getElementById('bannerIsActive').checked = b.is_active !== false;
@@ -1671,15 +1692,35 @@ function editBanner(b) {
 }
 
 function resetBannerForm() {
+    ensureBannerImageUploader();
+    // #bannerForm is a <div>, not a <form> — it has no native .reset(), so
+    // every field is cleared explicitly instead.
     document.getElementById('bannerEditId').value = '';
-    document.getElementById('bannerForm').reset();
-    document.getElementById('bannerFormTitle').textContent = 'Add New Banner';
+    document.getElementById('bannerTitleEn').value = '';
+    document.getElementById('bannerTitleAr').value = '';
+    document.getElementById('bannerSubtitleEn').value = '';
+    document.getElementById('bannerSubtitleAr').value = '';
+    document.getElementById('bannerBtnEn').value = '';
+    document.getElementById('bannerBtnAr').value = '';
+    document.getElementById('bannerBtnLink').value = '';
+    bannerImageUploader.reset();
     document.getElementById('bannerBgColor').value = '#1B8F4B';
+    document.getElementById('bannerSortOrder').value = 0;
+    document.getElementById('bannerIsActive').checked = true;
+    document.getElementById('bannerFormTitle').textContent = 'Add New Banner';
 }
 
 async function saveBanner(e) {
     e.preventDefault();
+    ensureBannerImageUploader();
+
+    if (bannerImageUploader.hasErrors()) {
+        alert('⚠️ The banner image failed to upload. Please retry or remove it before saving.');
+        return;
+    }
+
     const id = document.getElementById('bannerEditId').value;
+    const imageUrl = await bannerImageUploader.getValue();
     const payload = {
         title_en: document.getElementById('bannerTitleEn').value,
         title_ar: document.getElementById('bannerTitleAr').value,
@@ -1688,7 +1729,7 @@ async function saveBanner(e) {
         btn_text_en: document.getElementById('bannerBtnEn').value,
         btn_text_ar: document.getElementById('bannerBtnAr').value,
         btn_link: document.getElementById('bannerBtnLink').value,
-        image_url: document.getElementById('bannerImageUrl').value,
+        image_url: imageUrl,
         bg_color: document.getElementById('bannerBgColor').value,
         sort_order: parseInt(document.getElementById('bannerSortOrder').value) || 0,
         is_active: document.getElementById('bannerIsActive').checked

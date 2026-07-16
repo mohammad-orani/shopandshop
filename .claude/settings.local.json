@@ -47,7 +47,30 @@
       "Bash(node --check routes/customers.js)",
       "Bash(curl -s -m 10 http://localhost:3000/api/customers/orders/track/TEST-CUST-SHAPE-__CMDSUB_OUTPUT__?phone=0790000001)",
       "Bash(curl -s -m 10 \"http://localhost:3000/api/customers/track/TEST-CUST-SHAPE-1784242936?phone=0790000001\")",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(JSON.stringify\\(JSON.parse\\(d\\),null,2\\)\\)\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(JSON.stringify\\(JSON.parse\\(d\\),null,2\\)\\)\\)\")",
+      "Bash(node --check routes/upload.js)",
+      "Bash(node --check image-uploader.js)",
+      "Bash(node --check admin.js)",
+      "Bash(curl -s -m 8 -o /dev/null -w \"backend: %{http_code}\\\\n\" http://localhost:3000/api/products)",
+      "Bash(curl -s -m 8 -o /dev/null -w \"admin: %{http_code}\\\\n\" http://localhost:5601/index.html)",
+      "Bash(curl -s -m 8 -o /dev/null -w \"frontend: %{http_code}\\\\n\" http://localhost:5600/index.html)",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-banner-e2e.js\")",
+      "Bash(curl -sI http://localhost:3000/uploads/banners/68ad0c347349a38dd7b6ae10a920b6bb.webp)",
+      "Bash(curl -s -m 10 -X POST http://localhost:3000/api/banners -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"title_en\":\"Legacy External Banner\",\"title_ar\":\"بانر خارجي قديم\",\"image_url\":\"https://placehold.co/1920x800/1B8F4B/FFFFFF.png?text=Legacy+Banner\",\"sort_order\":1,\"is_active\":true}')",
+      "Bash(curl -s -m 10 \"http://localhost:3000/api/banners\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(JSON.parse\\(d\\).banners.map\\(b=>b.id+' | '+b.title_en+' | '+b.image_url\\)\\)\\)\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-banner-edit-legacy.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-banner-validation.js\")",
+      "Bash(curl -s -m 20 -X POST http://localhost:3000/api/upload?type=banner -H 'Authorization: Bearer __TRACKED_VAR__' -F 'image=@C:/Users/Mohammad/AppData/Local/Temp/test9mb.bin;type=image/png;filename=huge.png')",
+      "Bash(curl -s -m 20 -X POST http://localhost:3000/api/upload?type=product -H 'Authorization: Bearer __TRACKED_VAR__' -F 'image=@C:/Users/Mohammad/AppData/Local/Temp/test9mb.bin;type=image/png;filename=huge.png')",
+      "Bash(curl -s -m 15 -X POST http://localhost:3000/api/upload?type=product -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -F image=@C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/home.png)",
+      "Bash(curl -s -m 15 -X POST http://localhost:3000/api/upload -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -F image=@C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/home.png)",
+      "Bash(curl -s -m 10 -X DELETE http://localhost:3000/api/banners/1 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(curl -s -m 10 -X DELETE http://localhost:3000/api/banners/2 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(rm -f \"C:/Users/Mohammad/AppData/Local/Temp/test9mb.bin\")",
+      "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/banners/68ad0c347349a38dd7b6ae10a920b6bb.webp\")",
+      "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/products/b5ad6acab6b6c10d2c22eab78a999f31.webp\")",
+      "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/products/f4f05a65817d9ec1632d17e382b5587a.webp\")"
     ]
   }
 }

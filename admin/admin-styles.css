@@ -492,6 +492,19 @@ body {
     width: 180px;
     height: 180px;
 }
+/* Banners are a wide 2.4:1 crop (recommended 1920x800), not the product
+   uploader's square thumbnail — same component, differently sized slot. */
+.img-uploader--banner .img-uploader__slot {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 2.4 / 1;
+    height: auto;
+}
+.img-uploader__slot--drag-over {
+    outline: 2px dashed var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
 .img-uploader__preview {
     position: relative;
     width: 100%;

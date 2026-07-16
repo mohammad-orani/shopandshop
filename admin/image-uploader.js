@@ -13,25 +13,33 @@
 
 (function () {
 
+    // Defaults match the backend's "product" upload profile — pass
+    // acceptedTypes/maxBytes in opts to match a different profile (e.g. the
+    // backend's "banner" profile accepts fewer types at a smaller size cap).
     const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
     const MAX_CLIENT_SIDE_BYTES = 10 * 1024 * 1024; // mirrors the backend's limit — fail fast client-side too
 
-    function validateFile(file) {
-        if (!ACCEPTED_TYPES.includes(file.type)) {
-            return 'Unsupported file type. Please choose a JPEG, PNG, WebP, GIF, or AVIF image.';
+    function validateFile(file, acceptedTypes = ACCEPTED_TYPES, maxBytes = MAX_CLIENT_SIDE_BYTES) {
+        if (!acceptedTypes.includes(file.type)) {
+            const exts = acceptedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ');
+            return `Unsupported file type. Please choose a ${exts} image.`;
         }
-        if (file.size > MAX_CLIENT_SIDE_BYTES) {
-            return 'File is too large. Maximum size is 10MB.';
+        if (file.size > maxBytes) {
+            return `File is too large. Maximum size is ${maxBytes / (1024 * 1024)}MB.`;
         }
         return null;
     }
 
     // Uploads one file, reporting progress via onProgress(0-100). Resolves to
     // the server's returned URL, rejects with a human-readable message.
-    function uploadFile(file, onProgress) {
+    // uploadType is sent as ?type= so the backend applies the matching
+    // profile (resize target, byte cap, storage folder) — omit it for the
+    // default "product" profile.
+    function uploadFile(file, onProgress, uploadType) {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${window.API_URL}/upload`);
+            const url = uploadType ? `${window.API_URL}/upload?type=${encodeURIComponent(uploadType)}` : `${window.API_URL}/upload`;
+            xhr.open('POST', url);
             xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken()}`);
 
             xhr.upload.onprogress = (e) => {
@@ -55,22 +63,49 @@
     }
 
     // ==================== SINGLE IMAGE UPLOADER ====================
-    // opts: { initialUrl, onChange(url) }
+    // opts: { initialUrl, onChange(url), uploadType, acceptedTypes, maxBytes, extraClass }
+    // uploadType/acceptedTypes/maxBytes let a caller match a different
+    // backend profile (see routes/upload.js) — e.g. banners use uploadType:
+    // 'banner' with a smaller size cap and fewer accepted types. extraClass
+    // lets the caller size the preview slot differently (banners are a wide
+    // 2.4:1 crop, not the product uploader's square thumbnail).
     function createSingleImageUploader(containerId, opts) {
         opts = opts || {};
         const container = document.getElementById(containerId);
         if (!container) throw new Error(`createSingleImageUploader: #${containerId} not found`);
 
+        const acceptedTypes = opts.acceptedTypes || ACCEPTED_TYPES;
+        const maxBytes = opts.maxBytes || MAX_CLIENT_SIDE_BYTES;
+
         // state: { url, objectUrl, status: 'empty'|'uploading'|'done'|'error', progress, error, pendingUpload }
         let state = { url: opts.initialUrl || '', objectUrl: null, status: opts.initialUrl ? 'done' : 'empty', progress: 0, error: null, pendingUpload: null };
 
         container.innerHTML = `
-            <div class="img-uploader img-uploader--single">
+            <div class="img-uploader img-uploader--single${opts.extraClass ? ' ' + opts.extraClass : ''}">
                 <div class="img-uploader__slot"></div>
-                <input type="file" accept="${ACCEPTED_TYPES.join(',')}" hidden>
+                <input type="file" accept="${acceptedTypes.join(',')}" hidden>
             </div>`;
         const slot = container.querySelector('.img-uploader__slot');
         const fileInput = container.querySelector('input[type="file"]');
+
+        // Drag-and-drop: dropping a file from the OS anywhere on the slot
+        // uploads it, regardless of which visual state (empty/preview/error)
+        // it's currently in. Bound once here rather than in bindSlotEvents()
+        // since the slot element itself (unlike its innerHTML) persists
+        // across renders.
+        slot.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            slot.classList.add('img-uploader__slot--drag-over');
+        });
+        slot.addEventListener('dragleave', () => {
+            slot.classList.remove('img-uploader__slot--drag-over');
+        });
+        slot.addEventListener('drop', (e) => {
+            e.preventDefault();
+            slot.classList.remove('img-uploader__slot--drag-over');
+            const file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) startUpload(file);
+        });
 
         function render() {
             const displaySrc = state.objectUrl || state.url;
@@ -159,7 +194,7 @@
         }
 
         function startUpload(file) {
-            const validationError = validateFile(file);
+            const validationError = validateFile(file, acceptedTypes, maxBytes);
             if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
             const objectUrl = URL.createObjectURL(file);
 
@@ -177,7 +212,7 @@
                 state.progress = pct;
                 const bar = slot.querySelector('.img-uploader__progress-bar');
                 if (bar) bar.style.width = pct + '%';
-            }).then((url) => {
+            }, opts.uploadType).then((url) => {
                 if (state.pendingFile !== file) return; // superseded
                 state = { url, objectUrl: state.objectUrl, status: 'done', progress: 100, error: null, pendingFile: null, pendingUpload: null };
                 render();

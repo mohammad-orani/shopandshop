@@ -1,6 +1,12 @@
-// routes/upload.js — generic image upload endpoint used by the admin panel's
-// product image pickers (main image + additional images). One file per
-// request; the frontend calls this once per selected file.
+// routes/upload.js — generic image upload endpoint shared by every admin
+// image picker (product main/additional images, banner images, ...). One
+// file per request; the frontend calls this once per selected file.
+//
+// Different callers want different treatment (a product photo isn't the
+// same shape as a 2.4:1 hero banner), so the upload is parameterized by an
+// optional ?type= query param resolved to a profile below. Omitting it (or
+// passing an unrecognized value) keeps the original product behavior byte
+// for byte, so every existing caller is unaffected.
 
 const express = require('express');
 const multer  = require('multer');
@@ -12,18 +18,42 @@ const { authenticateToken, isAdmin, logAction } = require('../middleware');
 
 const router = express.Router();
 
-const UPLOAD_DIR = path.join(__dirname, '..', 'public', 'uploads', 'products');
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const PUBLIC_DIR = path.join(__dirname, '..', 'public', 'uploads');
 
-const MAX_UPLOAD_BYTES   = 10 * 1024 * 1024; // raw upload cap, before compression
-const MAX_DIMENSION      = 1600;             // longest side after resize
-const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+const UPLOAD_PROFILES = {
+    product: {
+        subdir:    'products',
+        maxBytes:  10 * 1024 * 1024,
+        resize:    { width: 1600, height: 1600 }, // longest side capped at 1600
+        mimeTypes: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'])
+    },
+    banner: {
+        subdir:    'banners',
+        maxBytes:  8 * 1024 * 1024,
+        resize:    { width: 1920, height: 800 },  // fits inside the recommended 2.4:1 box
+        mimeTypes: new Set(['image/jpeg', 'image/png', 'image/webp'])
+    }
+};
+
+function resolveProfile(req) {
+    return UPLOAD_PROFILES[req.query.type] || UPLOAD_PROFILES.product;
+}
+
+// Multer's own limit is just the outer safety net (largest of all profiles);
+// the actual per-profile byte cap is enforced after the file is in memory,
+// once we know which profile applies.
+const MAX_UPLOAD_BYTES_CEILING = Math.max(...Object.values(UPLOAD_PROFILES).map(p => p.maxBytes));
+
+Object.values(UPLOAD_PROFILES).forEach(profile => {
+    fs.mkdirSync(path.join(PUBLIC_DIR, profile.subdir), { recursive: true });
+});
 
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: MAX_UPLOAD_BYTES },
+    limits: { fileSize: MAX_UPLOAD_BYTES_CEILING },
     fileFilter(req, file, cb) {
-        if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+        const profile = resolveProfile(req);
+        if (!profile.mimeTypes.has(file.mimetype)) {
             return cb(new Error('UNSUPPORTED_FILE_TYPE'));
         }
         cb(null, true);
@@ -49,20 +79,27 @@ function getPublicOrigin(req) {
     return `${proto}://${host}`;
 }
 
-// POST /api/upload — multipart/form-data, field name "image"
+// POST /api/upload?type=product|banner — multipart/form-data, field name "image"
+// (?type= defaults to "product" when omitted or unrecognized)
 router.post('/', authenticateToken, isAdmin, (req, res) => {
     upload.single('image')(req, res, async (err) => {
+        const profile = resolveProfile(req);
+
         if (err) {
             if (err.message === 'UNSUPPORTED_FILE_TYPE') {
-                return res.status(400).json({ success: false, error: 'Unsupported file type. Please upload a JPEG, PNG, WebP, GIF, or AVIF image.' });
+                const exts = [...profile.mimeTypes].map(m => m.split('/')[1].toUpperCase()).join(', ');
+                return res.status(400).json({ success: false, error: `Unsupported file type. Please upload a ${exts} image.` });
             }
             if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ success: false, error: 'File is too large. Maximum size is 10MB.' });
+                return res.status(400).json({ success: false, error: `File is too large. Maximum size is ${MAX_UPLOAD_BYTES_CEILING / (1024 * 1024)}MB.` });
             }
             return res.status(400).json({ success: false, error: 'Upload failed: ' + err.message });
         }
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'No file uploaded' });
+        }
+        if (req.file.size > profile.maxBytes) {
+            return res.status(400).json({ success: false, error: `File is too large. Maximum size is ${profile.maxBytes / (1024 * 1024)}MB.` });
         }
 
         try {
@@ -74,32 +111,34 @@ router.post('/', authenticateToken, isAdmin, (req, res) => {
                 throw new Error('Not a decodable image');
             }
 
+            const uploadDir = path.join(PUBLIC_DIR, profile.subdir);
+
             // Collision-free filename (belt-and-suspenders on top of the
             // 128-bit random name — collisions are effectively impossible,
             // but this makes the guarantee explicit rather than assumed).
             let filename, destPath;
             do {
                 filename = randomFilename();
-                destPath = path.join(UPLOAD_DIR, filename);
+                destPath = path.join(uploadDir, filename);
             } while (fs.existsSync(destPath));
 
-            // Auto-orient from EXIF, cap the longest side (never upscale,
-            // aspect ratio preserved via `fit: 'inside'`), re-encode as
-            // compressed WebP.
+            // Auto-orient from EXIF, fit inside the profile's target box
+            // (never upscale, aspect ratio preserved via `fit: 'inside'`),
+            // re-encode as compressed WebP.
             await image
                 .rotate()
                 .resize({
-                    width: MAX_DIMENSION,
-                    height: MAX_DIMENSION,
+                    width: profile.resize.width,
+                    height: profile.resize.height,
                     fit: 'inside',
                     withoutEnlargement: true
                 })
                 .webp({ quality: 82 })
                 .toFile(destPath);
 
-            const url = `${getPublicOrigin(req)}/uploads/products/${filename}`;
+            const url = `${getPublicOrigin(req)}/uploads/${profile.subdir}/${filename}`;
             await logAction(req, 'CREATE', 'upload', filename,
-                `Uploaded image (${metadata.width}x${metadata.height} → WebP)`);
+                `Uploaded ${profile.subdir.slice(0, -1)} image (${metadata.width}x${metadata.height} → WebP)`);
             res.json({ success: true, url });
         } catch (procErr) {
             console.error('Image processing error:', procErr.message);
