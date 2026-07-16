@@ -195,7 +195,7 @@ router.get('/orders', authenticateCustomer, async (req, res) => {
 
         const result = await Promise.all(orders.map(async (order) => {
             const [items] = await pool.query(
-                `SELECT oi.*, p.image_url
+                `SELECT oi.*, oi.subtotal AS total, p.image_url
                  FROM order_items oi
                  LEFT JOIN products p ON p.id = oi.product_id
                  WHERE oi.order_id = ?`,
@@ -229,7 +229,7 @@ router.get('/track/:orderId', async (req, res) => {
 
         const order = orders[0];
         const [items] = await pool.query(
-            `SELECT oi.*, p.image_url FROM order_items oi
+            `SELECT oi.*, oi.subtotal AS total, p.image_url FROM order_items oi
              LEFT JOIN products p ON p.id = oi.product_id
              WHERE oi.order_id = ?`,
             [order.id]

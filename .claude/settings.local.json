@@ -39,7 +39,15 @@
       "Bash(tail -40 /c/Users/Mohammad/AppData/Local/Temp/backend.log)",
       "Bash(curl -s -m 15 -X POST http://localhost:3000/api/products -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"name_en\":\"DB VALUE CHECK\",\"name_ar\":\"فحص القيمة\",\"description_en\":\"x\",\"description_ar\":\"x\",\"category_id\":\"1\",\"stock\":1,\"quantity_to_sell\":1,\"cost_price\":1,\"old_price\":1,\"new_price\":1,\"image_url\":\"__TRACKED_VAR__\",\"additional_images\":\"[]\",\"is_visible\":true}')",
       "Bash(curl -s -m 10 -X DELETE http://localhost:3000/api/products/8 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
-      "Bash(curl -s -m 10 \"http://localhost:3000/api/products\")"
+      "Bash(curl -s -m 10 \"http://localhost:3000/api/products\")",
+      "Bash(node --check routes/orders.js)",
+      "Bash(curl -s -m 8 -o /dev/null -w \"backend health: %{http_code}\\\\n\" http://localhost:3000/api/products)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\)[0];console.log\\(p.id, p.name_en, p.new_price\\)}\\)\")",
+      "Bash(curl -s -m 15 -X POST http://localhost:3000/api/orders -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(node --check routes/customers.js)",
+      "Bash(curl -s -m 10 http://localhost:3000/api/customers/orders/track/TEST-CUST-SHAPE-__CMDSUB_OUTPUT__?phone=0790000001)",
+      "Bash(curl -s -m 10 \"http://localhost:3000/api/customers/track/TEST-CUST-SHAPE-1784242936?phone=0790000001\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(JSON.stringify\\(JSON.parse\\(d\\),null,2\\)\\)\\)\")"
     ]
   }
 }

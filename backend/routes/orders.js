@@ -29,7 +29,7 @@ async function fetchOrderItems(dbId) {
             oi.product_id,
             oi.quantity,
             oi.price,
-            oi.total,
+            oi.subtotal AS total,
             oi.selected_variant,
             COALESCE(p.name_en, oi.product_name_en, 'Unknown Product') AS product_name_en,
             COALESCE(p.name_ar, oi.product_name_ar, 'منتج غير معروف')  AS product_name_ar,
@@ -182,7 +182,7 @@ router.post('/', orderLimiter, async (req, res) => {
 
         for (const item of verifiedItems) {
             await connection.query(
-                `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, total, selected_variant)
+                `INSERT INTO order_items (order_id, product_id, product_name_en, product_name_ar, quantity, price, subtotal, selected_variant)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [dbOrderId, item.productId, item.productName,
                     item.productNameAr, item.quantity, item.unitPrice, item.lineTotal,
@@ -289,7 +289,7 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
         const placeholders = orderIds.map(() => '?').join(',');
         const [items] = await pool.query(
             `SELECT
-                oi.order_id, oi.product_id, oi.quantity, oi.price, oi.total,
+                oi.order_id, oi.product_id, oi.quantity, oi.price, oi.subtotal AS total,
                 COALESCE(p.name_en, oi.product_name_en, 'Unknown Product') AS product_name,
                 COALESCE(p.name_ar, oi.product_name_ar, 'منتج غير معروف')  AS product_name_ar,
                 p.image_url, p.cost_price
@@ -466,7 +466,7 @@ router.patch('/:id/items', authenticateToken, isAdmin, async (req, res) => {
             const total = parseFloat((qty * price).toFixed(2));
             if (item.id) {
                 await pool.query(
-                    'UPDATE order_items SET quantity = ?, price = ?, total = ? WHERE id = ? AND order_id = ?',
+                    'UPDATE order_items SET quantity = ?, price = ?, subtotal = ? WHERE id = ? AND order_id = ?',
                     [qty, price, total, parseInt(item.id, 10), dbOrderId]
                 );
             }
@@ -474,7 +474,7 @@ router.patch('/:id/items', authenticateToken, isAdmin, async (req, res) => {
 
         // Recalculate order subtotal and total from updated rows
         const [[subtotalRow]] = await pool.query(
-            'SELECT COALESCE(SUM(total), 0) AS newSubtotal FROM order_items WHERE order_id = ?',
+            'SELECT COALESCE(SUM(subtotal), 0) AS newSubtotal FROM order_items WHERE order_id = ?',
             [dbOrderId]
         );
         const newSubtotal = parseFloat(subtotalRow.newSubtotal || 0);
