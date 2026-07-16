@@ -37,9 +37,13 @@ logs/
 *.sql.backup
 *.db
 
-# Uploads (if implemented)
+# Uploads — user-generated product images (backend/routes/upload.js), served
+# via express.static('public') at /uploads/products/*. Not committed; the
+# directory is created automatically at runtime (fs.mkdirSync in upload.js).
 uploads/*
 !uploads/.gitkeep
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
 
 # Build files
 dist/

@@ -226,22 +226,17 @@
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group">
-                                <label>Main Image URL</label>
-                                <input type="text" id="productImage" placeholder="https://example.com/image.jpg"
-                                    required>
-                                <button type="button" class="btn-secondary" onclick="previewMainImage()"
-                                    style="margin-top: 0.5rem;">Preview Image</button>
+                            <div class="form-group" style="width:100%;">
+                                <label>Main Image</label>
+                                <div id="mainImageUploader"></div>
                             </div>
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group">
-                                <label>Additional Images (comma-separated URLs)</label>
-                                <textarea id="productAdditionalImages" rows="2"
-                                    placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"></textarea>
-                                <button type="button" class="btn-secondary" onclick="previewAdditionalImages()"
-                                    style="margin-top: 0.5rem;">Preview Images</button>
+                            <div class="form-group" style="width:100%;">
+                                <label>Additional Images <small
+                                        style="color:#888;font-weight:400;">(optional)</small></label>
+                                <div id="additionalImagesUploader"></div>
                             </div>
                         </div>
 
@@ -1216,6 +1211,7 @@ Add "Banners" to your sidebar nav too:
     <script src="auth-check.js"></script>
     <script src="config.js"></script>
     <script src="admin-api.js"></script>
+    <script src="image-uploader.js"></script>
     <script src="admin.js"></script>
     <script src="admin-delivery.js"></script>
     <script src="wa-admin.js"></script>

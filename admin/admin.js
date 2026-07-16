@@ -162,6 +162,17 @@ function searchProducts() {
     renderProductsTable(filtered);
 }
 
+// Lazily created once, then reused (reset/repopulated) across
+// showAddProductForm()/editProduct() calls rather than re-created each time,
+// so DOM listeners aren't stacked on every open of the form.
+let mainImageUploader = null;
+let additionalImagesUploader = null;
+
+function ensureImageUploaders() {
+    if (!mainImageUploader) mainImageUploader = createSingleImageUploader('mainImageUploader', {});
+    if (!additionalImagesUploader) additionalImagesUploader = createMultiImageUploader('additionalImagesUploader', {});
+}
+
 function showAddProductForm() {
     const form = document.getElementById('productForm');
     if (!form) return;
@@ -172,6 +183,9 @@ function showAddProductForm() {
     if (idEl) idEl.value = '';
     renderTierRows([]);
     renderColorRows([]);
+    ensureImageUploaders();
+    mainImageUploader.reset();
+    additionalImagesUploader.reset();
     loadCategoryOptions();
     form.scrollIntoView({ behavior: 'smooth' });
 }
@@ -204,17 +218,25 @@ async function editProduct(id) {
         setVal('productCostPrice', p.cost_price || p.costPrice || 0);
         setVal('productOldPrice', p.old_price || p.oldPrice || 0);
         setVal('productNewPrice', p.new_price || p.newPrice || 0);
-        setVal('productImage', p.image_url || p.image || '');
 
-        let additionalImagesStr = '';
+        ensureImageUploaders();
+        mainImageUploader.setValue(p.image_url || p.image || '');
+
+        // additional_images is stored as a JSON array string. Older rows from
+        // before that convention (or any hand-edited data) may still be a
+        // bare comma-separated string — handled gracefully either way so
+        // existing products keep working without a migration step.
+        let additionalImages = [];
         if (p.additional_images) {
             try {
                 const imgs = typeof p.additional_images === 'string'
                     ? JSON.parse(p.additional_images) : p.additional_images;
-                additionalImagesStr = Array.isArray(imgs) ? imgs.join(', ') : '';
-            } catch (e) { additionalImagesStr = p.additional_images; }
+                additionalImages = Array.isArray(imgs) ? imgs : [];
+            } catch (e) {
+                additionalImages = String(p.additional_images).split(',').map(u => u.trim()).filter(Boolean);
+            }
         }
-        setVal('productAdditionalImages', additionalImagesStr);
+        additionalImagesUploader.setValue(additionalImages);
         setVal('productVideo', p.video_url || p.videoUrl || '');
         setChecked('productNew', p.isNew || p.is_new || false);
         setChecked('productTopSeller', p.topSeller || p.is_top_seller || false);
@@ -265,12 +287,29 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
     e.preventDefault();
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn?.textContent;
+
+    // Uploads run automatically as soon as a file is picked, so by the time
+    // Save is clicked they're usually already done — but guard against the
+    // admin clicking Save while one is still in flight, or leaving a failed
+    // upload unresolved, rather than silently dropping it from the product.
+    if (mainImageUploader.hasErrors() || additionalImagesUploader.hasErrors()) {
+        alert('⚠️ One or more images failed to upload. Please retry or remove them before saving.');
+        return;
+    }
+
     if (submitBtn) { submitBtn.textContent = 'Saving...'; submitBtn.disabled = true; }
 
     try {
         const productId = document.getElementById('productId')?.value;
-        const additionalImagesText = document.getElementById('productAdditionalImages')?.value || '';
-        const additionalImages = additionalImagesText.split(',').map(u => u.trim()).filter(u => u);
+        const [imageUrl, additionalImages] = await Promise.all([
+            mainImageUploader.getValue(),
+            additionalImagesUploader.getValue()
+        ]);
+
+        if (!imageUrl) {
+            alert('⚠️ Please choose a main image for this product.');
+            return;
+        }
 
         const productData = {
             name_en: document.getElementById('productNameEn')?.value || '',
@@ -283,7 +322,7 @@ document.getElementById('productFormElement')?.addEventListener('submit', async 
             cost_price: parseFloat(document.getElementById('productCostPrice')?.value || 0),
             old_price: parseFloat(document.getElementById('productOldPrice')?.value || 0),
             new_price: parseFloat(document.getElementById('productNewPrice')?.value || 0),
-            image_url: document.getElementById('productImage')?.value || '',
+            image_url: imageUrl,
             additional_images: JSON.stringify(additionalImages),
             video_url: document.getElementById('productVideo')?.value || '',
             is_new: document.getElementById('productNew')?.checked || false,
@@ -399,28 +438,9 @@ function collectColors() {
 }
 
 // ==================== MEDIA PREVIEW ====================
-
-function previewMainImage() {
-    const url = document.getElementById('productImage')?.value;
-    if (!url) { alert('Enter an image URL first'); return; }
-    showPreview(`<img src="${url}" style="max-width:400px;max-height:400px;border:2px solid #000;"
-                      onerror="this.nextElementSibling.style.display='block';this.style.display='none';">
-                 <div style="display:none;padding:1rem;background:#ffebee;color:#c62828;">⚠️ Failed to load image</div>`);
-}
-
-function previewAdditionalImages() {
-    const text = document.getElementById('productAdditionalImages')?.value || '';
-    const urls = text.split(',').map(u => u.trim()).filter(u => u);
-    if (!urls.length) { alert('Enter image URLs first'); return; }
-    const html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
-        ${urls.map((url, i) => `
-            <div style="border:2px solid #000;padding:0.5rem;">
-                <div style="font-weight:600;margin-bottom:0.5rem;">Image ${i + 1}</div>
-                <img src="${url}" style="width:100%;height:160px;object-fit:cover;" onerror="this.style.display='none'">
-            </div>`).join('')}
-    </div>`;
-    showPreview(html);
-}
+// Main/additional image previews are now built into the upload widgets
+// themselves (admin/image-uploader.js) — only the video URL still needs a
+// manual "Preview" action since it isn't a file upload.
 
 function previewVideo() {
     const url = document.getElementById('productVideo')?.value;

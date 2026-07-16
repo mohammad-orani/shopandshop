@@ -15,7 +15,31 @@
       "Bash(git push *)",
       "Bash(node -e ' *)",
       "Bash(grep -nE \"#[0-9a-fA-F]{3,6}|rgba?\\\\\\([0-9]\" checkout.css)",
-      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\(\" checkout.html)"
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\(\" checkout.html)",
+      "Read(//c/Users/Mohammad/AppData/Local/Temp/**)",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-upload-repro.js\")",
+      "Bash(node -e \"console.log\\(Date.now\\(\\), new Date\\(\\).toISOString\\(\\)\\)\")",
+      "Bash(curl -s \"http://localhost:3000/api/products\")",
+      "Bash(curl -s -o /dev/null -w \"admin:%{http_code}\\\\n\" http://localhost:5601/index.html)",
+      "Bash(curl -s -o /dev/null -w \"frontend:%{http_code}\\\\n\" http://localhost:5600/index.html)",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-edit-preview-bug.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-legacy-product1.js\")",
+      "Bash(curl -s -o /dev/null -w \"backend:%{http_code}\\\\n\" http://localhost:3000/api/products)",
+      "Bash(curl -s -X DELETE http://localhost:3000/api/products/6 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(curl -s -X DELETE http://localhost:3000/api/products/7 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(JSON.parse\\(d\\).map\\(p=>p.id+' '+p.name_en\\)\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w 'URL: http://localhost:3000/uploads/products/80c9e9ba4e7bed1ae9e5fc8d3fdc9c19.webp\\\\nHTTP Status: %{http_code}\\\\nContent-Type: %{content_type}\\\\nSize: %{size_download} bytes\\\\nTime: %{time_total}s\\\\n\\\\n' http://localhost:3000/uploads/products/80c9e9ba4e7bed1ae9e5fc8d3fdc9c19.webp --max-time 10)",
+      "Bash(curl -s -L -o /dev/null -w 'URL: https://shorturl.at/Y5Bkw\\\\nHTTP Status: %{http_code}\\\\nRedirect URL: %{redirect_url}\\\\nTime: %{time_total}s\\\\n\\\\n' https://shorturl.at/Y5Bkw --max-time 10 -v)",
+      "Bash(curl -s -o /dev/null -w \"https://www.google.com -> HTTP %{http_code}\\\\n\" https://www.google.com --max-time 8)",
+      "Bash(curl -s -o /dev/null -w \"https://github.com -> HTTP %{http_code}\\\\n\" https://github.com --max-time 8)",
+      "Bash(curl -s -o /dev/null -w \"http://shorturl.at/Y5Bkw -> HTTP %{http_code}\\\\n\" http://shorturl.at/Y5Bkw --max-time 8 -L)",
+      "Bash(curl -s -o /dev/null -w \"https://shorturl.at/hdpM7 -> HTTP %{http_code}\\\\n\" https://shorturl.at/hdpM7 --max-time 8 -L)",
+      "Bash(curl -s -o /dev/null -w \"https://shorturl.at/Sd128 -> HTTP %{http_code}\\\\n\" https://shorturl.at/Sd128 --max-time 8 -L)",
+      "Bash(curl -s -m 5 -o /dev/null -w \"backend health: %{http_code}\\\\n\" http://localhost:3000/api/products)",
+      "Bash(tail -40 /c/Users/Mohammad/AppData/Local/Temp/backend.log)",
+      "Bash(curl -s -m 15 -X POST http://localhost:3000/api/products -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"name_en\":\"DB VALUE CHECK\",\"name_ar\":\"فحص القيمة\",\"description_en\":\"x\",\"description_ar\":\"x\",\"category_id\":\"1\",\"stock\":1,\"quantity_to_sell\":1,\"cost_price\":1,\"old_price\":1,\"new_price\":1,\"image_url\":\"__TRACKED_VAR__\",\"additional_images\":\"[]\",\"is_visible\":true}')",
+      "Bash(curl -s -m 10 -X DELETE http://localhost:3000/api/products/8 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(curl -s -m 10 \"http://localhost:3000/api/products\")"
     ]
   }
 }
