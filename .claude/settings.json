@@ -122,12 +122,16 @@
       "Bash(cp \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/run-migration-test.js\" d:/shopandshop_source_code/shopandshop/backend/run-migration-test.js)",
       "Bash(node run-migration-test.js)",
       "Bash(curl -s -m 8 \"http://localhost:3000/api/products/14\")",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('image_url:', p.image_url\\)}\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('image_url:', p.image_url\\)}\\)\")",
+      "Bash(curl -s -m 20 \"https://shopandshop-production.up.railway.app/api/products\")",
+      "Bash(curl -s -m 20 \"https://shopandshop-production.up.railway.app/api/banners\")",
+      "Bash(rm -f /c/Users/Mohammad/AppData/Local/Temp/check-all-urls.js /c/Users/Mohammad/AppData/Local/Temp/all-image-urls.json)"
     ],
     "additionalDirectories": [
       "d:\\shopandshop_source_code\\shopandshop\\frontend\\assets\\brand",
       "\\tmp",
-      "d:\\shopandshop_source_code\\shopandshop\\backend\\public\\uploads\\products"
+      "d:\\shopandshop_source_code\\shopandshop\\backend\\public\\uploads\\products",
+      "C:\\Users\\Mohammad\\AppData\\Local\\Temp"
     ]
   }
 }
