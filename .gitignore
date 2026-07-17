@@ -37,13 +37,18 @@ logs/
 *.sql.backup
 *.db
 
-# Uploads — user-generated product images (backend/routes/upload.js), served
-# via express.static('public') at /uploads/products/*. Not committed; the
-# directory is created automatically at runtime (fs.mkdirSync in upload.js).
+# Uploads — user-generated product/banner images (backend/routes/upload.js),
+# only actually written to when STORAGE_DRIVER=local (the default); served
+# via express.static('public') at /uploads/products|banners/*. Not
+# committed; the directory is created automatically at runtime.
 uploads/*
 !uploads/.gitkeep
 backend/public/uploads/*
 !backend/public/uploads/.gitkeep
+
+# Migration reports (backend/scripts/migrate-to-r2.js) — operational output,
+# not source; can reference real database record IDs.
+backend/migration-reports/
 
 # Build files
 dist/

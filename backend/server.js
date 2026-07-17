@@ -53,7 +53,9 @@ app.use(express.json());
 // allowlist above) from embedding these images at all — CORS only governs
 // fetch/XHR, not <img> loading, so it doesn't help here. Relax CORP to
 // cross-origin only for these static files; every other response keeps
-// helmet's stricter default.
+// helmet's stricter default. Only relevant when STORAGE_DRIVER=local (the
+// default) — harmless no-op otherwise, since nothing writes into public/
+// under the r2 driver.
 app.use(express.static('public', {
     setHeaders: (res) => res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
 }));
