@@ -1334,9 +1334,21 @@ body {
         gap: 6px;
     }
 
+    /* Root cause of inconsistent card heights: .product-title has no
+       reserved height, so a 1-line title leaves the price/stock/button
+       block sitting one line-height higher than on a card with a 2-line
+       title — even though the cards themselves are already the same
+       overall height (CSS Grid stretches them) and the button is already
+       pinned to the bottom via margin-top:auto. Reserving exactly 2 lines
+       here (line-height × 2, matching whatever the clamp below already
+       caps titles at) makes every card's price/stock/button start at the
+       same offset regardless of title length — not an arbitrary number,
+       it's tied directly to this rule's own line-height. Scoped to this
+       existing mobile breakpoint only; desktop's card layout is untouched. */
     .product-title,
     .product-name {
         font-size: 0.82rem;
+        min-height: calc(1.45em * 2);
     }
 
     .price-current,

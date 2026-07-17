@@ -70,7 +70,31 @@
       "Bash(rm -f \"C:/Users/Mohammad/AppData/Local/Temp/test9mb.bin\")",
       "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/banners/68ad0c347349a38dd7b6ae10a920b6bb.webp\")",
       "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/products/b5ad6acab6b6c10d2c22eab78a999f31.webp\")",
-      "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/products/f4f05a65817d9ec1632d17e382b5587a.webp\")"
+      "Bash(rm -f \"d:/shopandshop_source_code/shopandshop/backend/public/uploads/products/f4f05a65817d9ec1632d17e382b5587a.webp\")",
+      "Bash(curl -s -o /dev/null -w \"frontend:%{http_code}\\\\n\" http://localhost:5600/about.html)",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-about-alignment.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-about-text-ink.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-about-ink-full.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-about-ink-allwidths.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-about-visual-audit.js\")",
+      "Bash(node --check general-info.js)",
+      "Bash(node --check dist/js/general-info.min.js)",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-wa-tooltip-scope.js\")",
+      "Bash(node \"C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/test-cards-audit.js\")",
+      "Bash(curl -s -m 15 -X PUT http://localhost:3000/api/products/11 -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s -m 8 \"http://localhost:3000/api/products/11\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('name_ar:', p.name_ar\\)}\\)\")",
+      "Bash(curl -s -m 15 -X PUT http://localhost:3000/api/products/11 -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' --data-binary @C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/update-product11.json)",
+      "Bash(curl -s -m 8 \"http://localhost:3000/api/products/12\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('12 name_ar:', p.name_ar\\)}\\)\")",
+      "Bash(curl -s -m 8 \"http://localhost:3000/api/products/13\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('13 name_ar:', p.name_ar\\)}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('11 name_ar:', p.name_ar\\)}\\)\")",
+      "Bash(curl -s -m 15 -X PUT http://localhost:3000/api/products/12 -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' --data-binary @C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/update-product12.json)",
+      "Bash(curl -s -m 15 -X PUT http://localhost:3000/api/products/13 -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' --data-binary @C:/Users/Mohammad/AppData/Local/Temp/claude/d--shopandshop-source-code-shopandshop/2b41f800-1f00-40b4-831a-d56f1ead9640/scratchpad/update-product13.json)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('12:', p.name_ar\\)}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('13:', p.name_ar\\)}\\)\")",
+      "Bash(grep -o '\\\\.product-title,\\\\.product-name{font-size:.82rem}' d:/shopandshop_source_code/shopandshop/frontend/dist/css/topbaic-style.min.css)"
     ]
   }
 }

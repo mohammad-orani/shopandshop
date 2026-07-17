@@ -123,6 +123,27 @@
         injectWhatsAppButton(info);
     }
 
+    // The floating button itself is unconditional and unchanged everywhere —
+    // only the attention-grabbing tooltip bubble is scoped to pages where a
+    // "waiting for your message" purchase nudge actually makes sense. On
+    // static/informational pages (About, Contact, and any future Privacy/
+    // Terms/FAQ-style page) it defaults to off, since a permanently-visible,
+    // pulsing bubble has nothing to do with those pages' content and can sit
+    // on top of a heading or paragraph the visitor is trying to read. New
+    // pages are opt-in here rather than opt-out, since "no tooltip" is the
+    // safer default for a page whose purpose isn't yet known to this list.
+    const WA_TOOLTIP_PAGES = new Set([
+        '', 'index.html',      // home
+        'product.html', 'category.html', 'products.html', // browsing/discovery
+        'favorites.html',      // saved items — still shopping intent
+        'cart.html', 'checkout.html' // purchase flow
+    ]);
+
+    function shouldShowWaTooltip() {
+        const page = location.pathname.split('/').pop();
+        return WA_TOOLTIP_PAGES.has(page);
+    }
+
     function injectWhatsAppButton(info) {
         if (document.getElementById('wa-float-wrapper')) return;
 
@@ -182,23 +203,31 @@
 
         // Label bubble — independently fixed, right-aligned next to the button
         // button is 56px wide + 1.5rem from right, so label sits at right: calc(1.5rem + 56px + 10px)
-        const label = document.createElement('div');
-        label.id = 'wa-float-label';
-        label.textContent = 'بانتظار رسالتك للطلب';
-        label.style.cssText = [
-            'position:fixed',
-            'bottom:calc(1.5rem + 8px)',   /* vertically centered with 56px button */
-            'right:calc(1.5rem + 56px + 10px)',
-            'z-index:9999',
-            'background:#fff', 'color:#111',
-            'font-size:0.82rem', 'font-weight:700',
-            'padding:8px 14px', 'border-radius:20px',
-            'box-shadow:0 2px 12px rgba(0,0,0,0.15)',
-            'white-space:nowrap', 'direction:rtl',
-            'font-family:inherit',
-            'animation:wa-label-pulse 2.5s ease-in-out infinite',
-            'pointer-events:none'
-        ].join(';');
+        // Only created on shopping-funnel pages (see shouldShowWaTooltip) —
+        // on informational pages it's skipped entirely rather than hidden via
+        // CSS, so there's no lingering pulse animation running for an
+        // invisible element.
+        const showTooltip = shouldShowWaTooltip();
+        let label = null;
+        if (showTooltip) {
+            label = document.createElement('div');
+            label.id = 'wa-float-label';
+            label.textContent = 'بانتظار رسالتك للطلب';
+            label.style.cssText = [
+                'position:fixed',
+                'bottom:calc(1.5rem + 8px)',   /* vertically centered with 56px button */
+                'right:calc(1.5rem + 56px + 10px)',
+                'z-index:9999',
+                'background:#fff', 'color:#111',
+                'font-size:0.82rem', 'font-weight:700',
+                'padding:8px 14px', 'border-radius:20px',
+                'box-shadow:0 2px 12px rgba(0,0,0,0.15)',
+                'white-space:nowrap', 'direction:rtl',
+                'font-family:inherit',
+                'animation:wa-label-pulse 2.5s ease-in-out infinite',
+                'pointer-events:none'
+            ].join(';');
+        }
 
         // WhatsApp icon button — fixed independently
         const btn = document.createElement('a');
@@ -230,7 +259,7 @@
         wrapper.id = 'wa-float-wrapper';
         wrapper.style.cssText = 'display:none';
         document.body.appendChild(wrapper);
-        document.body.appendChild(label);
+        if (label) document.body.appendChild(label);
         document.body.appendChild(btn);
     }
 

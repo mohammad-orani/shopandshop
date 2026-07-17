@@ -172,7 +172,53 @@
     .about-section h2 { font-size: 1.5rem; }
     .about-section p { font-size: 0.98rem; }
     .values-grid { grid-template-columns: 1fr; }
-    .mission-statement { font-size: 1.1rem; padding: var(--spacing-md); }
+
+    /* Root cause of the heading/content misalignment: .mission-statement's
+       own accent border + full padding on that same side pushed its text
+       ~20px in from the section edge, while .about-section h2 above it has
+       no padding and sits flush against that edge. Every other section on
+       this page (plain paragraphs, the why-choose list) has no such offset,
+       so only "Our Mission" drifted out of alignment with its heading.
+       Fixed structurally, not with a magic-number nudge: the in-flow border
+       is replaced with an absolutely-positioned bar that doesn't consume
+       layout width, so the only remaining inset is the bar's own 4px —
+       the physical minimum needed for it to stay visible without the text
+       rendering on top of it. Scoped to this mobile breakpoint only —
+       desktop's wider column already reads fine and is left untouched. */
+    .mission-statement {
+        position: relative;
+        /* The box's own border-radius is larger than the 4px accent bar,
+           so the bar is clipped to the box's rounded shape via overflow
+           instead of carrying its own radius — a radius that size on a
+           4px-wide element would collapse it into a rounded blob rather
+           than a clean line. */
+        overflow: hidden;
+        font-size: 1.1rem;
+        padding-top: var(--spacing-md);
+        padding-bottom: var(--spacing-md);
+        padding-left: var(--spacing-md);
+        padding-right: 4px;
+        border-left: none;
+        border-right: none;
+    }
+    .mission-statement::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 4px;
+        background: var(--color-accent);
+    }
+    [dir="rtl"] .mission-statement {
+        padding-left: var(--spacing-md);
+        padding-right: 4px;
+        border-right: none;
+    }
+    [dir="rtl"] .mission-statement::before {
+        left: auto;
+        right: 0;
+    }
 }
 
 
