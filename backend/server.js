@@ -34,8 +34,8 @@ app.use(cors({
     origin: [
         `https://${storeDomain}`,
         `https://www.${storeDomain}`,
-        'https://adminshopandshop.netlify.app',
-        'https://clientshopandshop.netlify.app',
+        'https://admin.shopandshop.online',
+        'https://shopandshop.online',
         'http://127.0.0.1:5500',
         'http://localhost:5500',
         'http://localhost:3000',
